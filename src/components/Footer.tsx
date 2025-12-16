@@ -9,27 +9,33 @@ export function Footer() {
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {/* Logo & Social - Centered */}
+          {/* Logo & Social - Centered on mobile */}
           <div className="space-y-4 text-center md:text-left">
             <div className="flex justify-center md:justify-start">
               <img src={logo} alt="MediFranco" className="h-14 w-auto brightness-0 invert" />
             </div>
+            <p className="text-background/70 text-sm hidden md:block">
+              Cuidamos da sua visão e do seu sorriso há mais de 15 anos.
+            </p>
             <div className="flex gap-3 justify-center md:justify-start">
               <a
                 href="#"
                 className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
+                aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
+                aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
+                aria-label="LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
               </a>
@@ -37,7 +43,7 @@ export function Footer() {
           </div>
 
           {/* Links Rápidos */}
-          <div>
+          <div className="hidden md:block">
             <h4 className="font-semibold text-lg mb-4">Links Rápidos</h4>
             <ul className="space-y-2">
               {[
@@ -60,7 +66,7 @@ export function Footer() {
           </div>
 
           {/* Serviços */}
-          <div>
+          <div className="hidden md:block">
             <h4 className="font-semibold text-lg mb-4">Serviços</h4>
             <ul className="space-y-2">
               {[
@@ -80,31 +86,37 @@ export function Footer() {
 
           {/* Contactos */}
           <div>
-            <h4 className="font-semibold text-lg mb-4">Contactos</h4>
+            <h4 className="font-semibold text-lg mb-4 text-center md:text-left">Contactos</h4>
             <ul className="space-y-3">
-              <li className="flex items-start gap-3">
+              <li className="flex items-start gap-3 justify-center md:justify-start">
                 <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <span className="text-background/70 text-sm">
-                  Av. Francisco Sá Carneiro 43, Rio de Mouro
+                  Rua dos Comediantes nº 13 r/c – C<br />
+                  2910-468 Setúbal
                 </span>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-primary flex-shrink-0" />
-                <a href="tel:+351219123456" className="text-background/70 hover:text-primary text-sm">
-                  +351 219 123 456
-                </a>
+              <li className="flex items-start gap-3 justify-center md:justify-start">
+                <Phone className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="text-background/70 text-sm">
+                  <a href="tel:+351265540990" className="hover:text-primary block">
+                    265 540 990 (Fixo)
+                  </a>
+                  <a href="tel:+351919265497" className="hover:text-primary block">
+                    919 265 497 (Móvel)
+                  </a>
+                </div>
               </li>
-              <li className="flex items-center gap-3">
+              <li className="flex items-center gap-3 justify-center md:justify-start">
                 <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                 <a href="mailto:geral@medifranco.pt" className="text-background/70 hover:text-primary text-sm">
                   geral@medifranco.pt
                 </a>
               </li>
-              <li className="flex items-start gap-3">
+              <li className="flex items-start gap-3 justify-center md:justify-start">
                 <Clock className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="text-background/70 text-sm">
-                  <p>Seg-Sex: 9h às 19h</p>
-                  <p>Sábado: 9h às 13h</p>
+                  <p>Seg – Sex: 09:00 às 19:00</p>
+                  <p>Sáb – Dom: Fechados</p>
                 </div>
               </li>
             </ul>
@@ -115,7 +127,7 @@ export function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-background/20">
         <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-background/50 text-sm">
+          <p className="text-background/50 text-sm text-center md:text-left">
             © {currentYear} MediFranco. Todos os direitos reservados.
           </p>
           <div className="flex gap-6">

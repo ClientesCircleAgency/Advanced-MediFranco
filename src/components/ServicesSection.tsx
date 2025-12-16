@@ -10,18 +10,35 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 
   return (
     <div
-      className="group bg-background rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border border-border/50"
-      style={{ animationDelay: `${index * 50}ms` }}
+      className="group overflow-hidden rounded-2xl bg-background shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2"
+      style={{ animationDelay: `${index * 100}ms` }}
     >
-      <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center mb-4 group-hover:bg-primary group-hover:scale-110 transition-all duration-300">
-        <IconComponent className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors" />
+      {/* Image */}
+      {service.image && (
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={service.image}
+            alt={service.name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
+          <div className="absolute bottom-4 left-4">
+            <div className="w-12 h-12 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+              <IconComponent className="w-6 h-6 text-primary" />
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Content */}
+      <div className="p-6">
+        <h4 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+          {service.name}
+        </h4>
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          {service.description}
+        </p>
       </div>
-      <h4 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-        {service.name}
-      </h4>
-      <p className="text-muted-foreground text-sm leading-relaxed">
-        {service.description}
-      </p>
     </div>
   );
 }
@@ -52,17 +69,17 @@ export function ServicesSection() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8 h-12">
               <TabsTrigger
                 value="dentaria"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-10"
               >
                 <Icons.Smile className="w-4 h-4 mr-2" />
                 Medicina Dentária
               </TabsTrigger>
               <TabsTrigger
                 value="oftalmologia"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-10"
               >
                 <Icons.Eye className="w-4 h-4 mr-2" />
                 Oftalmologia
@@ -72,7 +89,13 @@ export function ServicesSection() {
             <TabsContent value="dentaria" className="mt-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {dentalServices.map((service, index) => (
-                  <ServiceCard key={service.id} service={service} index={index} />
+                  <div
+                    key={service.id}
+                    className={isVisible ? 'animate-fade-in-up' : 'opacity-0'}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <ServiceCard service={service} index={index} />
+                  </div>
                 ))}
               </div>
             </TabsContent>
@@ -80,7 +103,13 @@ export function ServicesSection() {
             <TabsContent value="oftalmologia" className="mt-0">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {ophthalmologyServices.map((service, index) => (
-                  <ServiceCard key={service.id} service={service} index={index} />
+                  <div
+                    key={service.id}
+                    className={isVisible ? 'animate-fade-in-up' : 'opacity-0'}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <ServiceCard service={service} index={index} />
+                  </div>
                 ))}
               </div>
             </TabsContent>

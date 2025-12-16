@@ -1,4 +1,3 @@
-import { ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo-medifranco.png';
 
@@ -54,7 +53,7 @@ export function HeroSection() {
             <Button
               size="lg"
               onClick={scrollToMarcacao}
-              className="bg-primary hover:bg-primary/90 text-base px-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+              className="bg-primary hover:bg-primary/90 text-base px-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
             >
               Marcar Consulta
             </Button>
@@ -62,20 +61,12 @@ export function HeroSection() {
               size="lg"
               variant="outline"
               onClick={scrollToSobre}
-              className="text-base px-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+              className="text-base px-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 active:scale-95"
             >
               Conhecer a Clínica
             </Button>
           </div>
         </div>
-
-        {/* Scroll Indicator */}
-        <button
-          onClick={scrollToSobre}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-primary hover:text-primary/80 transition-colors"
-        >
-          <ArrowDown className="w-7 h-7" />
-        </button>
       </div>
     </section>
   );
