@@ -2,14 +2,21 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Calendar, Clock, Send } from 'lucide-react';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
+import { CalendarIcon, Clock, Send } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { allServices } from '@/data/services';
 import { Appointment } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -18,13 +25,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const appointmentSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
   email: z.string().email('Email inválido').max(255),
   phone: z.string().min(9, 'Telefone inválido').max(20),
-  serviceType: z.enum(['dentaria', 'oftalmologia'], { required_error: 'Selecione uma área' }),
-  service: z.string().min(1, 'Selecione um serviço'),
+  nif: z.string().length(9, 'NIF deve ter 9 dígitos').regex(/^\d+$/, 'NIF deve conter apenas números'),
+  serviceType: z.enum(['dentaria', 'oftalmologia'], { required_error: 'Selecione o tipo de consulta' }),
   preferredDate: z.string().min(1, 'Selecione uma data'),
   preferredTime: z.string().min(1, 'Selecione uma hora'),
 });
@@ -39,7 +47,7 @@ const timeSlots = [
 export function AppointmentSection() {
   const { ref, isVisible } = useIntersectionObserver({ threshold: 0.1 });
   const [appointments, setAppointments] = useLocalStorage<Appointment[]>('medifranco_appointments', []);
-  const [selectedType, setSelectedType] = useState<'dentaria' | 'oftalmologia' | ''>('');
+  const [selectedDate, setSelectedDate] = useState<Date>();
   const { toast } = useToast();
 
   const {
@@ -53,9 +61,7 @@ export function AppointmentSection() {
     resolver: zodResolver(appointmentSchema),
   });
 
-  const filteredServices = selectedType
-    ? allServices.filter((s) => s.category === selectedType)
-    : [];
+  const watchServiceType = watch('serviceType');
 
   const onSubmit = async (data: AppointmentFormData) => {
     const newAppointment: Appointment = {
@@ -63,8 +69,8 @@ export function AppointmentSection() {
       name: data.name,
       email: data.email,
       phone: data.phone,
+      nif: data.nif,
       serviceType: data.serviceType,
-      service: data.service,
       preferredDate: data.preferredDate,
       preferredTime: data.preferredTime,
       status: 'pending',
@@ -79,10 +85,15 @@ export function AppointmentSection() {
     });
 
     reset();
-    setSelectedType('');
+    setSelectedDate(undefined);
   };
 
-  const today = new Date().toISOString().split('T')[0];
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+    if (date) {
+      setValue('preferredDate', format(date, 'yyyy-MM-dd'));
+    }
+  };
 
   return (
     <section id="marcacao" className="py-16 md:py-24 bg-secondary/30">
@@ -124,6 +135,21 @@ export function AppointmentSection() {
                 )}
               </div>
 
+              {/* NIF */}
+              <div className="space-y-2">
+                <Label htmlFor="nif">NIF</Label>
+                <Input
+                  id="nif"
+                  placeholder="123456789"
+                  maxLength={9}
+                  {...register('nif')}
+                  className={errors.nif ? 'border-destructive' : ''}
+                />
+                {errors.nif && (
+                  <p className="text-sm text-destructive">{errors.nif.message}</p>
+                )}
+              </div>
+
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -155,21 +181,19 @@ export function AppointmentSection() {
               </div>
 
               {/* Service Type */}
-              <div className="space-y-2">
-                <Label>Área</Label>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Tipo de Consulta</Label>
                 <Select
                   onValueChange={(value: 'dentaria' | 'oftalmologia') => {
-                    setSelectedType(value);
                     setValue('serviceType', value);
-                    setValue('service', '');
                   }}
                 >
                   <SelectTrigger className={errors.serviceType ? 'border-destructive' : ''}>
-                    <SelectValue placeholder="Selecione a área" />
+                    <SelectValue placeholder="Selecione o tipo de consulta" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="dentaria">Medicina Dentária</SelectItem>
                     <SelectItem value="oftalmologia">Oftalmologia</SelectItem>
+                    <SelectItem value="dentaria">Medicina Dentária</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.serviceType && (
@@ -177,42 +201,44 @@ export function AppointmentSection() {
                 )}
               </div>
 
-              {/* Service */}
+              {/* Date - Visual Calendar */}
               <div className="space-y-2">
-                <Label>Serviço</Label>
-                <Select
-                  onValueChange={(value) => setValue('service', value)}
-                  disabled={!selectedType}
-                >
-                  <SelectTrigger className={errors.service ? 'border-destructive' : ''}>
-                    <SelectValue placeholder="Selecione o serviço" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredServices.map((service) => (
-                      <SelectItem key={service.id} value={service.id}>
-                        {service.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.service && (
-                  <p className="text-sm text-destructive">{errors.service.message}</p>
-                )}
-              </div>
-
-              {/* Date */}
-              <div className="space-y-2">
-                <Label htmlFor="date">Data Preferida</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="date"
-                    type="date"
-                    min={today}
-                    {...register('preferredDate')}
-                    className={`pl-10 ${errors.preferredDate ? 'border-destructive' : ''}`}
-                  />
-                </div>
+                <Label>Data Preferida</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !selectedDate && "text-muted-foreground",
+                        errors.preferredDate && "border-destructive"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedDate ? (
+                        format(selectedDate, "PPP", { locale: pt })
+                      ) : (
+                        <span>Selecione uma data</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={handleDateSelect}
+                      disabled={(date) => {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const day = date.getDay();
+                        // Disable past dates and Sundays
+                        return date < today || day === 0;
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
                 {errors.preferredDate && (
                   <p className="text-sm text-destructive">{errors.preferredDate.message}</p>
                 )}
@@ -243,7 +269,7 @@ export function AppointmentSection() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-6 bg-primary hover:bg-primary/90"
+              className="w-full mt-6 bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all"
               size="lg"
             >
               <Send className="w-4 h-4 mr-2" />

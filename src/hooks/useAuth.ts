@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 
-const ADMIN_EMAIL = 'admin@example.com';
-const ADMIN_PASSWORD = 'qwertyuiop';
+const ADMIN_EMAIL = 'admin@medifranco.pt';
+const ADMIN_PASSWORD = 'medifranco2025';
 const AUTH_KEY = 'medifranco_admin_auth';
 
 export function useAuth() {
