@@ -3,8 +3,8 @@ export interface Appointment {
   name: string;
   email: string;
   phone: string;
+  nif: string;
   serviceType: 'dentaria' | 'oftalmologia';
-  service: string;
   preferredDate: string;
   preferredTime: string;
   status: 'pending' | 'confirmed' | 'cancelled';

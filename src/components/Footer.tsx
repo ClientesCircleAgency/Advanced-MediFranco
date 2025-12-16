@@ -5,16 +5,16 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-foreground text-background py-12">
-      <div className="container mx-auto px-4">
+    <footer className="bg-foreground text-background">
+      {/* Main Footer */}
+      <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {/* Logo & About */}
-          <div className="space-y-4">
-            <img src={logo} alt="MediFranco" className="h-12 w-auto brightness-0 invert" />
-            <p className="text-background/70 text-sm leading-relaxed">
-              Cuidados de excelência em medicina dentária e oftalmologia há mais de 15 anos.
-            </p>
-            <div className="flex gap-4">
+          {/* Logo & Social - Centered */}
+          <div className="space-y-4 text-center md:text-left">
+            <div className="flex justify-center md:justify-start">
+              <img src={logo} alt="MediFranco" className="h-14 w-auto brightness-0 invert" />
+            </div>
+            <div className="flex gap-3 justify-center md:justify-start">
               <a
                 href="#"
                 className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
@@ -110,9 +110,11 @@ export function Footer() {
             </ul>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-background/20 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      {/* Bottom Bar */}
+      <div className="border-t border-background/20">
+        <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-background/50 text-sm">
             © {currentYear} MediFranco. Todos os direitos reservados.
           </p>
