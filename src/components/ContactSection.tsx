@@ -24,12 +24,12 @@ const contactInfo = [
   {
     icon: MapPin,
     label: 'Morada',
-    value: 'Av. Francisco Sá Carneiro 43, Rio de Mouro',
+    value: 'Rua dos Comediantes nº 13 r/c – C\n2910-468 Setúbal, Portugal',
   },
   {
     icon: Phone,
     label: 'Telefone',
-    value: '+351 219 123 456',
+    value: '265 540 990 (Fixo)\n919 265 497 (Móvel)',
   },
   {
     icon: Mail,
@@ -39,7 +39,7 @@ const contactInfo = [
   {
     icon: Clock,
     label: 'Horário',
-    value: 'Seg-Sex: 9h-19h | Sáb: 9h-13h',
+    value: 'Seg – Sex: 09:00 às 19:00\nSáb – Dom: Fechados',
   },
 ];
 
@@ -105,14 +105,14 @@ export function ContactSection() {
                 {contactInfo.map((info, index) => (
                   <div
                     key={index}
-                    className="bg-background rounded-xl p-4 shadow-sm flex items-start gap-3"
+                    className="bg-background rounded-xl p-4 shadow-sm flex items-start gap-3 hover:shadow-md transition-shadow"
                   >
                     <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
                       <info.icon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">{info.label}</p>
-                      <p className="text-foreground font-medium text-sm">{info.value}</p>
+                      <p className="text-foreground font-medium text-sm whitespace-pre-line">{info.value}</p>
                     </div>
                   </div>
                 ))}
@@ -121,7 +121,7 @@ export function ContactSection() {
               {/* Google Maps */}
               <div className="rounded-xl overflow-hidden shadow-lg h-64 md:h-80">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3111.7462261859424!2d-9.334693!3d38.776547!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd1ecf1c8b7a5c5f%3A0x8c8c8c8c8c8c8c8c!2sAv.%20Francisco%20S%C3%A1%20Carneiro%2043%2C%20Rio%20de%20Mouro!5e0!3m2!1spt-PT!2spt!4v1699999999999!5m2!1spt-PT!2spt"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3118.123456789!2d-8.893333!3d38.523889!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd194330b6b4f1c1%3A0x1234567890abcdef!2sRua%20dos%20Comediantes%2013%2C%202910-468%20Set%C3%BAbal!5e0!3m2!1spt-PT!2spt!4v1700000000000!5m2!1spt-PT!2spt"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -200,7 +200,7 @@ export function ContactSection() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-primary hover:bg-primary/90"
+                  className="w-full bg-primary hover:bg-primary/90 active:scale-95 transition-all"
                   size="lg"
                 >
                   <Send className="w-4 h-4 mr-2" />

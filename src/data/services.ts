@@ -1,5 +1,21 @@
 import { Service } from '@/types';
 
+// Dental service images
+import ortodontiaImg from '@/assets/services/ortodontia.png';
+import implantologiaImg from '@/assets/services/implantologia.png';
+import branqueamentoImg from '@/assets/services/branqueamento.png';
+import protesesImg from '@/assets/services/proteses.png';
+import endodontiaImg from '@/assets/services/endodontia.png';
+import cirurgiaOralImg from '@/assets/services/cirurgia-oral.png';
+
+// Ophthalmology service images
+import consultaOftalmologiaImg from '@/assets/services/consulta-oftalmologia.png';
+import cirurgiaRefrativaImg from '@/assets/services/cirurgia-refrativa.png';
+import cataratasImg from '@/assets/services/cataratas.png';
+import glaucomaImg from '@/assets/services/glaucoma.png';
+import retinopatiaImg from '@/assets/services/retinopatia.png';
+import lentesContactoImg from '@/assets/services/lentes-contacto.png';
+
 export const dentalServices: Service[] = [
   {
     id: 'ortodontia',
@@ -7,6 +23,7 @@ export const dentalServices: Service[] = [
     description: 'Correção de má oclusão e alinhamento dentário com aparelhos fixos, removíveis e alinhadores invisíveis.',
     icon: 'Smile',
     category: 'dentaria',
+    image: ortodontiaImg,
   },
   {
     id: 'implantologia',
@@ -14,6 +31,7 @@ export const dentalServices: Service[] = [
     description: 'Substituição de dentes perdidos por implantes de titânio, devolvendo função e estética natural.',
     icon: 'CircleDot',
     category: 'dentaria',
+    image: implantologiaImg,
   },
   {
     id: 'branqueamento',
@@ -21,6 +39,7 @@ export const dentalServices: Service[] = [
     description: 'Técnicas avançadas para clarear os dentes de forma segura e eficaz, com resultados duradouros.',
     icon: 'Sparkles',
     category: 'dentaria',
+    image: branqueamentoImg,
   },
   {
     id: 'proteses',
@@ -28,6 +47,7 @@ export const dentalServices: Service[] = [
     description: 'Soluções removíveis ou fixas para substituir dentes em falta e recuperar a função mastigatória.',
     icon: 'LayoutGrid',
     category: 'dentaria',
+    image: protesesImg,
   },
   {
     id: 'endodontia',
@@ -35,6 +55,7 @@ export const dentalServices: Service[] = [
     description: 'Tratamento de canais radiculares para salvar dentes danificados por cáries profundas ou traumas.',
     icon: 'Target',
     category: 'dentaria',
+    image: endodontiaImg,
   },
   {
     id: 'cirurgia-oral',
@@ -42,6 +63,7 @@ export const dentalServices: Service[] = [
     description: 'Extração de sisos, cirurgias pré-protéticas e tratamento de patologias da cavidade oral.',
     icon: 'Scissors',
     category: 'dentaria',
+    image: cirurgiaOralImg,
   },
 ];
 
@@ -52,6 +74,7 @@ export const ophthalmologyServices: Service[] = [
     description: 'Avaliação completa da saúde visual, incluindo exames de acuidade visual e fundo de olho.',
     icon: 'Eye',
     category: 'oftalmologia',
+    image: consultaOftalmologiaImg,
   },
   {
     id: 'cirurgia-refrativa',
@@ -59,6 +82,7 @@ export const ophthalmologyServices: Service[] = [
     description: 'Correção de miopia, hipermetropia e astigmatismo com tecnologia laser de última geração.',
     icon: 'Zap',
     category: 'oftalmologia',
+    image: cirurgiaRefrativaImg,
   },
   {
     id: 'cataratas',
@@ -66,6 +90,7 @@ export const ophthalmologyServices: Service[] = [
     description: 'Remoção do cristalino opaco e implante de lente intraocular para visão nítida.',
     icon: 'Sun',
     category: 'oftalmologia',
+    image: cataratasImg,
   },
   {
     id: 'glaucoma',
@@ -73,6 +98,7 @@ export const ophthalmologyServices: Service[] = [
     description: 'Diagnóstico precoce e tratamento para controlar a pressão intraocular e prevenir perda visual.',
     icon: 'Gauge',
     category: 'oftalmologia',
+    image: glaucomaImg,
   },
   {
     id: 'retinopatia',
@@ -80,6 +106,7 @@ export const ophthalmologyServices: Service[] = [
     description: 'Tratamento de doenças da retina, incluindo degeneração macular e retinopatia diabética.',
     icon: 'Focus',
     category: 'oftalmologia',
+    image: retinopatiaImg,
   },
   {
     id: 'lentes-contacto',
@@ -87,6 +114,7 @@ export const ophthalmologyServices: Service[] = [
     description: 'Adaptação personalizada de lentes de contacto para correção visual e conforto máximo.',
     icon: 'Circle',
     category: 'oftalmologia',
+    image: lentesContactoImg,
   },
 ];
 

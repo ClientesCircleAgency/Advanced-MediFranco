@@ -45,4 +45,5 @@ export interface Service {
   description: string;
   icon: string;
   category: 'dentaria' | 'oftalmologia';
+  image?: string;
 }

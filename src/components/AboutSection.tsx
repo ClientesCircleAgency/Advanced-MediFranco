@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { teamMembers } from '@/data/team';
 import { TeamMember } from '@/types';
@@ -9,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import fundadoresImg from '@/assets/fundadores.png';
 
 export function AboutSection() {
   const { ref, isVisible } = useIntersectionObserver({ threshold: 0.1 });
@@ -34,6 +34,47 @@ export function AboutSection() {
             </p>
           </div>
 
+          {/* Founders Section */}
+          <div className="mb-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+              {/* Founders Image */}
+              <div className="relative">
+                <div className="rounded-2xl overflow-hidden shadow-xl">
+                  <img
+                    src={fundadoresImg}
+                    alt="Os Fundadores da MediFranco"
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
+                <div className="absolute -top-4 -left-4 w-32 h-32 bg-accent/30 rounded-full blur-3xl" />
+              </div>
+
+              {/* Founders Story */}
+              <div className="space-y-6">
+                <h3 className="text-2xl md:text-3xl font-bold text-foreground">
+                  A Nossa <span className="text-primary">História</span>
+                </h3>
+                <div className="space-y-4 text-muted-foreground leading-relaxed">
+                  <p>
+                    Crescemos a ver o nosso pai, <strong className="text-foreground">Dr. António Franco</strong>, 
+                    a exercer uma medicina diferente. Uma medicina de carinho genuíno, onde a conquista 
+                    da confiança dos doentes se traduzia em actos de verdadeiro reconhecimento.
+                  </p>
+                  <p>
+                    Essa forma de estar na medicina ficou-nos marcada na memória, inspirando a criação 
+                    da <strong className="text-foreground">MediFranco</strong> — uma clínica onde cada paciente 
+                    é tratado com o mesmo cuidado e dedicação que o nosso pai sempre demonstrou.
+                  </p>
+                  <p>
+                    Hoje, continuamos esse legado, combinando a tradição de excelência com as mais 
+                    modernas tecnologias em oftalmologia e medicina dentária.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
             {[
@@ -44,7 +85,7 @@ export function AboutSection() {
             ].map((stat, index) => (
               <div
                 key={index}
-                className="text-center p-6 bg-background rounded-lg shadow-sm"
+                className="text-center p-6 bg-background rounded-lg shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
                   {stat.number}
@@ -70,7 +111,7 @@ export function AboutSection() {
               <button
                 key={member.id}
                 onClick={() => setSelectedMember(member)}
-                className={`bg-background rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 text-left ${
+                className={`bg-background rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-left ${
                   isVisible ? 'animate-fade-in-up' : 'opacity-0'
                 }`}
                 style={{ animationDelay: `${index * 100}ms` }}
