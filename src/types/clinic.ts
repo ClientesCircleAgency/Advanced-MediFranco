@@ -1,3 +1,6 @@
+// Legacy types for backward compatibility with existing components
+// These use camelCase while Supabase uses snake_case
+
 // Estados da consulta
 export type AppointmentStatus = 
   | 'scheduled'    // Marcada
@@ -14,11 +17,11 @@ export type WaitlistPriority = 'low' | 'medium' | 'high';
 // Preferência de horário
 export type TimePreference = 'morning' | 'afternoon' | 'any';
 
-// Profissional
+// Profissional (camelCase for components)
 export interface Professional {
   id: string;
   name: string;
-  specialty: string;
+  specialty: string;  // This is specialty_id in DB
   color: string;
   avatar?: string;
 }
@@ -29,7 +32,7 @@ export interface Specialty {
   name: string;
 }
 
-// Tipo de consulta
+// Tipo de consulta (camelCase)
 export interface ConsultationType {
   id: string;
   name: string;
@@ -37,7 +40,7 @@ export interface ConsultationType {
   color?: string;
 }
 
-// Paciente (base interna por NIF)
+// Paciente (camelCase)
 export interface Patient {
   id: string;
   nif: string;
@@ -50,7 +53,7 @@ export interface Patient {
   createdAt: string;
 }
 
-// Consulta clínica
+// Consulta clínica (camelCase)
 export interface ClinicAppointment {
   id: string;
   patientId: string;
@@ -67,7 +70,7 @@ export interface ClinicAppointment {
   updatedAt: string;
 }
 
-// Item da Lista de Espera
+// Item da Lista de Espera (camelCase)
 export interface WaitlistItem {
   id: string;
   patientId: string;
@@ -76,6 +79,7 @@ export interface WaitlistItem {
   timePreference: TimePreference;
   preferredDates?: string[];
   priority: WaitlistPriority;
+  sortOrder?: number;
   reason?: string;
   createdAt: string;
 }
