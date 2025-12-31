@@ -14,6 +14,256 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          consultation_type_id: string
+          created_at: string
+          date: string
+          duration: number
+          id: string
+          notes: string | null
+          patient_id: string
+          professional_id: string
+          room_id: string | null
+          specialty_id: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          time: string
+          updated_at: string
+        }
+        Insert: {
+          consultation_type_id: string
+          created_at?: string
+          date: string
+          duration?: number
+          id?: string
+          notes?: string | null
+          patient_id: string
+          professional_id: string
+          room_id?: string | null
+          specialty_id: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          time: string
+          updated_at?: string
+        }
+        Update: {
+          consultation_type_id?: string
+          created_at?: string
+          date?: string
+          duration?: number
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          professional_id?: string
+          room_id?: string | null
+          specialty_id?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_consultation_type_id_fkey"
+            columns: ["consultation_type_id"]
+            isOneToOne: false
+            referencedRelation: "consultation_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      consultation_types: {
+        Row: {
+          color: string | null
+          created_at: string
+          default_duration: number
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          default_duration?: number
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          default_duration?: number
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      patients: {
+        Row: {
+          birth_date: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          nif: string
+          notes: string | null
+          phone: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          birth_date?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          nif: string
+          notes?: string | null
+          phone: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          nif?: string
+          notes?: string | null
+          phone?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      professionals: {
+        Row: {
+          avatar_url: string | null
+          color: string
+          created_at: string
+          id: string
+          name: string
+          specialty_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          specialty_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          specialty_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professionals_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          specialty_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          specialty_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          specialty_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rooms_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      specialties: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -35,6 +285,67 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist: {
+        Row: {
+          created_at: string
+          id: string
+          patient_id: string
+          preferred_dates: string[] | null
+          priority: Database["public"]["Enums"]["waitlist_priority"]
+          professional_id: string | null
+          reason: string | null
+          sort_order: number
+          specialty_id: string | null
+          time_preference: Database["public"]["Enums"]["time_preference"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          patient_id: string
+          preferred_dates?: string[] | null
+          priority?: Database["public"]["Enums"]["waitlist_priority"]
+          professional_id?: string | null
+          reason?: string | null
+          sort_order?: number
+          specialty_id?: string | null
+          time_preference?: Database["public"]["Enums"]["time_preference"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          patient_id?: string
+          preferred_dates?: string[] | null
+          priority?: Database["public"]["Enums"]["waitlist_priority"]
+          professional_id?: string | null
+          reason?: string | null
+          sort_order?: number
+          specialty_id?: string | null
+          time_preference?: Database["public"]["Enums"]["time_preference"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -50,6 +361,16 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      appointment_status:
+        | "scheduled"
+        | "confirmed"
+        | "waiting"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+        | "no_show"
+      time_preference: "morning" | "afternoon" | "any"
+      waitlist_priority: "low" | "medium" | "high"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -178,6 +499,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      appointment_status: [
+        "scheduled",
+        "confirmed",
+        "waiting",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "no_show",
+      ],
+      time_preference: ["morning", "afternoon", "any"],
+      waitlist_priority: ["low", "medium", "high"],
     },
   },
 } as const
