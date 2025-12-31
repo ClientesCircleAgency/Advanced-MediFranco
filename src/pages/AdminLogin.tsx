@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,29 +13,38 @@ import logo from '@/assets/logo-medifranco.png';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
-  password: z.string().min(1, 'Password é obrigatória'),
+  password: z.string().min(6, 'Password deve ter pelo menos 6 caracteres'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginFormData) => {
-    const success = login(data.email, data.password);
+  // Redirect if already authenticated
+  if (isAuthenticated) {
+    navigate('/admin');
+    return null;
+  }
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsSubmitting(true);
     
-    if (success) {
+    const result = await login(data.email, data.password);
+    
+    if (result.success) {
       toast({
         title: 'Login efetuado',
         description: 'Bem-vindo à área de administração.',
@@ -44,10 +53,12 @@ export default function AdminLogin() {
     } else {
       toast({
         title: 'Erro de autenticação',
-        description: 'Email ou password incorretos.',
+        description: result.error || 'Email ou password incorretos.',
         variant: 'destructive',
       });
     }
+    
+    setIsSubmitting(false);
   };
 
   return (
@@ -73,6 +84,7 @@ export default function AdminLogin() {
                 placeholder="admin@medifranco.pt"
                 {...register('email')}
                 className={errors.email ? 'border-destructive' : ''}
+                disabled={isSubmitting}
               />
               {errors.email && (
                 <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -88,11 +100,13 @@ export default function AdminLogin() {
                   placeholder="••••••••"
                   {...register('password')}
                   className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
+                  disabled={isSubmitting}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  disabled={isSubmitting}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -108,8 +122,17 @@ export default function AdminLogin() {
               className="w-full bg-primary hover:bg-primary/90"
               size="lg"
             >
-              <LogIn className="w-4 h-4 mr-2" />
-              {isSubmitting ? 'A entrar...' : 'Entrar'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  A entrar...
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Entrar
+                </>
+              )}
             </Button>
           </form>
 
