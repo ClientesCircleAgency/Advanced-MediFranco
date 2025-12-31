@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Phone, Mail, Calendar, Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -5,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useClinic } from '@/context/ClinicContext';
+import { AppointmentWizard } from '@/components/admin/AppointmentWizard';
 import { appointmentStatusLabels } from '@/types/clinic';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -14,18 +16,17 @@ export default function PatientDetailPage() {
   const navigate = useNavigate();
   const { getPatientById, getAppointmentsByPatient, getProfessionalById, getConsultationTypeById } = useClinic();
 
+  const [wizardOpen, setWizardOpen] = useState(false);
+
   const patient = getPatientById(id || '');
-  const appointments = getAppointmentsByPatient(id || '').sort(
-    (a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`)
-  );
+  const appointments = getAppointmentsByPatient(id || '').sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
 
   if (!patient) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Paciente não encontrado</p>
         <Button variant="outline" onClick={() => navigate('/admin/pacientes')} className="mt-4">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar
+          <ArrowLeft className="h-4 w-4 mr-2" />Voltar
         </Button>
       </div>
     );
@@ -46,7 +47,6 @@ export default function PatientDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate('/admin/pacientes')}>
           <ArrowLeft className="h-5 w-5" />
@@ -55,81 +55,32 @@ export default function PatientDetailPage() {
           <h2 className="text-2xl font-bold">{patient.name}</h2>
           <p className="text-muted-foreground">NIF: {patient.nif}</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nova Consulta
+        <Button className="gap-2" onClick={() => setWizardOpen(true)}>
+          <Plus className="h-4 w-4" />Nova Consulta
         </Button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {/* Dados do paciente */}
         <Card className="md:col-span-1">
-          <CardHeader>
-            <CardTitle>Dados Pessoais</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Dados Pessoais</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span>{patient.phone}</span>
-            </div>
-            {patient.email && (
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span>{patient.email}</span>
-              </div>
-            )}
-            {patient.birthDate && (
-              <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{format(new Date(patient.birthDate), 'dd/MM/yyyy', { locale: pt })}</span>
-              </div>
-            )}
-
+            <div className="flex items-center gap-3"><Phone className="h-4 w-4 text-muted-foreground" /><span>{patient.phone}</span></div>
+            {patient.email && <div className="flex items-center gap-3"><Mail className="h-4 w-4 text-muted-foreground" /><span>{patient.email}</span></div>}
+            {patient.birthDate && <div className="flex items-center gap-3"><Calendar className="h-4 w-4 text-muted-foreground" /><span>{format(new Date(patient.birthDate), 'dd/MM/yyyy', { locale: pt })}</span></div>}
             <Separator />
-
-            <div>
-              <h4 className="text-sm font-medium text-muted-foreground mb-2">Registado em</h4>
-              <p>{format(new Date(patient.createdAt), "d 'de' MMMM 'de' yyyy", { locale: pt })}</p>
-            </div>
-
-            {patient.tags && patient.tags.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Tags</h4>
-                <div className="flex flex-wrap gap-1">
-                  {patient.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {patient.notes && (
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Observações</h4>
-                <p className="text-sm">{patient.notes}</p>
-              </div>
-            )}
+            <div><h4 className="text-sm font-medium text-muted-foreground mb-2">Registado em</h4><p>{format(new Date(patient.createdAt), "d 'de' MMMM 'de' yyyy", { locale: pt })}</p></div>
+            {patient.tags && patient.tags.length > 0 && <div><h4 className="text-sm font-medium text-muted-foreground mb-2">Tags</h4><div className="flex flex-wrap gap-1">{patient.tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}</div></div>}
+            {patient.notes && <div><h4 className="text-sm font-medium text-muted-foreground mb-2">Observações</h4><p className="text-sm">{patient.notes}</p></div>}
           </CardContent>
         </Card>
 
-        {/* Histórico de consultas */}
         <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Histórico de Consultas ({appointments.length})
-            </CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5" />Histórico de Consultas ({appointments.length})</CardTitle></CardHeader>
           <CardContent>
             {appointments.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <p>Sem histórico de consultas</p>
-                <Button variant="outline" className="mt-4 gap-2">
-                  <Plus className="h-4 w-4" />
-                  Agendar primeira consulta
-                </Button>
+                <Button variant="outline" className="mt-4 gap-2" onClick={() => setWizardOpen(true)}><Plus className="h-4 w-4" />Agendar primeira consulta</Button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -137,29 +88,10 @@ export default function PatientDetailPage() {
                   const professional = getProfessionalById(apt.professionalId);
                   const consultationType = getConsultationTypeById(apt.consultationTypeId);
                   return (
-                    <div
-                      key={apt.id}
-                      className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
-                    >
-                      <div className="text-center min-w-20">
-                        <p className="text-lg font-bold">
-                          {format(new Date(apt.date), 'dd', { locale: pt })}
-                        </p>
-                        <p className="text-xs text-muted-foreground uppercase">
-                          {format(new Date(apt.date), 'MMM yyyy', { locale: pt })}
-                        </p>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{apt.time}</span>
-                          <span className="text-muted-foreground">•</span>
-                          <span>{consultationType?.name || 'Consulta'}</span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{professional?.name}</p>
-                      </div>
-                      <Badge className={getStatusColor(apt.status)}>
-                        {appointmentStatusLabels[apt.status]}
-                      </Badge>
+                    <div key={apt.id} className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer">
+                      <div className="text-center min-w-20"><p className="text-lg font-bold">{format(new Date(apt.date), 'dd', { locale: pt })}</p><p className="text-xs text-muted-foreground uppercase">{format(new Date(apt.date), 'MMM yyyy', { locale: pt })}</p></div>
+                      <div className="flex-1"><div className="flex items-center gap-2"><span className="font-medium">{apt.time}</span><span className="text-muted-foreground">•</span><span>{consultationType?.name || 'Consulta'}</span></div><p className="text-sm text-muted-foreground">{professional?.name}</p></div>
+                      <Badge className={getStatusColor(apt.status)}>{appointmentStatusLabels[apt.status]}</Badge>
                     </div>
                   );
                 })}
@@ -168,6 +100,8 @@ export default function PatientDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <AppointmentWizard open={wizardOpen} onOpenChange={setWizardOpen} preselectedPatient={patient} />
     </div>
   );
 }

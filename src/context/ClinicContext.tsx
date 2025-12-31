@@ -48,6 +48,16 @@ interface ClinicContextType {
   removeFromWaitlist: (id: string) => void;
   updateWaitlistItem: (id: string, data: Partial<WaitlistItem>) => void;
 
+  // Ações - Profissionais
+  addProfessional: (professional: Omit<Professional, 'id'>) => void;
+  updateProfessional: (id: string, data: Partial<Professional>) => void;
+  removeProfessional: (id: string) => void;
+
+  // Ações - Tipos de Consulta
+  addConsultationType: (type: Omit<ConsultationType, 'id'>) => void;
+  updateConsultationType: (id: string, data: Partial<ConsultationType>) => void;
+  removeConsultationType: (id: string) => void;
+
   // Helpers
   getProfessionalById: (id: string) => Professional | undefined;
   getSpecialtyById: (id: string) => Specialty | undefined;
@@ -60,11 +70,11 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
   const [patients, setPatients] = useState<Patient[]>(mockPatients);
   const [appointments, setAppointments] = useState<ClinicAppointment[]>(mockAppointments);
   const [waitlist, setWaitlist] = useState<WaitlistItem[]>(mockWaitlist);
+  const [professionals, setProfessionals] = useState<Professional[]>(mockProfessionals);
+  const [consultationTypes, setConsultationTypes] = useState<ConsultationType[]>(mockConsultationTypes);
 
-  // Dados estáticos (não mudam)
-  const professionals = mockProfessionals;
+  // Dados estáticos
   const specialties = mockSpecialties;
-  const consultationTypes = mockConsultationTypes;
   const rooms = mockRooms;
 
   // Helpers
@@ -172,6 +182,44 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  // Ações - Profissionais
+  const addProfessional = useCallback((data: Omit<Professional, 'id'>) => {
+    const newProfessional: Professional = {
+      ...data,
+      id: `prof-${Date.now()}`,
+    };
+    setProfessionals((prev) => [...prev, newProfessional]);
+  }, []);
+
+  const updateProfessional = useCallback((id: string, data: Partial<Professional>) => {
+    setProfessionals((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...data } : p))
+    );
+  }, []);
+
+  const removeProfessional = useCallback((id: string) => {
+    setProfessionals((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  // Ações - Tipos de Consulta
+  const addConsultationType = useCallback((data: Omit<ConsultationType, 'id'>) => {
+    const newType: ConsultationType = {
+      ...data,
+      id: `type-${Date.now()}`,
+    };
+    setConsultationTypes((prev) => [...prev, newType]);
+  }, []);
+
+  const updateConsultationType = useCallback((id: string, data: Partial<ConsultationType>) => {
+    setConsultationTypes((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...data } : t))
+    );
+  }, []);
+
+  const removeConsultationType = useCallback((id: string) => {
+    setConsultationTypes((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
   const value = useMemo(
     () => ({
       patients,
@@ -194,6 +242,12 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
       addToWaitlist,
       removeFromWaitlist,
       updateWaitlistItem,
+      addProfessional,
+      updateProfessional,
+      removeProfessional,
+      addConsultationType,
+      updateConsultationType,
+      removeConsultationType,
       getProfessionalById,
       getSpecialtyById,
       getConsultationTypeById,
@@ -219,6 +273,12 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
       addToWaitlist,
       removeFromWaitlist,
       updateWaitlistItem,
+      addProfessional,
+      updateProfessional,
+      removeProfessional,
+      addConsultationType,
+      updateConsultationType,
+      removeConsultationType,
       getProfessionalById,
       getSpecialtyById,
       getConsultationTypeById,
