@@ -1,140 +1,141 @@
-import { CalendarDays, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useClinic } from '@/context/ClinicContext';
+import { CalendarToolbar, type CalendarView } from '@/components/admin/CalendarToolbar';
+import { DaySummaryPanel } from '@/components/admin/DaySummaryPanel';
+import { AppointmentWizard } from '@/components/admin/AppointmentWizard';
+import { AppointmentDetailDrawer } from '@/components/admin/AppointmentDetailDrawer';
+import { StatusBadge } from '@/components/admin/StatusBadge';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import type { ClinicAppointment } from '@/types/clinic';
 
 export default function AgendaPage() {
-  const { appointments, professionals, getPatientById, getProfessionalById } = useClinic();
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const todayAppointments = appointments.filter((a) => a.date === today);
+  const { appointments, getPatientById, getProfessionalById, getConsultationTypeById } = useClinic();
 
-  // Contadores por estado
-  const statusCounts = {
-    scheduled: todayAppointments.filter((a) => a.status === 'scheduled').length,
-    confirmed: todayAppointments.filter((a) => a.status === 'confirmed').length,
-    waiting: todayAppointments.filter((a) => a.status === 'waiting').length,
-    in_progress: todayAppointments.filter((a) => a.status === 'in_progress').length,
-    completed: todayAppointments.filter((a) => a.status === 'completed').length,
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = useState<CalendarView>('day');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProfessional, setSelectedProfessional] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<ClinicAppointment | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const dateStr = format(currentDate, 'yyyy-MM-dd');
+
+  // Filtrar consultas
+  const filteredAppointments = appointments.filter((apt) => {
+    if (apt.date !== dateStr) return false;
+    if (selectedProfessional !== 'all' && apt.professionalId !== selectedProfessional) return false;
+    if (selectedStatus !== 'all' && apt.status !== selectedStatus) return false;
+    if (searchQuery) {
+      const patient = getPatientById(apt.patientId);
+      const searchLower = searchQuery.toLowerCase();
+      if (!patient?.name.toLowerCase().includes(searchLower) && 
+          !patient?.phone.includes(searchQuery) &&
+          !patient?.nif.includes(searchQuery)) {
+        return false;
+      }
+    }
+    return true;
+  }).sort((a, b) => a.time.localeCompare(b.time));
+
+  const handleAppointmentClick = (apt: ClinicAppointment) => {
+    setSelectedAppointment(apt);
+    setDrawerOpen(true);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header com data */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">
-            {format(new Date(), "EEEE, d 'de' MMMM", { locale: pt })}
-          </h2>
-          <p className="text-muted-foreground">
-            {todayAppointments.length} consultas agendadas para hoje
-          </p>
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          <CalendarToolbar
+            currentDate={currentDate}
+            onDateChange={setCurrentDate}
+            view={view}
+            onViewChange={setView}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedProfessional={selectedProfessional}
+            onProfessionalChange={setSelectedProfessional}
+            selectedStatus={selectedStatus}
+            onStatusChange={setSelectedStatus}
+          />
         </div>
-        <Button className="gap-2">
+        <Button onClick={() => setWizardOpen(true)} className="gap-2 shrink-0">
           <Plus className="h-4 w-4" />
           Nova Consulta
         </Button>
       </div>
 
-      {/* Estatísticas do dia */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Marcadas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{statusCounts.scheduled}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Confirmadas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-green-600">{statusCounts.confirmed}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Em espera</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-yellow-600">{statusCounts.waiting}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Em atendimento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-orange-600">{statusCounts.in_progress}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Concluídas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-muted-foreground">{statusCounts.completed}</p>
-          </CardContent>
-        </Card>
+      {/* Layout principal */}
+      <div className="grid lg:grid-cols-4 gap-4">
+        {/* Painel lateral */}
+        <div className="lg:col-span-1 order-2 lg:order-1">
+          <DaySummaryPanel currentDate={currentDate} onAppointmentClick={handleAppointmentClick} />
+        </div>
+
+        {/* Calendário/Lista */}
+        <div className="lg:col-span-3 order-1 lg:order-2">
+          <Card>
+            <CardContent className="p-4">
+              {filteredAppointments.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="text-lg font-medium">Sem consultas</p>
+                  <p className="text-sm">Não há consultas para os filtros selecionados</p>
+                  <Button variant="outline" onClick={() => setWizardOpen(true)} className="mt-4 gap-2">
+                    <Plus className="h-4 w-4" />
+                    Agendar Consulta
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredAppointments.map((apt) => {
+                    const patient = getPatientById(apt.patientId);
+                    const professional = getProfessionalById(apt.professionalId);
+                    const type = getConsultationTypeById(apt.consultationTypeId);
+                    return (
+                      <div
+                        key={apt.id}
+                        onClick={() => handleAppointmentClick(apt)}
+                        className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                      >
+                        <div
+                          className="w-1 h-12 rounded-full shrink-0"
+                          style={{ backgroundColor: professional?.color }}
+                        />
+                        <div className="text-lg font-mono font-medium w-14 shrink-0">{apt.time}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{patient?.name}</p>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {type?.name} • {professional?.name}
+                          </p>
+                        </div>
+                        <div className="text-sm text-muted-foreground shrink-0">{apt.duration} min</div>
+                        <StatusBadge status={apt.status} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Placeholder para o calendário */}
-      <Card className="min-h-[400px]">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5" />
-            Calendário
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center h-64 border-2 border-dashed border-border rounded-lg">
-            <div className="text-center text-muted-foreground">
-              <CalendarDays className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Visualização do calendário</p>
-              <p className="text-sm">Será implementado na Fase 2</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Modal Nova Consulta */}
+      <AppointmentWizard open={wizardOpen} onOpenChange={setWizardOpen} preselectedDate={currentDate} />
 
-      {/* Lista de consultas de hoje */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Consultas de Hoje</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {todayAppointments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Sem consultas agendadas para hoje</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {todayAppointments
-                .sort((a, b) => a.time.localeCompare(b.time))
-                .map((apt) => {
-                  const patient = getPatientById(apt.patientId);
-                  const professional = getProfessionalById(apt.professionalId);
-                  return (
-                    <div
-                      key={apt.id}
-                      className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
-                    >
-                      <div className="text-lg font-mono font-medium w-16">{apt.time}</div>
-                      <div className="flex-1">
-                        <p className="font-medium">{patient?.name || 'Paciente desconhecido'}</p>
-                        <p className="text-sm text-muted-foreground">{professional?.name}</p>
-                      </div>
-                      <div className="text-sm text-muted-foreground">{apt.duration} min</div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Drawer Detalhes */}
+      <AppointmentDetailDrawer
+        appointment={selectedAppointment}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+      />
     </div>
   );
 }
