@@ -2,11 +2,17 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
-import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import AgendaPage from "./pages/admin/AgendaPage";
+import PatientsPage from "./pages/admin/PatientsPage";
+import PatientDetailPage from "./pages/admin/PatientDetailPage";
+import WaitlistPage from "./pages/admin/WaitlistPage";
+import WaitingRoomPage from "./pages/admin/WaitingRoomPage";
+import SettingsPage from "./pages/admin/SettingsPage";
 
 const queryClient = new QueryClient();
 
@@ -18,9 +24,16 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/admin" element={<Admin />} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="agenda" replace />} />
+            <Route path="agenda" element={<AgendaPage />} />
+            <Route path="pacientes" element={<PatientsPage />} />
+            <Route path="pacientes/:id" element={<PatientDetailPage />} />
+            <Route path="lista-espera" element={<WaitlistPage />} />
+            <Route path="sala-espera" element={<WaitingRoomPage />} />
+            <Route path="configuracoes" element={<SettingsPage />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
