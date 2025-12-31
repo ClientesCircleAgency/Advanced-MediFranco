@@ -52,14 +52,14 @@ export default function Admin() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate('/admin/login');
+      navigate('/admin/login', { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" aria-label="A carregar"></div>
       </div>
     );
   }
@@ -70,7 +70,7 @@ export default function Admin() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/admin/login');
+    navigate('/admin/login', { replace: true });
   };
 
   const appointmentsForDate = selectedDate

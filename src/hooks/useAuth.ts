@@ -29,35 +29,46 @@ export function useAuth() {
 
   useEffect(() => {
     // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Defer role check with setTimeout to avoid deadlock
-        if (session?.user) {
-          setTimeout(() => {
-            checkAdminRole(session.user.id).then(setIsAdmin);
-          }, 0);
-        } else {
-          setIsAdmin(false);
-        }
-        
-        setIsLoading(false);
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
+      // Keep loading until the role check completes to avoid redirect flicker/loops
       if (session?.user) {
-        checkAdminRole(session.user.id).then(setIsAdmin);
+        setIsLoading(true);
+        setTimeout(() => {
+          checkAdminRole(session.user.id)
+            .then(setIsAdmin)
+            .finally(() => setIsLoading(false));
+        }, 0);
+      } else {
+        setIsAdmin(false);
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     });
+
+    // THEN check for existing session
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          setIsLoading(true);
+          return checkAdminRole(session.user.id)
+            .then(setIsAdmin)
+            .finally(() => setIsLoading(false));
+        }
+
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsAdmin(false);
+        setIsLoading(false);
+      });
 
     return () => subscription.unsubscribe();
   }, [checkAdminRole]);
