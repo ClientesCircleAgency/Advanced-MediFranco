@@ -1,52 +1,165 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { Users, Clock, Stethoscope, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable, closestCenter } from '@dnd-kit/core';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useClinic } from '@/context/ClinicContext';
 import { format } from 'date-fns';
+import { WaitingRoomCard } from '@/components/admin/WaitingRoomCard';
+import { useAppointments, useUpdateAppointmentStatus } from '@/hooks/useAppointments';
+import { usePatients } from '@/hooks/usePatients';
+import { useProfessionals } from '@/hooks/useProfessionals';
+import { useConsultationTypes } from '@/hooks/useConsultationTypes';
+import type { AppointmentStatus, AppointmentRow } from '@/types/database';
+import { toast } from 'sonner';
+
+// Column definitions
+const columns = [
+  {
+    id: 'confirmed' as AppointmentStatus,
+    title: 'Confirmadas',
+    icon: Users,
+    color: 'text-green-600',
+  },
+  {
+    id: 'waiting' as AppointmentStatus,
+    title: 'Em Espera',
+    icon: Clock,
+    color: 'text-yellow-600',
+  },
+  {
+    id: 'in_progress' as AppointmentStatus,
+    title: 'Em Atendimento',
+    icon: Stethoscope,
+    color: 'text-orange-600',
+  },
+  {
+    id: 'completed' as AppointmentStatus,
+    title: 'Concluídas',
+    icon: CheckCircle,
+    color: 'text-muted-foreground',
+  },
+];
+
+// Droppable column component
+function DroppableColumn({ 
+  id, 
+  children 
+}: { 
+  id: string; 
+  children: React.ReactNode;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      className={`space-y-2 min-h-[300px] transition-colors rounded-lg p-2 -m-2 ${
+        isOver ? 'bg-primary/5 ring-2 ring-primary/20' : ''
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function WaitingRoomPage() {
-  const { appointments, getPatientById, getProfessionalById, getConsultationTypeById, updateAppointmentStatus } = useClinic();
+  const [activeId, setActiveId] = useState<string | null>(null);
   
+  // Fetch data from Supabase
+  const { data: appointments = [], isLoading: loadingAppointments } = useAppointments();
+  const { data: patients = [] } = usePatients();
+  const { data: professionals = [] } = useProfessionals();
+  const { data: consultationTypes = [] } = useConsultationTypes();
+  
+  const updateStatusMutation = useUpdateAppointmentStatus();
+
+  // Helper functions
+  const getPatientById = (id: string) => patients.find((p) => p.id === id);
+  const getProfessionalById = (id: string) => professionals.find((p) => p.id === id);
+  const getConsultationTypeById = (id: string) => consultationTypes.find((c) => c.id === id);
+
+  // Filter today's appointments
   const today = format(new Date(), 'yyyy-MM-dd');
-  const todayAppointments = appointments.filter((a) => a.date === today);
+  const todayAppointments = useMemo(() => 
+    appointments.filter((a) => a.date === today),
+    [appointments, today]
+  );
 
-  // Agrupar por estado para o kanban
-  const columns = [
-    {
-      id: 'confirmed',
-      title: 'Confirmadas',
-      icon: Users,
-      color: 'text-green-600',
-      appointments: todayAppointments.filter((a) => a.status === 'confirmed'),
-    },
-    {
-      id: 'waiting',
-      title: 'Em Espera',
-      icon: Clock,
-      color: 'text-yellow-600',
-      appointments: todayAppointments.filter((a) => a.status === 'waiting'),
-    },
-    {
-      id: 'in_progress',
-      title: 'Em Atendimento',
-      icon: Stethoscope,
-      color: 'text-orange-600',
-      appointments: todayAppointments.filter((a) => a.status === 'in_progress'),
-    },
-    {
-      id: 'completed',
-      title: 'Concluídas',
-      icon: CheckCircle,
-      color: 'text-muted-foreground',
-      appointments: todayAppointments.filter((a) => a.status === 'completed'),
-    },
-  ];
+  // Group appointments by status
+  const appointmentsByStatus = useMemo(() => {
+    const grouped: Record<string, AppointmentRow[]> = {};
+    columns.forEach((col) => {
+      grouped[col.id] = todayAppointments
+        .filter((a) => a.status === col.id)
+        .sort((a, b) => a.time.localeCompare(b.time));
+    });
+    return grouped;
+  }, [todayAppointments]);
 
-  const handleAction = (appointmentId: string, newStatus: 'waiting' | 'in_progress' | 'completed') => {
-    updateAppointmentStatus(appointmentId, newStatus);
+  // Get active appointment for drag overlay
+  const activeAppointment = activeId 
+    ? todayAppointments.find((a) => a.id === activeId) 
+    : null;
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
   };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const appointmentId = active.id as string;
+    const newStatus = over.id as AppointmentStatus;
+    const currentData = active.data.current as { currentStatus: AppointmentStatus } | undefined;
+    const currentStatus = currentData?.currentStatus;
+
+    // Don't do anything if dropped in same column
+    if (currentStatus === newStatus) return;
+
+    // Validate transition
+    const validTransitions: Record<string, AppointmentStatus[]> = {
+      confirmed: ['waiting', 'cancelled'],
+      waiting: ['in_progress', 'confirmed'],
+      in_progress: ['completed', 'waiting'],
+      completed: ['in_progress'],
+    };
+
+    if (!validTransitions[currentStatus || '']?.includes(newStatus)) {
+      toast.error('Transição inválida');
+      return;
+    }
+
+    // Update status
+    updateStatusMutation.mutate(
+      { id: appointmentId, status: newStatus },
+      {
+        onSuccess: () => {
+          const statusLabels: Record<string, string> = {
+            waiting: 'Em espera',
+            in_progress: 'Em atendimento',
+            completed: 'Concluída',
+            confirmed: 'Confirmada',
+          };
+          toast.success(`Estado alterado para: ${statusLabels[newStatus]}`);
+        },
+        onError: () => {
+          toast.error('Erro ao atualizar estado');
+        },
+      }
+    );
+  };
+
+  if (loadingAppointments) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">A carregar...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -58,88 +171,66 @@ export default function WaitingRoomPage() {
         </p>
       </div>
 
-      {/* Kanban Board */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {columns.map((column) => {
-          const Icon = column.icon;
-          return (
-            <Card key={column.id} className="min-h-[400px]">
-              <CardHeader className="pb-3">
-                <CardTitle className={`text-sm font-medium flex items-center gap-2 ${column.color}`}>
-                  <Icon className="h-4 w-4" />
-                  {column.title}
-                  <Badge variant="secondary" className="ml-auto">
-                    {column.appointments.length}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {column.appointments.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    Sem pacientes
-                  </div>
-                ) : (
-                  column.appointments
-                    .sort((a, b) => a.time.localeCompare(b.time))
-                    .map((apt) => {
-                      const patient = getPatientById(apt.patientId);
-                      const professional = getProfessionalById(apt.professionalId);
-                      const type = getConsultationTypeById(apt.consultationTypeId);
+      {/* Kanban Board with DnD */}
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {columns.map((column) => {
+            const Icon = column.icon;
+            const columnAppointments = appointmentsByStatus[column.id] || [];
 
-                      return (
-                        <div
+            return (
+              <Card key={column.id} className="min-h-[400px]">
+                <CardHeader className="pb-3">
+                  <CardTitle className={`text-sm font-medium flex items-center gap-2 ${column.color}`}>
+                    <Icon className="h-4 w-4" />
+                    {column.title}
+                    <Badge variant="secondary" className="ml-auto">
+                      {columnAppointments.length}
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <DroppableColumn id={column.id}>
+                    {columnAppointments.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground text-sm">
+                        Sem pacientes
+                      </div>
+                    ) : (
+                      columnAppointments.map((apt) => (
+                        <WaitingRoomCard
                           key={apt.id}
-                          className="p-3 bg-card border border-border rounded-lg hover:shadow-sm transition-shadow"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <p className="font-medium text-sm">{patient?.name}</p>
-                              <p className="text-xs text-muted-foreground">{apt.time} • {type?.name}</p>
-                              <p className="text-xs text-muted-foreground">{professional?.name}</p>
-                            </div>
-                          </div>
+                          appointment={apt}
+                          patient={getPatientById(apt.patient_id)}
+                          professional={getProfessionalById(apt.professional_id)}
+                          consultationType={getConsultationTypeById(apt.consultation_type_id)}
+                        />
+                      ))
+                    )}
+                  </DroppableColumn>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
 
-                          {/* Ações por coluna */}
-                          <div className="mt-2 flex gap-1">
-                            {column.id === 'confirmed' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs h-7 w-full"
-                                onClick={() => handleAction(apt.id, 'waiting')}
-                              >
-                                Check-in
-                              </Button>
-                            )}
-                            {column.id === 'waiting' && (
-                              <Button
-                                size="sm"
-                                className="text-xs h-7 w-full"
-                                onClick={() => handleAction(apt.id, 'in_progress')}
-                              >
-                                Iniciar
-                              </Button>
-                            )}
-                            {column.id === 'in_progress' && (
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                className="text-xs h-7 w-full"
-                                onClick={() => handleAction(apt.id, 'completed')}
-                              >
-                                Concluir
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+        {/* Drag Overlay */}
+        <DragOverlay>
+          {activeAppointment ? (
+            <div className="p-3 bg-card border border-border rounded-lg shadow-xl opacity-90">
+              <p className="font-medium text-sm">
+                {getPatientById(activeAppointment.patient_id)?.name || 'Paciente'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {activeAppointment.time}
+              </p>
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
