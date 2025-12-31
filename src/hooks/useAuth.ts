@@ -1,44 +1,107 @@
 import { useState, useCallback, useEffect } from 'react';
-
-const ADMIN_EMAIL = 'admin@medifranco.pt';
-const ADMIN_PASSWORD = 'medifranco2025';
-const AUTH_KEY = 'medifranco_admin_auth';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const authData = sessionStorage.getItem(AUTH_KEY);
-    if (authData) {
-      try {
-        const { timestamp } = JSON.parse(authData);
-        // Session expires after 24 hours
-        if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
-          setIsAuthenticated(true);
-        } else {
-          sessionStorage.removeItem(AUTH_KEY);
-        }
-      } catch {
-        sessionStorage.removeItem(AUTH_KEY);
+  const checkAdminRole = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('has_role', {
+        _user_id: userId,
+        _role: 'admin'
+      });
+      
+      if (error) {
+        console.error('Error checking admin role:', error);
+        return false;
       }
+      
+      return data === true;
+    } catch (error) {
+      console.error('Error checking admin role:', error);
+      return false;
     }
-    setIsLoading(false);
   }, []);
 
-  const login = useCallback((email: string, password: string): boolean => {
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      sessionStorage.setItem(AUTH_KEY, JSON.stringify({ timestamp: Date.now() }));
-      setIsAuthenticated(true);
-      return true;
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Defer role check with setTimeout to avoid deadlock
+        if (session?.user) {
+          setTimeout(() => {
+            checkAdminRole(session.user.id).then(setIsAdmin);
+          }, 0);
+        } else {
+          setIsAdmin(false);
+        }
+        
+        setIsLoading(false);
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        checkAdminRole(session.user.id).then(setIsAdmin);
+      }
+      
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [checkAdminRole]);
+
+  const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        const hasAdminRole = await checkAdminRole(data.user.id);
+        if (!hasAdminRole) {
+          await supabase.auth.signOut();
+          return { success: false, error: 'Não tem permissões de administrador.' };
+        }
+        setIsAdmin(true);
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Erro ao fazer login. Tente novamente.' };
     }
-    return false;
+  }, [checkAdminRole]);
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+    setIsAdmin(false);
   }, []);
 
-  const logout = useCallback(() => {
-    sessionStorage.removeItem(AUTH_KEY);
-    setIsAuthenticated(false);
-  }, []);
-
-  return { isAuthenticated, isLoading, login, logout };
+  return { 
+    user, 
+    session, 
+    isAuthenticated: !!session && isAdmin, 
+    isAdmin,
+    isLoading, 
+    login, 
+    logout 
+  };
 }
