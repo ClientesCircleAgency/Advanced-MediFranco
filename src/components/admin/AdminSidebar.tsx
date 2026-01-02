@@ -1,8 +1,9 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
+  LayoutDashboard,
   CalendarDays,
   Users,
-  Clock,
+  MessageSquare,
   Armchair,
   Settings,
   ChevronLeft,
@@ -21,9 +22,10 @@ import { useClinic } from '@/context/ClinicContext';
 import logoMedifranco from '@/assets/logo-medifranco.png';
 
 const navItems = [
+  { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/agenda', label: 'Agenda', icon: CalendarDays },
   { path: '/admin/pacientes', label: 'Pacientes', icon: Users },
-  { path: '/admin/lista-espera', label: 'Lista de Espera', icon: Clock },
+  { path: '/admin/mensagens', label: 'Mensagens', icon: MessageSquare, badge: 3 },
   { path: '/admin/sala-espera', label: 'Sala de Espera', icon: Armchair },
 ];
 
@@ -36,9 +38,8 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }: AdminSidebarProps) {
   const location = useLocation();
-  const { waitlist, appointments } = useClinic();
+  const { appointments } = useClinic();
 
-  const waitlistCount = waitlist.length;
   const todayDate = new Date().toISOString().split('T')[0];
   const pendingToday = appointments.filter(
     (a) => a.date === todayDate && (a.status === 'scheduled' || a.status === 'confirmed')
@@ -99,9 +100,8 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }
           const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
           const Icon = item.icon;
           const badge =
-            item.path === '/admin/lista-espera' && waitlistCount > 0
-              ? waitlistCount
-              : item.path === '/admin/agenda' && pendingToday > 0
+            item.badge ? item.badge
+            : item.path === '/admin/agenda' && pendingToday > 0
               ? pendingToday
               : null;
 

@@ -7,11 +7,13 @@ import Index from "./pages/Index";
 import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 import { AdminLayout } from "./components/admin/AdminLayout";
+import DashboardPage from "./pages/admin/DashboardPage";
 import AgendaPage from "./pages/admin/AgendaPage";
 import PatientsPage from "./pages/admin/PatientsPage";
 import PatientDetailPage from "./pages/admin/PatientDetailPage";
 import WaitlistPage from "./pages/admin/WaitlistPage";
 import WaitingRoomPage from "./pages/admin/WaitingRoomPage";
+import MessagesPage from "./pages/admin/MessagesPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 
 const queryClient = new QueryClient();
@@ -26,12 +28,14 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Navigate to="agenda" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="agenda" element={<AgendaPage />} />
             <Route path="pacientes" element={<PatientsPage />} />
             <Route path="pacientes/:id" element={<PatientDetailPage />} />
             <Route path="lista-espera" element={<WaitlistPage />} />
             <Route path="sala-espera" element={<WaitingRoomPage />} />
+            <Route path="mensagens" element={<MessagesPage />} />
             <Route path="configuracoes" element={<SettingsPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
