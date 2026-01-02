@@ -66,10 +66,10 @@ export function PatientLookupByNIF({ onPatientSelect, selectedPatient, onClear }
     setNotFound(false);
   };
 
-  const handleCreatePatient = () => {
+  const handleCreatePatient = async () => {
     if (!newPatient.name || !newPatient.phone) return;
 
-    const patient = addPatient({
+    const patient = await addPatient({
       nif,
       name: newPatient.name,
       phone: newPatient.phone,

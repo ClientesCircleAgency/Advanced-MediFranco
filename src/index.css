@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 20% 98%;
     --foreground: 220 20% 20%;
 
     --card: 0 0% 100%;
@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 20%;
 
-    --primary: 172 50% 45%;
+    --primary: 172 66% 40%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 20% 96%;
@@ -23,25 +23,74 @@
     --muted-foreground: 220 10% 50%;
 
     --accent: 172 40% 95%;
-    --accent-foreground: 172 50% 35%;
+    --accent-foreground: 172 66% 30%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 15% 90%;
     --input: 220 15% 90%;
-    --ring: 172 50% 45%;
+    --ring: 172 66% 40%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 172 50% 45%;
+    /* Custom colors for status */
+    --status-scheduled: 220 15% 60%;
+    --status-confirmed: 172 66% 40%;
+    --status-waiting: 45 93% 47%;
+    --status-in-progress: 25 95% 53%;
+    --status-completed: 142 71% 45%;
+    --status-cancelled: 0 84% 60%;
+    --status-no-show: 280 60% 50%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 30%;
+    --sidebar-primary: 172 66% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 172 40% 95%;
-    --sidebar-accent-foreground: 172 50% 35%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 172 50% 45%;
+    --sidebar-accent-foreground: 172 66% 30%;
+    --sidebar-border: 220 15% 92%;
+    --sidebar-ring: 172 66% 40%;
+  }
+
+  .dark {
+    --background: 220 20% 10%;
+    --foreground: 210 20% 98%;
+
+    --card: 220 20% 14%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 220 20% 14%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 172 66% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 10% 60%;
+
+    --accent: 172 40% 20%;
+    --accent-foreground: 172 66% 80%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 172 66% 45%;
+
+    --sidebar-background: 220 20% 12%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 172 66% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 172 40% 20%;
+    --sidebar-accent-foreground: 172 66% 80%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 172 66% 45%;
   }
 }
 

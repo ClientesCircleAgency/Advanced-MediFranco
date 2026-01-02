@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Calendar, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useClinic } from '@/context/ClinicContext';
+import { PageHeader } from '@/components/admin/PageHeader';
+import { StatCard } from '@/components/admin/StatCard';
+import { EmptyState } from '@/components/admin/EmptyState';
 import { CalendarToolbar, type CalendarView } from '@/components/admin/CalendarToolbar';
 import { DaySummaryPanel } from '@/components/admin/DaySummaryPanel';
 import { AppointmentWizard } from '@/components/admin/AppointmentWizard';
@@ -10,7 +14,7 @@ import { AppointmentDetailDrawer } from '@/components/admin/AppointmentDetailDra
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { WeekView } from '@/components/admin/WeekView';
 import { MonthView } from '@/components/admin/MonthView';
-import { format } from 'date-fns';
+import { format, addDays, subDays, isToday } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import type { ClinicAppointment } from '@/types/clinic';
 
@@ -28,7 +32,14 @@ export default function AgendaPage() {
 
   const dateStr = format(currentDate, 'yyyy-MM-dd');
 
-  // Filtrar consultas (para vista dia)
+  // Estatísticas do dia
+  const dayAppointments = appointments.filter((apt) => apt.date === dateStr);
+  const scheduled = dayAppointments.filter((a) => a.status === 'scheduled').length;
+  const confirmed = dayAppointments.filter((a) => a.status === 'confirmed').length;
+  const waiting = dayAppointments.filter((a) => a.status === 'waiting').length;
+  const inProgress = dayAppointments.filter((a) => a.status === 'in_progress').length;
+
+  // Filtrar consultas
   const filteredAppointments = appointments.filter((apt) => {
     if (apt.date !== dateStr) return false;
     if (selectedProfessional !== 'all' && apt.professionalId !== selectedProfessional) return false;
@@ -56,47 +67,106 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1">
-          <CalendarToolbar
-            currentDate={currentDate}
-            onDateChange={setCurrentDate}
-            view={view}
-            onViewChange={setView}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedProfessional={selectedProfessional}
-            onProfessionalChange={setSelectedProfessional}
-            selectedStatus={selectedStatus}
-            onStatusChange={setSelectedStatus}
-          />
+    <div className="space-y-6">
+      {/* Header com navegação de data */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentDate(new Date())}
+            className={isToday(currentDate) ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''}
+          >
+            Hoje
+          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(subDays(currentDate, 1))}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-lg font-semibold min-w-48 text-center">
+              {format(currentDate, "EEEE, d 'de' MMMM", { locale: pt })}
+            </span>
+            <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 1))}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <Button onClick={() => setWizardOpen(true)} className="gap-2 shrink-0">
-          <Plus className="h-4 w-4" />
-          Nova Consulta
-        </Button>
+
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Pesquisar paciente..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
+          <div className="flex rounded-lg border border-border overflow-hidden">
+            {(['day', 'week', 'month'] as CalendarView[]).map((v) => (
+              <Button
+                key={v}
+                variant="ghost"
+                size="sm"
+                onClick={() => setView(v)}
+                className={`rounded-none ${view === v ? 'bg-primary text-primary-foreground' : ''}`}
+              >
+                {v === 'day' ? 'Dia' : v === 'week' ? 'Semana' : 'Mês'}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Layout principal */}
       {view === 'day' && (
-        <div className="grid lg:grid-cols-4 gap-4">
-          <div className="lg:col-span-1 order-2 lg:order-1">
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Painel lateral esquerdo */}
+          <div className="lg:col-span-1 space-y-4">
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <h3 className="font-semibold text-sm text-muted-foreground mb-4">Resumo do Dia</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-muted/50 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-foreground">{scheduled}</p>
+                  <p className="text-xs text-muted-foreground">Marcadas</p>
+                </div>
+                <div className="bg-primary/10 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-primary">{confirmed}</p>
+                  <p className="text-xs text-muted-foreground">Confirmadas</p>
+                </div>
+                <div className="bg-yellow-100 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-yellow-700">{waiting}</p>
+                  <p className="text-xs text-muted-foreground">Em Espera</p>
+                </div>
+                <div className="bg-orange-100 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-orange-700">{inProgress}</p>
+                  <p className="text-xs text-muted-foreground">Atendimento</p>
+                </div>
+              </div>
+            </div>
+
             <DaySummaryPanel currentDate={currentDate} onAppointmentClick={handleAppointmentClick} />
           </div>
-          <div className="lg:col-span-3 order-1 lg:order-2">
-            <Card>
-              <CardContent className="p-4">
+
+          {/* Área principal */}
+          <div className="lg:col-span-3">
+            <div className="bg-card border border-border rounded-2xl">
+              <div className="p-4 border-b border-border flex items-center justify-between">
+                <h3 className="font-semibold">Consultas</h3>
+                <Button onClick={() => setWizardOpen(true)} size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Nova Consulta
+                </Button>
+              </div>
+              <div className="p-4">
                 {filteredAppointments.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <p className="text-lg font-medium">Sem consultas</p>
-                    <p className="text-sm">Não há consultas para os filtros selecionados</p>
-                    <Button variant="outline" onClick={() => setWizardOpen(true)} className="mt-4 gap-2">
-                      <Plus className="h-4 w-4" />
-                      Agendar Consulta
-                    </Button>
-                  </div>
+                  <EmptyState
+                    icon={Calendar}
+                    title="Sem consultas"
+                    description="Não há consultas agendadas para este dia"
+                    actionLabel="Agendar Consulta"
+                    onAction={() => setWizardOpen(true)}
+                  />
                 ) : (
                   <div className="space-y-2">
                     {filteredAppointments.map((apt) => {
@@ -107,23 +177,32 @@ export default function AgendaPage() {
                         <div
                           key={apt.id}
                           onClick={() => handleAppointmentClick(apt)}
-                          className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                          className="flex items-center gap-4 p-4 rounded-xl border border-border hover:bg-accent/30 transition-colors cursor-pointer"
                         >
-                          <div className="w-1 h-12 rounded-full shrink-0" style={{ backgroundColor: professional?.color }} />
-                          <div className="text-lg font-mono font-medium w-14 shrink-0">{apt.time}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{patient?.name}</p>
-                            <p className="text-sm text-muted-foreground truncate">{type?.name} • {professional?.name}</p>
+                          <div 
+                            className="w-1 h-14 rounded-full shrink-0" 
+                            style={{ backgroundColor: professional?.color }} 
+                          />
+                          <div className="text-xl font-mono font-semibold w-16 shrink-0 text-foreground">
+                            {apt.time}
                           </div>
-                          <div className="text-sm text-muted-foreground shrink-0">{apt.duration} min</div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-foreground truncate">{patient?.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {type?.name} • {professional?.name}
+                            </p>
+                          </div>
+                          <div className="text-sm text-muted-foreground shrink-0 bg-muted px-2 py-1 rounded">
+                            {apt.duration} min
+                          </div>
                           <StatusBadge status={apt.status} />
                         </div>
                       );
                     })}
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       )}
