@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { CalendarIcon, Clock, Send } from 'lucide-react';
+import { CalendarIcon, Clock, Send, Smile, Eye } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Appointment } from '@/types';
@@ -96,7 +96,7 @@ export function AppointmentSection() {
   };
 
   return (
-    <section id="marcacao" className="py-16 md:py-24 bg-secondary/30">
+    <section id="marcacao" className="py-20 md:py-28 bg-background">
       <div className="container mx-auto px-4">
         <div
           ref={ref}
@@ -106,6 +106,9 @@ export function AppointmentSection() {
         >
           {/* Section Header */}
           <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-full mb-4">
+              <span className="text-sm font-medium text-accent-foreground">Marcação</span>
+            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Marque a sua <span className="text-primary">Consulta</span>
             </h2>
@@ -118,8 +121,56 @@ export function AppointmentSection() {
           {/* Form */}
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="max-w-2xl mx-auto bg-background rounded-2xl p-6 md:p-8 shadow-lg"
+            className="max-w-2xl mx-auto bg-card border border-border rounded-2xl p-6 md:p-8 shadow-lg"
           >
+            {/* Service Type Selection */}
+            <div className="mb-8">
+              <Label className="text-base font-medium mb-4 block">Tipo de Consulta</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => setValue('serviceType', 'oftalmologia')}
+                  className={cn(
+                    "p-6 rounded-2xl border-2 transition-all text-center",
+                    watchServiceType === 'oftalmologia'
+                      ? "border-primary bg-accent"
+                      : "border-border hover:border-primary/50"
+                  )}
+                >
+                  <Eye className={cn(
+                    "w-8 h-8 mx-auto mb-3",
+                    watchServiceType === 'oftalmologia' ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <span className={cn(
+                    "font-medium",
+                    watchServiceType === 'oftalmologia' ? "text-primary" : "text-foreground"
+                  )}>Oftalmologia</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setValue('serviceType', 'dentaria')}
+                  className={cn(
+                    "p-6 rounded-2xl border-2 transition-all text-center",
+                    watchServiceType === 'dentaria'
+                      ? "border-primary bg-accent"
+                      : "border-border hover:border-primary/50"
+                  )}
+                >
+                  <Smile className={cn(
+                    "w-8 h-8 mx-auto mb-3",
+                    watchServiceType === 'dentaria' ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <span className={cn(
+                    "font-medium",
+                    watchServiceType === 'dentaria' ? "text-primary" : "text-foreground"
+                  )}>Medicina Dentária</span>
+                </button>
+              </div>
+              {errors.serviceType && (
+                <p className="text-sm text-destructive mt-2">{errors.serviceType.message}</p>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Name */}
               <div className="space-y-2">
@@ -128,7 +179,7 @@ export function AppointmentSection() {
                   id="name"
                   placeholder="O seu nome"
                   {...register('name')}
-                  className={errors.name ? 'border-destructive' : ''}
+                  className={cn("rounded-xl h-12", errors.name && 'border-destructive')}
                 />
                 {errors.name && (
                   <p className="text-sm text-destructive">{errors.name.message}</p>
@@ -143,7 +194,7 @@ export function AppointmentSection() {
                   placeholder="123456789"
                   maxLength={9}
                   {...register('nif')}
-                  className={errors.nif ? 'border-destructive' : ''}
+                  className={cn("rounded-xl h-12", errors.nif && 'border-destructive')}
                 />
                 {errors.nif && (
                   <p className="text-sm text-destructive">{errors.nif.message}</p>
@@ -158,7 +209,7 @@ export function AppointmentSection() {
                   type="email"
                   placeholder="seu@email.com"
                   {...register('email')}
-                  className={errors.email ? 'border-destructive' : ''}
+                  className={cn("rounded-xl h-12", errors.email && 'border-destructive')}
                 />
                 {errors.email && (
                   <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -173,35 +224,14 @@ export function AppointmentSection() {
                   type="tel"
                   placeholder="912 345 678"
                   {...register('phone')}
-                  className={errors.phone ? 'border-destructive' : ''}
+                  className={cn("rounded-xl h-12", errors.phone && 'border-destructive')}
                 />
                 {errors.phone && (
                   <p className="text-sm text-destructive">{errors.phone.message}</p>
                 )}
               </div>
 
-              {/* Service Type */}
-              <div className="space-y-2 md:col-span-2">
-                <Label>Tipo de Consulta</Label>
-                <Select
-                  onValueChange={(value: 'dentaria' | 'oftalmologia') => {
-                    setValue('serviceType', value);
-                  }}
-                >
-                  <SelectTrigger className={errors.serviceType ? 'border-destructive' : ''}>
-                    <SelectValue placeholder="Selecione o tipo de consulta" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="oftalmologia">Oftalmologia</SelectItem>
-                    <SelectItem value="dentaria">Medicina Dentária</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.serviceType && (
-                  <p className="text-sm text-destructive">{errors.serviceType.message}</p>
-                )}
-              </div>
-
-              {/* Date - Visual Calendar */}
+              {/* Date */}
               <div className="space-y-2">
                 <Label>Data Preferida</Label>
                 <Popover>
@@ -209,7 +239,7 @@ export function AppointmentSection() {
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal",
+                        "w-full justify-start text-left font-normal rounded-xl h-12",
                         !selectedDate && "text-muted-foreground",
                         errors.preferredDate && "border-destructive"
                       )}
@@ -222,7 +252,7 @@ export function AppointmentSection() {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 rounded-2xl" align="start">
                     <Calendar
                       mode="single"
                       selected={selectedDate}
@@ -231,11 +261,10 @@ export function AppointmentSection() {
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
                         const day = date.getDay();
-                        // Disable past dates and Sundays
                         return date < today || day === 0;
                       }}
                       initialFocus
-                      className="pointer-events-auto"
+                      className="pointer-events-auto rounded-2xl"
                     />
                   </PopoverContent>
                 </Popover>
@@ -248,13 +277,13 @@ export function AppointmentSection() {
               <div className="space-y-2">
                 <Label>Hora Preferida</Label>
                 <Select onValueChange={(value) => setValue('preferredTime', value)}>
-                  <SelectTrigger className={errors.preferredTime ? 'border-destructive' : ''}>
+                  <SelectTrigger className={cn("rounded-xl h-12", errors.preferredTime && 'border-destructive')}>
                     <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
                     <SelectValue placeholder="Selecione a hora" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl">
                     {timeSlots.map((time) => (
-                      <SelectItem key={time} value={time}>
+                      <SelectItem key={time} value={time} className="rounded-lg">
                         {time}
                       </SelectItem>
                     ))}
@@ -269,10 +298,10 @@ export function AppointmentSection() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full mt-6 bg-primary hover:bg-primary/90 shadow-md hover:shadow-lg transition-all"
+              className="w-full mt-8 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all rounded-xl h-14 text-base"
               size="lg"
             >
-              <Send className="w-4 h-4 mr-2" />
+              <Send className="w-5 h-5 mr-2" />
               {isSubmitting ? 'A enviar...' : 'Enviar Pedido de Marcação'}
             </Button>
           </form>

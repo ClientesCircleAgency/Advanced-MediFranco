@@ -7,34 +7,34 @@ export function Footer() {
   return (
     <footer className="bg-foreground text-background">
       {/* Main Footer */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {/* Logo & Social - Centered on mobile */}
-          <div className="space-y-4 text-center md:text-left">
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
+          {/* Logo & Social */}
+          <div className="space-y-6 text-center md:text-left">
             <div className="flex justify-center md:justify-start">
               <img src={logo} alt="MediFranco" className="h-14 w-auto brightness-0 invert" />
             </div>
-            <p className="text-background/70 text-sm hidden md:block">
-              Cuidamos da sua visão e do seu sorriso há mais de 15 anos.
+            <p className="text-background/70 text-sm hidden md:block leading-relaxed">
+              Cuidamos da sua visão e do seu sorriso há mais de 15 anos, com dedicação e tecnologia de ponta.
             </p>
             <div className="flex gap-3 justify-center md:justify-start">
               <a
                 href="#"
-                className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
+                className="w-11 h-11 rounded-xl bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
+                className="w-11 h-11 rounded-xl bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
+                className="w-11 h-11 rounded-xl bg-background/10 flex items-center justify-center hover:bg-primary transition-colors"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
@@ -44,8 +44,8 @@ export function Footer() {
 
           {/* Links Rápidos */}
           <div className="hidden md:block">
-            <h4 className="font-semibold text-lg mb-4">Links Rápidos</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-lg mb-5">Links Rápidos</h4>
+            <ul className="space-y-3">
               {[
                 { label: 'Início', href: '#hero' },
                 { label: 'Sobre Nós', href: '#sobre' },
@@ -67,8 +67,8 @@ export function Footer() {
 
           {/* Serviços */}
           <div className="hidden md:block">
-            <h4 className="font-semibold text-lg mb-4">Serviços</h4>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-lg mb-5">Serviços</h4>
+            <ul className="space-y-3">
               {[
                 'Ortodontia',
                 'Implantologia',
@@ -86,17 +86,21 @@ export function Footer() {
 
           {/* Contactos */}
           <div>
-            <h4 className="font-semibold text-lg mb-4 text-center md:text-left">Contactos</h4>
-            <ul className="space-y-3">
+            <h4 className="font-semibold text-lg mb-5 text-center md:text-left">Contactos</h4>
+            <ul className="space-y-4">
               <li className="flex items-start gap-3 justify-center md:justify-start">
-                <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-5 h-5 text-primary" />
+                </div>
                 <span className="text-background/70 text-sm">
                   Rua dos Comediantes nº 13 r/c – C<br />
                   2910-468 Setúbal
                 </span>
               </li>
               <li className="flex items-start gap-3 justify-center md:justify-start">
-                <Phone className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Phone className="w-5 h-5 text-primary" />
+                </div>
                 <div className="text-background/70 text-sm">
                   <a href="tel:+351265540990" className="hover:text-primary block">
                     265 540 990 (Fixo)
@@ -107,13 +111,17 @@ export function Footer() {
                 </div>
               </li>
               <li className="flex items-center gap-3 justify-center md:justify-start">
-                <Mail className="w-5 h-5 text-primary flex-shrink-0" />
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-5 h-5 text-primary" />
+                </div>
                 <a href="mailto:geral@medifranco.pt" className="text-background/70 hover:text-primary text-sm">
                   geral@medifranco.pt
                 </a>
               </li>
               <li className="flex items-start gap-3 justify-center md:justify-start">
-                <Clock className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-5 h-5 text-primary" />
+                </div>
                 <div className="text-background/70 text-sm">
                   <p>Seg – Sex: 09:00 às 19:00</p>
                   <p>Sáb – Dom: Fechados</p>
@@ -125,7 +133,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-background/20">
+      <div className="border-t border-background/10">
         <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-background/50 text-sm text-center md:text-left">
             © {currentYear} MediFranco. Todos os direitos reservados.

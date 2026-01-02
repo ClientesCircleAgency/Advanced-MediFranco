@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { ArrowRight, Calendar } from 'lucide-react';
 import logo from '@/assets/logo-medifranco.png';
 
 export function HeroSection() {
@@ -22,7 +23,7 @@ export function HeroSection() {
           backgroundImage: `url('https://images.unsplash.com/photo-1606811841689-23dfddce3e95?w=1920&q=80')`,
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/70 to-background" />
       </div>
 
       {/* Content */}
@@ -32,11 +33,11 @@ export function HeroSection() {
           <img
             src={logo}
             alt="MediFranco"
-            className="h-28 md:h-36 lg:h-44 w-auto mx-auto mb-6 drop-shadow-lg"
+            className="h-24 md:h-32 lg:h-40 w-auto mx-auto mb-8 drop-shadow-lg"
           />
 
           {/* Main Tagline */}
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 leading-tight">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
             Cuidamos da sua{' '}
             <span className="text-primary">visão</span>
             {' '}e do seu{' '}
@@ -44,28 +45,37 @@ export function HeroSection() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-base md:text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-            Especialistas em Oftalmologia e Medicina Dentária.
+          <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-xl mx-auto">
+            Especialistas em Oftalmologia e Medicina Dentária, com mais de 15 anos de experiência.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
               onClick={scrollToMarcacao}
-              className="bg-primary hover:bg-primary/90 text-base px-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
+              className="bg-primary hover:bg-primary/90 text-base px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl gap-2"
             >
+              <Calendar className="w-5 h-5" />
               Marcar Consulta
             </Button>
             <Button
               size="lg"
               variant="outline"
               onClick={scrollToSobre}
-              className="text-base px-6 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 active:scale-95"
+              className="text-base px-8 py-6 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 rounded-xl gap-2"
             >
               Conhecer a Clínica
+              <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-1">
+          <div className="w-1.5 h-3 bg-primary rounded-full animate-pulse" />
         </div>
       </div>
     </section>

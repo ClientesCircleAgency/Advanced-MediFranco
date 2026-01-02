@@ -1,11 +1,19 @@
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import { Users, Calendar, Award, Stethoscope } from 'lucide-react';
 import fundadoresImg from '@/assets/fundadores.png';
+
+const stats = [
+  { number: '15+', label: 'Anos de Experiência', icon: Award },
+  { number: '10.000+', label: 'Pacientes Satisfeitos', icon: Users },
+  { number: '3', label: 'Especialistas', icon: Stethoscope },
+  { number: '12', label: 'Serviços', icon: Calendar },
+];
 
 export function AboutSection() {
   const { ref, isVisible } = useIntersectionObserver({ threshold: 0.1 });
 
   return (
-    <section id="sobre" className="py-16 md:py-24 bg-secondary/30">
+    <section id="sobre" className="py-20 md:py-28 bg-background">
       <div className="container mx-auto px-4">
         <div
           ref={ref}
@@ -14,9 +22,12 @@ export function AboutSection() {
           }`}
         >
           {/* Section Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-full mb-4">
+              <span className="text-sm font-medium text-accent-foreground">Sobre Nós</span>
+            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Sobre a <span className="text-primary">MediFranco</span>
+              Conheça a <span className="text-primary">MediFranco</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
               Há mais de 15 anos a cuidar da sua saúde oral e visual, com uma equipa
@@ -25,19 +36,19 @@ export function AboutSection() {
           </div>
 
           {/* Founders Section */}
-          <div className="mb-16">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+          <div className="mb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
               {/* Founders Image */}
               <div className="relative">
-                <div className="rounded-2xl overflow-hidden shadow-xl">
+                <div className="rounded-3xl overflow-hidden shadow-2xl border border-border">
                   <img
                     src={fundadoresImg}
                     alt="Os Fundadores da MediFranco"
                     className="w-full h-auto object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-primary/20 rounded-full blur-2xl" />
-                <div className="absolute -top-4 -left-4 w-32 h-32 bg-accent/30 rounded-full blur-3xl" />
+                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+                <div className="absolute -top-6 -left-6 w-40 h-40 bg-accent/50 rounded-full blur-3xl" />
               </div>
 
               {/* Founders Story */}
@@ -66,23 +77,24 @@ export function AboutSection() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { number: '15+', label: 'Anos de Experiência' },
-              { number: '10.000+', label: 'Pacientes Satisfeitos' },
-              { number: '3', label: 'Especialistas' },
-              { number: '12', label: 'Serviços' },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="text-center p-6 bg-background rounded-lg shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
-                  {stat.number}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-card border border-border rounded-2xl p-6 text-center hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center mx-auto mb-4">
+                    <Icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                    {stat.number}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{stat.label}</div>
                 </div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
