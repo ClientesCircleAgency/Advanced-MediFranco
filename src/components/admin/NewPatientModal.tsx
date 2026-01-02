@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Dialog,
   DialogContent,
@@ -8,11 +9,19 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useClinic } from '@/context/ClinicContext';
 import { toast } from 'sonner';
 import { AlertCircle } from 'lucide-react';
+import { patientFormSchema, type PatientFormData } from '@/lib/validations/patient';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 interface NewPatientModalProps {
   open: boolean;
@@ -23,177 +32,195 @@ interface NewPatientModalProps {
 export function NewPatientModal({ open, onOpenChange, onPatientCreated }: NewPatientModalProps) {
   const { addPatient, findPatientByNif } = useClinic();
 
-  const [nif, setNif] = useState('');
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [notes, setNotes] = useState('');
-  const [nifError, setNifError] = useState('');
+  const form = useForm<PatientFormData>({
+    resolver: zodResolver(patientFormSchema),
+    defaultValues: {
+      nif: '',
+      name: '',
+      phone: '',
+      email: '',
+      birthDate: '',
+      notes: '',
+    },
+  });
 
-  const validateNif = (value: string) => {
-    // Limpar erro
-    setNifError('');
+  const nifValue = form.watch('nif');
+  const existingPatient = nifValue.length === 9 ? findPatientByNif(nifValue) : null;
 
-    // Verificar formato
-    if (value.length === 9) {
-      // Verificar se já existe
-      const existing = findPatientByNif(value);
-      if (existing) {
-        setNifError(`NIF já registado para: ${existing.name}`);
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const handleNifChange = (value: string) => {
-    // Apenas números
-    const cleaned = value.replace(/\D/g, '').slice(0, 9);
-    setNif(cleaned);
-    if (cleaned.length === 9) {
-      validateNif(cleaned);
-    } else {
-      setNifError('');
-    }
-  };
-
-  const handleSubmit = async () => {
-    // Validações
-    if (nif.length !== 9) {
-      toast.error('NIF deve ter 9 dígitos');
-      return;
-    }
-
-    if (!validateNif(nif)) {
-      return;
-    }
-
-    if (!name.trim()) {
-      toast.error('Nome é obrigatório');
-      return;
-    }
-
-    if (!phone.trim()) {
-      toast.error('Telefone é obrigatório');
+  const handleSubmit = async (data: PatientFormData) => {
+    // Check for duplicate NIF
+    if (existingPatient) {
+      form.setError('nif', {
+        type: 'manual',
+        message: `NIF já registado para: ${existingPatient.name}`,
+      });
       return;
     }
 
     const newPatient = await addPatient({
-      nif,
-      name: name.trim(),
-      phone: phone.trim(),
-      email: email.trim() || undefined,
-      birthDate: birthDate || undefined,
-      notes: notes.trim() || undefined,
+      nif: data.nif,
+      name: data.name.trim(),
+      phone: data.phone,
+      email: data.email?.trim() || undefined,
+      birthDate: data.birthDate || undefined,
+      notes: data.notes?.trim() || undefined,
     });
 
     toast.success('Paciente criado com sucesso');
     onPatientCreated?.(newPatient.id);
-    resetForm();
+    form.reset();
     onOpenChange(false);
   };
 
-  const resetForm = () => {
-    setNif('');
-    setName('');
-    setPhone('');
-    setEmail('');
-    setBirthDate('');
-    setNotes('');
-    setNifError('');
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      form.reset();
+    }
+    onOpenChange(isOpen);
   };
 
-  const isValid = nif.length === 9 && !nifError && name.trim() && phone.trim();
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Novo Paciente</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* NIF */}
-          <div className="space-y-2">
-            <Label>NIF *</Label>
-            <Input
-              value={nif}
-              onChange={(e) => handleNifChange(e.target.value)}
-              placeholder="123456789"
-              maxLength={9}
-              className={nifError ? 'border-destructive' : ''}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
+            {/* NIF */}
+            <FormField
+              control={form.control}
+              name="nif"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>NIF *</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="123456789"
+                      maxLength={9}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/\D/g, '').slice(0, 9);
+                        field.onChange(cleaned);
+                      }}
+                    />
+                  </FormControl>
+                  {existingPatient && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      NIF já registado para: {existingPatient.name}
+                    </p>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {nifError && (
-              <p className="text-sm text-destructive flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
-                {nifError}
-              </p>
-            )}
-          </div>
 
-          {/* Nome */}
-          <div className="space-y-2">
-            <Label>Nome Completo *</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Nome do paciente"
+            {/* Nome */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome Completo *</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Nome do paciente" maxLength={100} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* Telefone */}
-          <div className="space-y-2">
-            <Label>Telefone *</Label>
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="912 345 678"
-              type="tel"
+            {/* Telefone */}
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefone *</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="912 345 678"
+                      type="tel"
+                      maxLength={9}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/\D/g, '').slice(0, 9);
+                        field.onChange(cleaned);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* Email */}
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemplo.com"
-              type="email"
+            {/* Email */}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="email@exemplo.com"
+                      type="email"
+                      maxLength={255}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* Data de Nascimento */}
-          <div className="space-y-2">
-            <Label>Data de Nascimento</Label>
-            <Input
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              type="date"
+            {/* Data de Nascimento */}
+            <FormField
+              control={form.control}
+              name="birthDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data de Nascimento</FormLabel>
+                  <FormControl>
+                    <Input {...field} type="date" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* Observações */}
-          <div className="space-y-2">
-            <Label>Observações</Label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notas sobre o paciente..."
-              rows={2}
+            {/* Observações */}
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Observações</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Notas sobre o paciente..."
+                      rows={2}
+                      maxLength={1000}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSubmit} disabled={!isValid}>
-            Criar Paciente
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={!!existingPatient || !form.formState.isValid}>
+                Criar Paciente
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
