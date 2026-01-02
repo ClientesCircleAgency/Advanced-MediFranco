@@ -63,75 +63,35 @@ export default function PatientsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Gestão de Pacientes"
-        subtitle="Visualize e gerencie todos os pacientes da clínica"
-        actions={
-          <Button className="gap-2" onClick={() => setNewPatientOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Novo Paciente
-          </Button>
-        }
-      />
-
-      {/* Estatísticas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard
-          label="Total Pacientes"
-          value={patients.length}
-          icon={Users}
-          iconColor="bg-blue-100 text-blue-600"
-        />
-        <StatCard
-          label="Novos este mês"
-          value={newThisMonth}
-          icon={UserPlus}
-          iconColor="bg-green-100 text-green-600"
-        />
-        <StatCard
-          label="Consultas hoje"
-          value={withAppointmentToday}
-          icon={Calendar}
-          iconColor="bg-purple-100 text-purple-600"
-        />
-        <StatCard
-          label="Resultados"
-          value={filteredPatients.length}
-          icon={Filter}
-          iconColor="bg-orange-100 text-orange-600"
-        />
-      </div>
-
-      {/* Tabs e Pesquisa */}
-      <div className="flex items-center justify-between gap-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList>
-            <TabsTrigger value="all">Todos</TabsTrigger>
-            <TabsTrigger value="active">Ativos</TabsTrigger>
-            <TabsTrigger value="archived">Arquivados</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* Barra de pesquisa e filtros */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Pesquisar por nome, NIF ou telefone..."
+            placeholder="Pesquisar por nome, telemóvel ou email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
+            className="pl-11 h-12 bg-card border-border rounded-xl"
           />
         </div>
+        <Button variant="outline" className="gap-2 h-12 px-5">
+          <Filter className="h-4 w-4" />
+          Filtros
+        </Button>
       </div>
 
-      {/* Tabela */}
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+      {/* Área de conteúdo */}
+      <div className="bg-card border border-border rounded-2xl min-h-[400px]">
         {filteredPatients.length === 0 ? (
-          <EmptyState
-            icon={Users}
-            title={search ? 'Nenhum paciente encontrado' : 'Sem pacientes registados'}
-            description={search ? `Não encontrámos resultados para "${search}"` : 'Adicione o primeiro paciente para começar'}
-            actionLabel={!search ? 'Adicionar Paciente' : undefined}
-            onAction={!search ? () => setNewPatientOpen(true) : undefined}
-          />
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="font-semibold text-foreground mb-1">Base de Pacientes</h3>
+            <p className="text-sm text-muted-foreground">
+              {search ? `Nenhum resultado para "${search}"` : 'A sua lista está sincronizada. Comece a digitar para encontrar fichas.'}
+            </p>
+          </div>
         ) : (
           <Table>
             <TableHeader>
