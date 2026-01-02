@@ -1,150 +1,224 @@
-import { useMemo } from 'react';
-import { Users, Clock, Stethoscope, CheckCircle } from 'lucide-react';
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable, closestCenter } from '@dnd-kit/core';
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, forwardRef } from 'react';
+import { DndContext, DragOverlay, closestCorners, PointerSensor, useSensor, useSensors, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core';
+import { useDroppable } from '@dnd-kit/core';
+import { CheckCircle, Clock, Stethoscope, UserCheck, Wifi } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { PageHeader } from '@/components/admin/PageHeader';
 import { WaitingRoomCard } from '@/components/admin/WaitingRoomCard';
 import { useAppointments, useUpdateAppointmentStatus } from '@/hooks/useAppointments';
 import { usePatients } from '@/hooks/usePatients';
 import { useProfessionals } from '@/hooks/useProfessionals';
 import { useConsultationTypes } from '@/hooks/useConsultationTypes';
-import type { AppointmentStatus, AppointmentRow } from '@/types/database';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 import { toast } from 'sonner';
+import type { AppointmentRow, AppointmentStatus } from '@/types/database';
+import { cn } from '@/lib/utils';
 
-// Column definitions
 const columns = [
   {
     id: 'confirmed' as AppointmentStatus,
     title: 'Confirmadas',
-    icon: Users,
-    color: 'text-green-600',
+    dotColor: 'bg-primary',
+    bgColor: 'bg-card',
+    borderColor: 'border-border',
+    emptyIcon: CheckCircle,
+    emptyIconColor: 'text-primary',
+    emptyIconBg: 'bg-primary/10',
+    emptyTitle: 'Sem consultas confirmadas',
+    emptyDescription: 'para chegar.',
   },
   {
     id: 'waiting' as AppointmentStatus,
-    title: 'Em Espera',
-    icon: Clock,
-    color: 'text-yellow-600',
+    title: 'Em Sala de Espera',
+    dotColor: 'bg-yellow-500',
+    bgColor: 'bg-yellow-50',
+    borderColor: 'border-yellow-200',
+    emptyIcon: Clock,
+    emptyIconColor: 'text-yellow-600',
+    emptyIconBg: 'bg-yellow-100',
+    emptyTitle: 'Sala de espera vazia.',
+    emptyDescription: 'Excelente fluxo!',
+    showDropZone: true,
   },
   {
     id: 'in_progress' as AppointmentStatus,
     title: 'Em Atendimento',
-    icon: Stethoscope,
-    color: 'text-orange-600',
+    dotColor: 'bg-orange-500',
+    bgColor: 'bg-card',
+    borderColor: 'border-border',
+    emptyIcon: Stethoscope,
+    emptyIconColor: 'text-orange-600',
+    emptyIconBg: 'bg-orange-100',
+    emptyTitle: 'Nenhum paciente',
+    emptyDescription: 'no consultório.',
   },
   {
     id: 'completed' as AppointmentStatus,
     title: 'Concluídas',
-    icon: CheckCircle,
-    color: 'text-muted-foreground',
+    dotColor: 'bg-muted-foreground',
+    bgColor: 'bg-card',
+    borderColor: 'border-border',
+    emptyIcon: UserCheck,
+    emptyIconColor: 'text-muted-foreground',
+    emptyIconBg: 'bg-muted',
+    emptyTitle: 'O histórico do dia',
+    emptyDescription: 'aparecerá aqui.',
   },
 ];
 
-// Droppable column component
-function DroppableColumn({ 
-  id, 
-  children 
-}: { 
-  id: string; 
+interface DroppableColumnProps {
+  column: typeof columns[0];
   children: React.ReactNode;
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id });
+  count: number;
+  isOver: boolean;
+}
+
+const DroppableColumnContent = forwardRef<HTMLDivElement, DroppableColumnProps>(
+  ({ column, children, count, isOver }, ref) => {
+    const EmptyIcon = column.emptyIcon;
+    const hasChildren = count > 0;
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          'flex flex-col rounded-2xl border transition-all min-h-[500px]',
+          column.bgColor,
+          column.borderColor,
+          isOver && 'ring-2 ring-primary ring-offset-2'
+        )}
+      >
+        {/* Header */}
+        <div className="p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className={cn('w-2.5 h-2.5 rounded-full', column.dotColor)} />
+            <span className="font-medium text-foreground">{column.title}</span>
+          </div>
+          <span className={cn(
+            'text-sm font-medium',
+            column.id === 'waiting' ? 'text-yellow-600' : 
+            column.id === 'in_progress' ? 'text-orange-600' : 
+            'text-muted-foreground'
+          )}>
+            {count}
+          </span>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 px-3 pb-3 space-y-3">
+          {!hasChildren ? (
+            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
+              <div className={cn('h-14 w-14 rounded-full flex items-center justify-center mb-4', column.emptyIconBg)}>
+                <EmptyIcon className={cn('h-7 w-7', column.emptyIconColor)} />
+              </div>
+              <p className="text-sm text-muted-foreground">{column.emptyTitle}</p>
+              <p className="text-sm text-muted-foreground">{column.emptyDescription}</p>
+              
+              {/* Drop zone indicator for waiting column */}
+              {column.showDropZone && (
+                <div className="mt-8 w-full max-w-[200px] border-2 border-dashed border-yellow-400 rounded-xl p-6 text-center">
+                  <span className="text-sm text-yellow-600 font-medium">Arraste para aqui</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            children
+          )}
+        </div>
+      </div>
+    );
+  }
+);
+DroppableColumnContent.displayName = 'DroppableColumnContent';
+
+function DroppableColumn({ column, children, count }: Omit<DroppableColumnProps, 'isOver'>) {
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
 
   return (
-    <div 
-      ref={setNodeRef} 
-      className={`space-y-2 min-h-[300px] transition-colors rounded-lg p-2 -m-2 ${
-        isOver ? 'bg-primary/5 ring-2 ring-primary/20' : ''
-      }`}
+    <DroppableColumnContent
+      ref={setNodeRef}
+      column={column}
+      count={count}
+      isOver={isOver}
     >
       {children}
-    </div>
+    </DroppableColumnContent>
   );
 }
 
 export default function WaitingRoomPage() {
-  const [activeId, setActiveId] = useState<string | null>(null);
-  
-  // Fetch data from Supabase
-  const { data: appointments = [], isLoading: loadingAppointments } = useAppointments();
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const formattedDate = format(new Date(), "EEEE, d 'de' MMMM", { locale: pt });
+
+  const { data: allAppointments = [], isLoading } = useAppointments();
   const { data: patients = [] } = usePatients();
   const { data: professionals = [] } = useProfessionals();
   const { data: consultationTypes = [] } = useConsultationTypes();
-  
-  const updateStatusMutation = useUpdateAppointmentStatus();
+  const updateAppointmentStatus = useUpdateAppointmentStatus();
 
-  // Helper functions
-  const getPatientById = (id: string) => patients.find((p) => p.id === id);
-  const getProfessionalById = (id: string) => professionals.find((p) => p.id === id);
-  const getConsultationTypeById = (id: string) => consultationTypes.find((c) => c.id === id);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Filter today's appointments
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const todayAppointments = useMemo(() => 
-    appointments.filter((a) => a.date === today),
-    [appointments, today]
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    })
   );
 
-  // Group appointments by status
-  const appointmentsByStatus = useMemo(() => {
-    const grouped: Record<string, AppointmentRow[]> = {};
-    columns.forEach((col) => {
-      grouped[col.id] = todayAppointments
-        .filter((a) => a.status === col.id)
-        .sort((a, b) => a.time.localeCompare(b.time));
-    });
-    return grouped;
-  }, [todayAppointments]);
+  // Filtrar apenas consultas de hoje com estados relevantes
+  const todayAppointments = allAppointments.filter(
+    (apt) => apt.date === today && ['confirmed', 'waiting', 'in_progress', 'completed'].includes(apt.status)
+  );
 
-  // Get active appointment for drag overlay
-  const activeAppointment = activeId 
-    ? todayAppointments.find((a) => a.id === activeId) 
-    : null;
+  const getPatient = (id: string) => patients.find((p) => p.id === id);
+  const getProfessional = (id: string) => professionals.find((p) => p.id === id);
+  const getConsultationType = (id: string) => consultationTypes.find((t) => t.id === id);
+
+  const getAppointmentsByStatus = (status: AppointmentStatus) => {
+    return todayAppointments
+      .filter((apt) => apt.status === status)
+      .sort((a, b) => a.time.localeCompare(b.time));
+  };
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
     setActiveId(null);
+    const { active, over } = event;
 
     if (!over) return;
 
-    const appointmentId = active.id as string;
+    const appointment = todayAppointments.find((apt) => apt.id === active.id);
+    if (!appointment) return;
+
     const newStatus = over.id as AppointmentStatus;
-    const currentData = active.data.current as { currentStatus: AppointmentStatus } | undefined;
-    const currentStatus = currentData?.currentStatus;
+    if (appointment.status === newStatus) return;
 
-    // Don't do anything if dropped in same column
-    if (currentStatus === newStatus) return;
-
-    // Validate transition
-    const validTransitions: Record<string, AppointmentStatus[]> = {
+    // Validar transições
+    const validTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
+      scheduled: ['confirmed'],
       confirmed: ['waiting', 'cancelled'],
-      waiting: ['in_progress', 'confirmed'],
-      in_progress: ['completed', 'waiting'],
-      completed: ['in_progress'],
+      waiting: ['in_progress', 'no_show'],
+      in_progress: ['completed'],
+      completed: [],
+      cancelled: [],
+      no_show: [],
     };
 
-    if (!validTransitions[currentStatus || '']?.includes(newStatus)) {
-      toast.error('Transição inválida');
+    if (!validTransitions[appointment.status]?.includes(newStatus)) {
+      toast.error('Transição de estado inválida');
       return;
     }
 
-    // Update status
-    updateStatusMutation.mutate(
-      { id: appointmentId, status: newStatus },
+    updateAppointmentStatus.mutate(
+      { id: appointment.id, status: newStatus },
       {
         onSuccess: () => {
-          const statusLabels: Record<string, string> = {
-            waiting: 'Em espera',
-            in_progress: 'Em atendimento',
-            completed: 'Concluída',
-            confirmed: 'Confirmada',
-          };
-          toast.success(`Estado alterado para: ${statusLabels[newStatus]}`);
+          const patient = getPatient(appointment.patient_id);
+          toast.success(`${patient?.name || 'Paciente'} movido para ${columns.find((c) => c.id === newStatus)?.title}`);
         },
         onError: () => {
           toast.error('Erro ao atualizar estado');
@@ -153,82 +227,90 @@ export default function WaitingRoomPage() {
     );
   };
 
-  if (loadingAppointments) {
+  const activeAppointment = activeId ? todayAppointments.find((apt) => apt.id === activeId) : null;
+
+  // Profissionais ativos hoje
+  const activeProfessionalIds = [...new Set(todayAppointments.map((apt) => apt.professional_id))];
+  const activeProfessionals = professionals.filter((p) => activeProfessionalIds.includes(p.id));
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">A carregar...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold">Sala de Espera</h2>
-        <p className="text-muted-foreground">
-          {format(new Date(), "EEEE, d 'de' MMMM")} — {todayAppointments.length} consultas hoje
-        </p>
-      </div>
+      <PageHeader
+        title="Fluxo de Atendimento"
+        subtitle={`${formattedDate} — Visão em tempo real`}
+        badge={
+          <div className="flex items-center gap-1.5 text-green-600">
+            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          </div>
+        }
+        actions={
+          <div className="flex items-center gap-3">
+            {activeProfessionals.length > 0 && (
+              <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
+                {activeProfessionals.slice(0, 3).map((prof) => (
+                  <Avatar key={prof.id} className="h-7 w-7 border-2 border-background">
+                    <AvatarFallback 
+                      className="text-[10px] font-medium text-white"
+                      style={{ backgroundColor: prof.color }}
+                    >
+                      {prof.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+                {activeProfessionals.length > 3 && (
+                  <span className="text-xs text-muted-foreground">+{activeProfessionals.length - 3}</span>
+                )}
+              </div>
+            )}
+          </div>
+        }
+      />
 
-      {/* Kanban Board with DnD */}
       <DndContext
-        collisionDetection={closestCenter}
+        sensors={sensors}
+        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {columns.map((column) => {
-            const Icon = column.icon;
-            const columnAppointments = appointmentsByStatus[column.id] || [];
+            const columnAppointments = getAppointmentsByStatus(column.id);
 
             return (
-              <Card key={column.id} className="min-h-[400px]">
-                <CardHeader className="pb-3">
-                  <CardTitle className={`text-sm font-medium flex items-center gap-2 ${column.color}`}>
-                    <Icon className="h-4 w-4" />
-                    {column.title}
-                    <Badge variant="secondary" className="ml-auto">
-                      {columnAppointments.length}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <DroppableColumn id={column.id}>
-                    {columnAppointments.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground text-sm">
-                        Sem pacientes
-                      </div>
-                    ) : (
-                      columnAppointments.map((apt) => (
-                        <WaitingRoomCard
-                          key={apt.id}
-                          appointment={apt}
-                          patient={getPatientById(apt.patient_id)}
-                          professional={getProfessionalById(apt.professional_id)}
-                          consultationType={getConsultationTypeById(apt.consultation_type_id)}
-                        />
-                      ))
-                    )}
-                  </DroppableColumn>
-                </CardContent>
-              </Card>
+              <DroppableColumn key={column.id} column={column} count={columnAppointments.length}>
+                {columnAppointments.map((apt) => (
+                  <WaitingRoomCard
+                    key={apt.id}
+                    appointment={apt}
+                    patient={getPatient(apt.patient_id)}
+                    professional={getProfessional(apt.professional_id)}
+                    consultationType={getConsultationType(apt.consultation_type_id)}
+                  />
+                ))}
+              </DroppableColumn>
             );
           })}
         </div>
 
-        {/* Drag Overlay */}
         <DragOverlay>
-          {activeAppointment ? (
-            <div className="p-3 bg-card border border-border rounded-lg shadow-xl opacity-90">
-              <p className="font-medium text-sm">
-                {getPatientById(activeAppointment.patient_id)?.name || 'Paciente'}
+          {activeAppointment && (
+            <div className="bg-card border border-border rounded-xl p-4 shadow-xl">
+              <p className="font-semibold text-foreground">
+                {getPatient(activeAppointment.patient_id)?.name || 'Paciente'}
               </p>
-              <p className="text-xs text-muted-foreground">
-                {activeAppointment.time}
+              <p className="text-sm text-muted-foreground">
+                {activeAppointment.time} • {getConsultationType(activeAppointment.consultation_type_id)?.name}
               </p>
             </div>
-          ) : null}
+          )}
         </DragOverlay>
       </DndContext>
     </div>
