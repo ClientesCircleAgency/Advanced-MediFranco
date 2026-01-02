@@ -1,13 +1,23 @@
 import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Search, User, Plus, Check, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useClinic } from '@/context/ClinicContext';
 import type { Patient } from '@/types/clinic';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { inlinePatientFormSchema, type InlinePatientFormData } from '@/lib/validations/patient';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 interface PatientLookupByNIFProps {
   onPatientSelect: (patient: Patient) => void;
@@ -22,14 +32,17 @@ export function PatientLookupByNIF({ onPatientSelect, selectedPatient, onClear }
   const [searchResult, setSearchResult] = useState<Patient | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  
-  // Form para novo paciente
-  const [newPatient, setNewPatient] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    birthDate: '',
-    notes: '',
+
+  const form = useForm<InlinePatientFormData>({
+    resolver: zodResolver(inlinePatientFormSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      email: '',
+      birthDate: '',
+      notes: '',
+    },
+    mode: 'onChange',
   });
 
   // Validar NIF (9 dígitos)
@@ -66,21 +79,19 @@ export function PatientLookupByNIF({ onPatientSelect, selectedPatient, onClear }
     setNotFound(false);
   };
 
-  const handleCreatePatient = async () => {
-    if (!newPatient.name || !newPatient.phone) return;
-
+  const handleCreatePatient = async (data: InlinePatientFormData) => {
     const patient = await addPatient({
       nif,
-      name: newPatient.name,
-      phone: newPatient.phone,
-      email: newPatient.email || undefined,
-      birthDate: newPatient.birthDate || undefined,
-      notes: newPatient.notes || undefined,
+      name: data.name.trim(),
+      phone: data.phone,
+      email: data.email?.trim() || undefined,
+      birthDate: data.birthDate || undefined,
+      notes: data.notes?.trim() || undefined,
     });
 
     onPatientSelect(patient);
     setNif('');
-    setNewPatient({ name: '', phone: '', email: '', birthDate: '', notes: '' });
+    form.reset();
     setShowCreateForm(false);
     setNotFound(false);
   };
@@ -129,7 +140,7 @@ export function PatientLookupByNIF({ onPatientSelect, selectedPatient, onClear }
     <div className="space-y-4">
       {/* Input NIF */}
       <div className="space-y-2">
-        <Label htmlFor="nif">NIF do Paciente *</Label>
+        <FormLabel htmlFor="nif">NIF do Paciente *</FormLabel>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -198,72 +209,103 @@ export function PatientLookupByNIF({ onPatientSelect, selectedPatient, onClear }
           <CardContent className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="font-semibold">Novo Paciente</h4>
-              <Button variant="ghost" size="sm" onClick={() => setShowCreateForm(false)}>
+              <Button variant="ghost" size="sm" onClick={() => {
+                setShowCreateForm(false);
+                form.reset();
+              }}>
                 Cancelar
               </Button>
             </div>
 
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome Completo *</Label>
-                <Input
-                  id="name"
-                  placeholder="Nome do paciente"
-                  value={newPatient.name}
-                  onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleCreatePatient)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome Completo *</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Nome do paciente" maxLength={100} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Telemóvel *</Label>
-                <Input
-                  id="phone"
-                  placeholder="912345678"
-                  value={newPatient.phone}
-                  onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value.replace(/\D/g, '').slice(0, 9) })}
-                  maxLength={9}
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telemóvel *</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="912345678"
+                          maxLength={9}
+                          onChange={(e) => {
+                            const cleaned = e.target.value.replace(/\D/g, '').slice(0, 9);
+                            field.onChange(cleaned);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email (opcional)</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@exemplo.com"
-                  value={newPatient.email}
-                  onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email (opcional)</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="email" placeholder="email@exemplo.com" maxLength={255} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="birthDate">Data de Nascimento (opcional)</Label>
-                <Input
-                  id="birthDate"
-                  type="date"
-                  value={newPatient.birthDate}
-                  onChange={(e) => setNewPatient({ ...newPatient, birthDate: e.target.value })}
+                <FormField
+                  control={form.control}
+                  name="birthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data de Nascimento (opcional)</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="date" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="notes">Observações (opcional)</Label>
-                <Input
-                  id="notes"
-                  placeholder="Notas internas sobre o paciente"
-                  value={newPatient.notes}
-                  onChange={(e) => setNewPatient({ ...newPatient, notes: e.target.value })}
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Observações (opcional)</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Notas internas sobre o paciente" maxLength={1000} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-            </div>
 
-            <Button
-              onClick={handleCreatePatient}
-              disabled={!newPatient.name || !newPatient.phone}
-              className="w-full"
-            >
-              Criar e Continuar
-            </Button>
+                <Button
+                  type="submit"
+                  disabled={!form.formState.isValid}
+                  className="w-full"
+                >
+                  Criar e Continuar
+                </Button>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       )}
