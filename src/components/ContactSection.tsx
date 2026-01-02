@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
@@ -24,7 +25,7 @@ const contactInfo = [
   {
     icon: MapPin,
     label: 'Morada',
-    value: 'Rua dos Comediantes nº 13 r/c – C\n2910-468 Setúbal, Portugal',
+    value: 'Rua dos Comediantes nº 13 r/c – C\n2910-468 Setúbal',
   },
   {
     icon: Phone,
@@ -79,7 +80,7 @@ export function ContactSection() {
   };
 
   return (
-    <section id="contactos" className="py-16 md:py-24 bg-secondary/30">
+    <section id="contactos" className="py-20 md:py-28 bg-muted/30">
       <div className="container mx-auto px-4">
         <div
           ref={ref}
@@ -89,6 +90,9 @@ export function ContactSection() {
         >
           {/* Section Header */}
           <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-full mb-4">
+              <span className="text-sm font-medium text-accent-foreground">Contactos</span>
+            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Entre em <span className="text-primary">Contacto</span>
             </h2>
@@ -105,13 +109,13 @@ export function ContactSection() {
                 {contactInfo.map((info, index) => (
                   <div
                     key={index}
-                    className="bg-background rounded-xl p-4 shadow-sm flex items-start gap-3 hover:shadow-md transition-shadow"
+                    className="bg-card border border-border rounded-2xl p-5 flex items-start gap-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
                   >
-                    <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
                       <info.icon className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">{info.label}</p>
+                      <p className="text-sm text-muted-foreground mb-1">{info.label}</p>
                       <p className="text-foreground font-medium text-sm whitespace-pre-line">{info.value}</p>
                     </div>
                   </div>
@@ -119,7 +123,7 @@ export function ContactSection() {
               </div>
 
               {/* Google Maps */}
-              <div className="rounded-xl overflow-hidden shadow-lg h-64 md:h-80">
+              <div className="rounded-2xl overflow-hidden shadow-lg h-64 md:h-80 border border-border">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3118.123456789!2d-8.893333!3d38.523889!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd194330b6b4f1c1%3A0x1234567890abcdef!2sRua%20dos%20Comediantes%2013%2C%202910-468%20Set%C3%BAbal!5e0!3m2!1spt-PT!2spt!4v1700000000000!5m2!1spt-PT!2spt"
                   width="100%"
@@ -134,19 +138,19 @@ export function ContactSection() {
             </div>
 
             {/* Contact Form */}
-            <div className="bg-background rounded-2xl p-6 md:p-8 shadow-lg">
+            <div className="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-lg">
               <h3 className="text-xl font-semibold text-foreground mb-6">
                 Envie-nos uma mensagem
               </h3>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="contact-name">Nome</Label>
                   <Input
                     id="contact-name"
                     placeholder="O seu nome"
                     {...register('name')}
-                    className={errors.name ? 'border-destructive' : ''}
+                    className={cn("rounded-xl h-12", errors.name && 'border-destructive')}
                   />
                   {errors.name && (
                     <p className="text-sm text-destructive">{errors.name.message}</p>
@@ -161,7 +165,7 @@ export function ContactSection() {
                       type="email"
                       placeholder="seu@email.com"
                       {...register('email')}
-                      className={errors.email ? 'border-destructive' : ''}
+                      className={cn("rounded-xl h-12", errors.email && 'border-destructive')}
                     />
                     {errors.email && (
                       <p className="text-sm text-destructive">{errors.email.message}</p>
@@ -175,7 +179,7 @@ export function ContactSection() {
                       type="tel"
                       placeholder="912 345 678"
                       {...register('phone')}
-                      className={errors.phone ? 'border-destructive' : ''}
+                      className={cn("rounded-xl h-12", errors.phone && 'border-destructive')}
                     />
                     {errors.phone && (
                       <p className="text-sm text-destructive">{errors.phone.message}</p>
@@ -190,7 +194,7 @@ export function ContactSection() {
                     placeholder="A sua mensagem..."
                     rows={4}
                     {...register('message')}
-                    className={errors.message ? 'border-destructive' : ''}
+                    className={cn("rounded-xl resize-none", errors.message && 'border-destructive')}
                   />
                   {errors.message && (
                     <p className="text-sm text-destructive">{errors.message.message}</p>
@@ -200,10 +204,10 @@ export function ContactSection() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-primary hover:bg-primary/90 active:scale-95 transition-all"
+                  className="w-full bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all rounded-xl h-14 text-base"
                   size="lg"
                 >
-                  <Send className="w-4 h-4 mr-2" />
+                  <Send className="w-5 h-5 mr-2" />
                   {isSubmitting ? 'A enviar...' : 'Enviar Mensagem'}
                 </Button>
               </form>

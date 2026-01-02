@@ -10,7 +10,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 
   return (
     <div
-      className="group overflow-hidden rounded-2xl bg-background shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2"
+      className="group overflow-hidden rounded-2xl bg-card border border-border shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500"
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Image */}
@@ -23,7 +23,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/20 to-transparent" />
           <div className="absolute bottom-4 left-4">
-            <div className="w-12 h-12 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-xl bg-card/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
               <IconComponent className="w-6 h-6 text-primary" />
             </div>
           </div>
@@ -48,7 +48,7 @@ export function ServicesSection() {
   const [activeTab, setActiveTab] = useState('dentaria');
 
   return (
-    <section id="servicos" className="py-16 md:py-24 bg-background">
+    <section id="servicos" className="py-20 md:py-28 bg-muted/30">
       <div className="container mx-auto px-4">
         <div
           ref={ref}
@@ -58,6 +58,9 @@ export function ServicesSection() {
         >
           {/* Section Header */}
           <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-full mb-4">
+              <span className="text-sm font-medium text-accent-foreground">Serviços</span>
+            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Os Nossos <span className="text-primary">Serviços</span>
             </h2>
@@ -69,17 +72,17 @@ export function ServicesSection() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8 h-12">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-10 h-14 p-1 bg-card border border-border rounded-2xl">
               <TabsTrigger
                 value="dentaria"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-10"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl h-12 text-sm font-medium transition-all"
               >
                 <Icons.Smile className="w-4 h-4 mr-2" />
                 Medicina Dentária
               </TabsTrigger>
               <TabsTrigger
                 value="oftalmologia"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-10"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl h-12 text-sm font-medium transition-all"
               >
                 <Icons.Eye className="w-4 h-4 mr-2" />
                 Oftalmologia
