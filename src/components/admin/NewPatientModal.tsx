@@ -58,7 +58,7 @@ export function NewPatientModal({ open, onOpenChange, onPatientCreated }: NewPat
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validações
     if (nif.length !== 9) {
       toast.error('NIF deve ter 9 dígitos');
@@ -79,7 +79,7 @@ export function NewPatientModal({ open, onOpenChange, onPatientCreated }: NewPat
       return;
     }
 
-    const newPatient = addPatient({
+    const newPatient = await addPatient({
       nif,
       name: name.trim(),
       phone: phone.trim(),

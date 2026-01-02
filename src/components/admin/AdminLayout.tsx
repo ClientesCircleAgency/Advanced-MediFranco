@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { AdminSidebar } from './AdminSidebar';
 import { ClinicProvider } from '@/context/ClinicContext';
@@ -11,7 +11,6 @@ export function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
   const { isAuthenticated, isLoading, logout } = useAuth();
   const { toast } = useToast();
 
@@ -46,16 +45,6 @@ export function AdminLayout() {
     return null;
   }
 
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path.includes('/agenda')) return 'Agenda';
-    if (path.includes('/pacientes')) return 'Pacientes';
-    if (path.includes('/lista-espera')) return 'Lista de Espera';
-    if (path.includes('/sala-espera')) return 'Sala de Espera';
-    if (path.includes('/configuracoes')) return 'Configurações';
-    return 'Admin';
-  };
-
   return (
     <ClinicProvider>
       <div className="min-h-screen bg-background">
@@ -68,17 +57,11 @@ export function AdminLayout() {
 
         <main
           className={cn(
-            'min-h-screen transition-all duration-300',
+            'min-h-screen transition-all duration-300 p-6',
             collapsed ? 'ml-16' : 'ml-64'
           )}
         >
-          <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between sticky top-0 z-30">
-            <h1 className="text-xl font-semibold">{getPageTitle()}</h1>
-          </header>
-
-          <div className="p-6">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
 
         <AppointmentWizard open={wizardOpen} onOpenChange={setWizardOpen} />
