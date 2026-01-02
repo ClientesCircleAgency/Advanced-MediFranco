@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Search, Send, Bot, User, Phone, Calendar, FileText, MoreVertical, Paperclip, Smile } from 'lucide-react';
+import { Search, Send, Bot, User, Phone, Calendar, FileText, ArrowLeft, Paperclip, Smile } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
@@ -14,7 +13,6 @@ interface Conversation {
   time: string;
   unread?: boolean;
   isBot?: boolean;
-  avatar?: string;
 }
 
 interface Message {
@@ -80,7 +78,7 @@ const mockMessages: Message[] = [
 
 export default function MessagesPage() {
   const [conversations] = useState<Conversation[]>(mockConversations);
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(mockConversations[0]);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages] = useState<Message[]>(mockMessages);
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
@@ -98,62 +96,68 @@ export default function MessagesPage() {
       .toUpperCase();
   };
 
+  const handleBack = () => {
+    setSelectedConversation(null);
+  };
+
   return (
-    <div className="flex h-[calc(100vh-48px)] gap-0 -m-6">
-      {/* Lista de conversas */}
-      <div className="w-80 border-r border-border bg-card flex flex-col">
+    <div className="flex h-[calc(100vh-64px)] bg-background">
+      {/* Lista de conversas - hidden on mobile when conversation selected */}
+      <div className={cn(
+        'w-full md:w-80 lg:w-72 xl:w-80 border-r border-border bg-card flex flex-col shrink-0',
+        selectedConversation && 'hidden md:flex'
+      )}>
         {/* Search */}
-        <div className="p-4 border-b border-border">
+        <div className="p-3 border-b border-border">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Procurar conversa..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-muted/50 border-0"
+              className="pl-9 h-10 bg-muted/50 border-0 text-sm"
             />
           </div>
         </div>
 
         {/* Conversations list */}
         <ScrollArea className="flex-1">
-          <div className="divide-y divide-border">
+          <div>
             {filteredConversations.map((conversation) => (
               <button
                 key={conversation.id}
                 onClick={() => setSelectedConversation(conversation)}
                 className={cn(
-                  'w-full p-4 flex items-start gap-3 text-left transition-colors hover:bg-accent/50',
+                  'w-full px-3 py-3 flex items-center gap-3 text-left transition-colors hover:bg-accent/50 border-b border-border/50',
                   selectedConversation?.id === conversation.id && 'bg-accent border-l-4 border-l-primary'
                 )}
               >
                 <Avatar className="h-10 w-10 shrink-0">
-                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                     {getInitials(conversation.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className={cn(
-                      'font-medium text-sm truncate',
-                      conversation.unread ? 'text-foreground' : 'text-foreground'
-                    )}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium text-sm text-foreground truncate">
                       {conversation.name}
                     </span>
-                    <span className="text-xs text-muted-foreground shrink-0 ml-2">
-                      {conversation.time}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        {conversation.time}
+                      </span>
+                      {conversation.unread && (
+                        <div className="w-2 h-2 rounded-full bg-destructive" />
+                      )}
+                    </div>
                   </div>
                   <p className={cn(
-                    'text-sm truncate',
-                    conversation.unread ? 'text-foreground font-medium' : 'text-muted-foreground'
+                    'text-sm truncate mt-0.5',
+                    conversation.unread ? 'text-foreground' : 'text-muted-foreground'
                   )}>
                     {conversation.lastMessage}
                   </p>
                 </div>
-                {conversation.unread && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-destructive shrink-0 mt-1" />
-                )}
               </button>
             ))}
           </div>
@@ -162,31 +166,42 @@ export default function MessagesPage() {
 
       {/* Área de chat */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col bg-[hsl(40,30%,94%)]">
+        <div className={cn(
+          'flex-1 flex flex-col bg-[hsl(40,25%,94%)] min-w-0',
+          !selectedConversation && 'hidden md:flex'
+        )}>
           {/* Chat header */}
-          <div className="bg-card border-b border-border px-6 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-primary text-primary-foreground font-medium">
+          <div className="bg-card border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden shrink-0"
+                onClick={handleBack}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <Avatar className="h-9 w-9 shrink-0">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                   {getInitials(selectedConversation.name)}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <h3 className="font-semibold text-foreground">{selectedConversation.name}</h3>
+              <div className="min-w-0">
+                <h3 className="font-semibold text-foreground text-sm truncate">{selectedConversation.name}</h3>
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Bot className="h-3 w-3" />
-                  <span>Bot respondeu há 5 min</span>
+                  <Bot className="h-3 w-3 shrink-0" />
+                  <span className="truncate">Bot respondeu há 5 min</span>
                 </div>
               </div>
             </div>
-            <Button variant="default" size="sm" className="gap-2">
+            <Button size="sm" className="shrink-0 text-xs h-8">
               Assumir Controlo
             </Button>
           </div>
 
           {/* Messages area */}
-          <ScrollArea className="flex-1 p-6">
-            <div className="max-w-3xl mx-auto space-y-4">
+          <ScrollArea className="flex-1">
+            <div className="p-4 md:p-6 space-y-3">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -197,9 +212,9 @@ export default function MessagesPage() {
                 >
                   <div
                     className={cn(
-                      'max-w-[70%] rounded-2xl px-4 py-3 shadow-sm',
+                      'max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-2.5 shadow-sm',
                       message.isOutgoing
-                        ? 'bg-[hsl(145,60%,92%)] text-foreground rounded-br-md'
+                        ? 'bg-[hsl(145,55%,90%)] text-foreground rounded-br-md'
                         : 'bg-card text-foreground rounded-bl-md border border-border'
                     )}
                   >
@@ -223,32 +238,32 @@ export default function MessagesPage() {
           </ScrollArea>
 
           {/* Message input */}
-          <div className="bg-card border-t border-border p-4">
-            <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <div className="bg-card border-t border-border p-3 shrink-0">
+            <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <Input
                   placeholder="Escreva uma mensagem..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  className="pr-20 bg-muted/50 border-0 h-12 rounded-full"
+                  className="pr-16 bg-muted/50 border-0 h-11 rounded-full text-sm"
                 />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                     <Paperclip className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                     <Smile className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
-              <Button size="icon" className="h-12 w-12 rounded-full shrink-0">
-                <Send className="h-5 w-5" />
+              <Button size="icon" className="h-11 w-11 rounded-full shrink-0">
+                <Send className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center bg-muted/30">
+        <div className="hidden md:flex flex-1 items-center justify-center bg-muted/30">
           <div className="text-center">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
               <Bot className="h-8 w-8 text-muted-foreground" />
@@ -258,59 +273,59 @@ export default function MessagesPage() {
         </div>
       )}
 
-      {/* Sidebar de contexto (opcional, para quando há paciente associado) */}
+      {/* Sidebar de contexto */}
       {selectedConversation && (
-        <div className="w-72 border-l border-border bg-card p-4 hidden xl:block">
+        <div className="w-64 border-l border-border bg-card p-4 hidden xl:flex flex-col shrink-0">
           <div className="text-center mb-6">
-            <Avatar className="h-20 w-20 mx-auto mb-3">
-              <AvatarFallback className="bg-primary text-primary-foreground text-xl font-semibold">
+            <Avatar className="h-16 w-16 mx-auto mb-3">
+              <AvatarFallback className="bg-primary text-primary-foreground text-lg font-semibold">
                 {getInitials(selectedConversation.name)}
               </AvatarFallback>
             </Avatar>
-            <h3 className="font-semibold text-foreground">{selectedConversation.name}</h3>
-            <p className="text-sm text-muted-foreground">Paciente desde 2023</p>
+            <h3 className="font-semibold text-foreground text-sm">{selectedConversation.name}</h3>
+            <p className="text-xs text-muted-foreground">Paciente desde 2023</p>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                 <Phone className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Telefone</p>
-                <p className="text-foreground">+351 912 345 678</p>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Telefone</p>
+                <p className="text-sm text-foreground truncate">+351 912 345 678</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Próxima Consulta</p>
-                <p className="text-foreground">Amanhã, 10:00</p>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Próxima Consulta</p>
+                <p className="text-sm text-foreground truncate">Amanhã, 10:00</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div>
-                <p className="text-muted-foreground text-xs">Última Consulta</p>
-                <p className="text-foreground">15 Dez 2025</p>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Última Consulta</p>
+                <p className="text-sm text-foreground truncate">15 Dez 2025</p>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-border">
-            <h4 className="font-medium text-sm text-foreground mb-3">Ações Rápidas</h4>
+          <div className="mt-auto pt-4 border-t border-border">
+            <h4 className="font-medium text-xs text-muted-foreground uppercase tracking-wide mb-3">Ações Rápidas</h4>
             <div className="space-y-2">
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+              <Button variant="ghost" size="sm" className="w-full justify-start gap-2 h-9 text-sm">
                 <Calendar className="h-4 w-4" />
                 Agendar Consulta
               </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+              <Button variant="ghost" size="sm" className="w-full justify-start gap-2 h-9 text-sm">
                 <User className="h-4 w-4" />
                 Ver Ficha
               </Button>

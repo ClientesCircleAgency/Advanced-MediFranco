@@ -19,7 +19,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useClinic } from '@/context/ClinicContext';
-import logoMedifranco from '@/assets/logo-medifranco.png';
 
 const navItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -34,9 +33,10 @@ interface AdminSidebarProps {
   onToggle: () => void;
   onNewAppointment: () => void;
   onLogout: () => void;
+  isMobile?: boolean;
 }
 
-export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }: AdminSidebarProps) {
+export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, isMobile = false }: AdminSidebarProps) {
   const location = useLocation();
   const { appointments } = useClinic();
 
@@ -45,22 +45,25 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }
     (a) => a.date === todayDate && (a.status === 'scheduled' || a.status === 'confirmed')
   ).length;
 
+  const isCollapsed = collapsed && !isMobile;
+
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col',
-        collapsed ? 'w-16' : 'w-64'
+        'h-screen bg-sidebar border-r border-sidebar-border flex flex-col',
+        isMobile ? 'w-full' : 'fixed left-0 top-0 z-40 transition-all duration-300',
+        !isMobile && (isCollapsed ? 'w-16' : 'w-64')
       )}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center px-4 border-b border-sidebar-border">
-        {collapsed ? (
+      <div className="h-14 lg:h-16 flex items-center px-4 border-b border-sidebar-border">
+        {isCollapsed ? (
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center mx-auto">
             <span className="text-sm font-bold text-primary-foreground">M</span>
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
               <span className="text-sm font-bold text-primary-foreground">M</span>
             </div>
             <span className="text-lg font-bold text-foreground">MediFranco</span>
@@ -70,7 +73,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }
 
       {/* Botão Nova Consulta */}
       <div className="p-3">
-        {collapsed ? (
+        {isCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -105,7 +108,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }
               ? pendingToday
               : null;
 
-          if (collapsed) {
+          if (isCollapsed) {
             return (
               <Tooltip key={item.path}>
                 <TooltipTrigger asChild>
@@ -138,7 +141,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }
               className={cn(
                 'flex items-center gap-3 h-11 px-3 rounded-xl transition-all',
                 isActive
-                  ? 'bg-accent text-primary font-medium border-r-4 border-primary'
+                  ? 'bg-accent text-primary font-medium border-l-4 border-primary'
                   : 'text-sidebar-foreground hover:bg-accent/50 hover:text-primary'
               )}
             >
@@ -161,7 +164,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }
 
       {/* Configurações e Footer */}
       <div className="p-3 space-y-1">
-        {collapsed ? (
+        {isCollapsed ? (
           <>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -200,7 +203,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }
               className={cn(
                 'flex items-center gap-3 h-11 px-3 rounded-xl transition-all',
                 location.pathname === '/admin/configuracoes'
-                  ? 'bg-accent text-primary font-medium border-r-4 border-primary'
+                  ? 'bg-accent text-primary font-medium border-l-4 border-primary'
                   : 'text-sidebar-foreground hover:bg-accent/50 hover:text-primary'
               )}
             >
@@ -219,27 +222,29 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout }
         )}
       </div>
 
-      {/* Toggle */}
-      <div className="p-3 border-t border-sidebar-border">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggle}
-          className={cn(
-            'w-full text-muted-foreground hover:text-foreground',
-            collapsed ? 'justify-center' : 'justify-start gap-3'
-          )}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <>
-              <ChevronLeft className="h-4 w-4" />
-              <span>Recolher</span>
-            </>
-          )}
-        </Button>
-      </div>
+      {/* Toggle - only on desktop */}
+      {!isMobile && (
+        <div className="p-3 border-t border-sidebar-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggle}
+            className={cn(
+              'w-full text-muted-foreground hover:text-foreground',
+              isCollapsed ? 'justify-center' : 'justify-start gap-3'
+            )}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <>
+                <ChevronLeft className="h-4 w-4" />
+                <span>Recolher</span>
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </aside>
   );
 }

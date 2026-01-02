@@ -84,20 +84,20 @@ const DroppableColumnContent = forwardRef<HTMLDivElement, DroppableColumnProps>(
       <div
         ref={ref}
         className={cn(
-          'flex flex-col rounded-2xl border transition-all min-h-[500px]',
+          'flex flex-col rounded-xl lg:rounded-2xl border transition-all min-h-[200px] sm:min-h-[300px] lg:min-h-[400px]',
           column.bgColor,
           column.borderColor,
           isOver && 'ring-2 ring-primary ring-offset-2'
         )}
       >
         {/* Header */}
-        <div className="p-4 flex items-center justify-between">
+        <div className="p-3 lg:p-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className={cn('w-2.5 h-2.5 rounded-full', column.dotColor)} />
-            <span className="font-medium text-foreground">{column.title}</span>
+            <div className={cn('w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full', column.dotColor)} />
+            <span className="font-medium text-foreground text-xs lg:text-sm">{column.title}</span>
           </div>
           <span className={cn(
-            'text-sm font-medium',
+            'text-xs lg:text-sm font-medium',
             column.id === 'waiting' ? 'text-yellow-600' : 
             column.id === 'in_progress' ? 'text-orange-600' : 
             'text-muted-foreground'
@@ -107,19 +107,19 @@ const DroppableColumnContent = forwardRef<HTMLDivElement, DroppableColumnProps>(
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-3 pb-3 space-y-3">
+        <div className="flex-1 px-2 lg:px-3 pb-2 lg:pb-3 space-y-2 lg:space-y-3">
           {!hasChildren ? (
-            <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-              <div className={cn('h-14 w-14 rounded-full flex items-center justify-center mb-4', column.emptyIconBg)}>
-                <EmptyIcon className={cn('h-7 w-7', column.emptyIconColor)} />
+            <div className="flex flex-col items-center justify-center h-full py-6 lg:py-12 text-center">
+              <div className={cn('h-10 w-10 lg:h-14 lg:w-14 rounded-full flex items-center justify-center mb-3 lg:mb-4', column.emptyIconBg)}>
+                <EmptyIcon className={cn('h-5 w-5 lg:h-7 lg:w-7', column.emptyIconColor)} />
               </div>
-              <p className="text-sm text-muted-foreground">{column.emptyTitle}</p>
-              <p className="text-sm text-muted-foreground">{column.emptyDescription}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">{column.emptyTitle}</p>
+              <p className="text-xs lg:text-sm text-muted-foreground">{column.emptyDescription}</p>
               
               {/* Drop zone indicator for waiting column */}
               {column.showDropZone && (
-                <div className="mt-8 w-full max-w-[200px] border-2 border-dashed border-yellow-400 rounded-xl p-6 text-center">
-                  <span className="text-sm text-yellow-600 font-medium">Arraste para aqui</span>
+                <div className="mt-4 lg:mt-8 w-full max-w-[150px] lg:max-w-[200px] border-2 border-dashed border-yellow-400 rounded-xl p-4 lg:p-6 text-center">
+                  <span className="text-xs lg:text-sm text-yellow-600 font-medium">Arraste para aqui</span>
                 </div>
               )}
             </div>
@@ -242,37 +242,31 @@ export default function WaitingRoomPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Fluxo de Atendimento"
-        subtitle={`${formattedDate} — Visão em tempo real`}
-        badge={
-          <div className="flex items-center gap-1.5 text-green-600">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          </div>
-        }
-        actions={
-          <div className="flex items-center gap-3">
-            {activeProfessionals.length > 0 && (
-              <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
-                {activeProfessionals.slice(0, 3).map((prof) => (
-                  <Avatar key={prof.id} className="h-7 w-7 border-2 border-background">
-                    <AvatarFallback 
-                      className="text-[10px] font-medium text-white"
-                      style={{ backgroundColor: prof.color }}
-                    >
-                      {prof.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-                {activeProfessionals.length > 3 && (
-                  <span className="text-xs text-muted-foreground">+{activeProfessionals.length - 3}</span>
-                )}
-              </div>
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header simplificado para mobile */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-xs lg:text-sm text-muted-foreground">{formattedDate}</span>
+        </div>
+        {activeProfessionals.length > 0 && (
+          <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
+            {activeProfessionals.slice(0, 3).map((prof) => (
+              <Avatar key={prof.id} className="h-6 w-6 lg:h-7 lg:w-7 border-2 border-background">
+                <AvatarFallback 
+                  className="text-[9px] lg:text-[10px] font-medium text-white"
+                  style={{ backgroundColor: prof.color }}
+                >
+                  {prof.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+            ))}
+            {activeProfessionals.length > 3 && (
+              <span className="text-xs text-muted-foreground">+{activeProfessionals.length - 3}</span>
             )}
           </div>
-        }
-      />
+        )}
+      </div>
 
       <DndContext
         sensors={sensors}
@@ -280,7 +274,8 @@ export default function WaitingRoomPage() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-4 gap-4">
+        {/* Responsivo: 1 coluna em mobile, 2 em tablet, 4 em desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 lg:gap-4">
           {columns.map((column) => {
             const columnAppointments = getAppointmentsByStatus(column.id);
 
@@ -302,11 +297,11 @@ export default function WaitingRoomPage() {
 
         <DragOverlay>
           {activeAppointment && (
-            <div className="bg-card border border-border rounded-xl p-4 shadow-xl">
-              <p className="font-semibold text-foreground">
+            <div className="bg-card border border-border rounded-xl p-3 lg:p-4 shadow-xl">
+              <p className="font-semibold text-foreground text-sm">
                 {getPatient(activeAppointment.patient_id)?.name || 'Paciente'}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 {activeAppointment.time} • {getConsultationType(activeAppointment.consultation_type_id)?.name}
               </p>
             </div>
