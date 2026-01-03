@@ -11,6 +11,7 @@ import {
   Plus,
   LogOut,
   Inbox,
+  Euro,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ const navItems = [
   { path: '/admin/agenda', label: 'Agenda', icon: CalendarDays },
   { path: '/admin/pedidos', label: 'Pedidos', icon: Inbox, badgeKey: 'requests' },
   { path: '/admin/pacientes', label: 'Pacientes', icon: Users },
+  { path: '/admin/faturacao', label: 'Faturação', icon: Euro },
   { path: '/admin/mensagens', label: 'Mensagens', icon: MessageSquare },
   { path: '/admin/sala-espera', label: 'Sala de Espera', icon: Armchair },
 ];

@@ -17,6 +17,7 @@ import MessagesPage from "./pages/admin/MessagesPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import RequestsPage from "./pages/admin/RequestsPage";
 import PlanPage from "./pages/admin/PlanPage";
+import BillingPage from "./pages/admin/BillingPage";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="mensagens" element={<MessagesPage />} />
             <Route path="configuracoes" element={<SettingsPage />} />
             <Route path="plano" element={<PlanPage />} />
+            <Route path="faturacao" element={<BillingPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

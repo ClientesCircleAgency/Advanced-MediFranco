@@ -21,6 +21,7 @@ const pageTitles: Record<string, { title: string }> = {
   '/admin/configuracoes': { title: 'Configurações' },
   '/admin/pedidos': { title: 'Pedidos de Marcação' },
   '/admin/plano': { title: 'Plano' },
+  '/admin/faturacao': { title: 'Faturação' },
 };
 
 export function AdminLayout() {
