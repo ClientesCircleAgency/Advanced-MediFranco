@@ -12,7 +12,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 type Period = 'day' | 'week' | 'month' | 'year';
 
@@ -82,7 +82,7 @@ export function RevenueChart() {
   const chartConfig = {
     value: {
       label: 'Faturação',
-      color: 'oklch(var(--chart-1))',
+      color: 'hsl(var(--chart-1))',
     },
   };
 
@@ -108,7 +108,7 @@ export function RevenueChart() {
           </div>
         </div>
         <Badge variant="secondary" className="font-mono text-sm px-3 py-1 flex items-center gap-1 w-fit">
-          <TrendingUp className="h-3 w-3 text-chart-1" />
+          <TrendingUp className="h-3 w-3 text-primary" />
           +{percentageChange}%
         </Badge>
       </div>
@@ -158,8 +158,8 @@ export function RevenueChart() {
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="oklch(var(--chart-1))" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="oklch(var(--chart-1))" stopOpacity={0} />
+                <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
@@ -167,12 +167,12 @@ export function RevenueChart() {
               dataKey="name" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: 'oklch(var(--muted-foreground))' }}
+              tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: 'hsl(var(--muted-foreground))' }}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: 'oklch(var(--muted-foreground))' }}
+              tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: 'hsl(var(--muted-foreground))' }}
               tickFormatter={(value) => `${value}€`}
               width={50}
             />
@@ -183,7 +183,7 @@ export function RevenueChart() {
             <Area 
               type="monotone"
               dataKey="value" 
-              stroke="oklch(var(--chart-1))"
+              stroke="hsl(var(--chart-1))"
               strokeWidth={2}
               fill="url(#chartGradient)"
             />
