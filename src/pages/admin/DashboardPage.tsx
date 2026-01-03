@@ -26,27 +26,27 @@ export default function DashboardPage() {
   const chatbotBookingsToday = 3;
 
   return (
-    <div className="space-y-4 lg:space-y-6">
-      {/* Sophisticated Header */}
-      <div className="bg-card border border-border rounded-xl p-4 lg:p-6 shadow-sm">
-        <p className="font-serif italic text-foreground text-lg lg:text-2xl">
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Minimal Header */}
+      <div className="text-center md:text-left">
+        <p className="font-serif italic text-foreground text-xl md:text-2xl">
           Bem-vindo de volta, Dr. Franco
         </p>
-        <p className="font-mono text-xs text-muted-foreground mt-1 uppercase tracking-wide">
+        <p className="font-mono text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
           {currentDate}
         </p>
       </div>
 
-      {/* Minimalist Square KPI Cards */}
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* Compact Square KPI Cards - Fixed size, centered */}
+      <div className="flex flex-wrap justify-center gap-3">
         {/* Consultas Hoje */}
-        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
-          <CalendarDays className="h-4 w-4 text-primary" />
+        <div className="bg-card border border-border rounded-xl w-24 h-24 md:w-28 md:h-28 p-3 shadow-sm flex flex-col justify-between">
+          <CalendarDays className="h-3.5 w-3.5 text-primary" />
           <div>
-            <p className="font-mono text-2xl lg:text-3xl font-semibold text-primary">
+            <p className="font-mono text-xl md:text-2xl font-semibold text-primary leading-none">
               {todayAppointments.length}
             </p>
-            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
               Hoje
             </p>
           </div>
@@ -54,18 +54,18 @@ export default function DashboardPage() {
 
         {/* Pedidos Pendentes */}
         <Link to="/admin/pedidos" className="block">
-          <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between h-full hover:border-primary/50 transition-colors">
+          <div className="bg-card border border-border rounded-xl w-24 h-24 md:w-28 md:h-28 p-3 shadow-sm flex flex-col justify-between hover:border-primary/50 transition-colors">
             <div className="flex items-center justify-between">
-              <Inbox className="h-4 w-4 text-primary" />
+              <Inbox className="h-3.5 w-3.5 text-primary" />
               {pendingRequests.length > 0 && (
-                <span className="h-2 w-2 rounded-full bg-destructive" />
+                <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
               )}
             </div>
             <div>
-              <p className="font-mono text-2xl lg:text-3xl font-semibold text-primary">
+              <p className="font-mono text-xl md:text-2xl font-semibold text-primary leading-none">
                 {pendingRequests.length}
               </p>
-              <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
                 Pedidos
               </p>
             </div>
@@ -73,55 +73,55 @@ export default function DashboardPage() {
         </Link>
 
         {/* Pacientes Registados */}
-        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
-          <Users className="h-4 w-4 text-muted-foreground" />
+        <div className="bg-card border border-border rounded-xl w-24 h-24 md:w-28 md:h-28 p-3 shadow-sm flex flex-col justify-between">
+          <Users className="h-3.5 w-3.5 text-muted-foreground" />
           <div>
-            <p className="font-mono text-2xl lg:text-3xl font-semibold text-foreground">
+            <p className="font-mono text-xl md:text-2xl font-semibold text-foreground leading-none">
               {patients.length}
             </p>
-            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
               Pacientes
             </p>
           </div>
         </div>
 
         {/* Total Consultas */}
-        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+        <div className="bg-card border border-border rounded-xl w-24 h-24 md:w-28 md:h-28 p-3 shadow-sm flex flex-col justify-between">
+          <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
           <div>
-            <p className="font-mono text-2xl lg:text-3xl font-semibold text-foreground">
+            <p className="font-mono text-xl md:text-2xl font-semibold text-foreground leading-none">
               {appointments.length}
             </p>
-            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
               Total
             </p>
           </div>
         </div>
 
         {/* Google Rating */}
-        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
-          <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+        <div className="bg-card border border-border rounded-xl w-24 h-24 md:w-28 md:h-28 p-3 shadow-sm flex flex-col justify-between">
+          <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
           <div>
             <div className="flex items-baseline gap-0.5">
-              <p className="font-mono text-2xl lg:text-3xl font-semibold text-foreground">
+              <p className="font-mono text-xl md:text-2xl font-semibold text-foreground leading-none">
                 {googleRating}
               </p>
-              <span className="text-[10px] text-muted-foreground">/5</span>
+              <span className="text-[8px] text-muted-foreground">/5</span>
             </div>
-            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
               Google
             </p>
           </div>
         </div>
 
         {/* Chatbot Bookings Today */}
-        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
-          <Bot className="h-4 w-4 text-primary" />
+        <div className="bg-card border border-border rounded-xl w-24 h-24 md:w-28 md:h-28 p-3 shadow-sm flex flex-col justify-between">
+          <Bot className="h-3.5 w-3.5 text-primary" />
           <div>
-            <p className="font-mono text-2xl lg:text-3xl font-semibold text-primary">
+            <p className="font-mono text-xl md:text-2xl font-semibold text-primary leading-none">
               {chatbotBookingsToday}
             </p>
-            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-[8px] md:text-[9px] font-medium text-muted-foreground uppercase tracking-wide mt-0.5">
               Chatbot
             </p>
           </div>
