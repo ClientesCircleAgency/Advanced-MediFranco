@@ -280,7 +280,10 @@ export function RevenueChart() {
             <ChartTooltip
               content={<ChartTooltipContent />}
               labelFormatter={(label) => {
-                const d = new Date(Number(label));
+                const timestamp = Number(label);
+                if (Number.isNaN(timestamp)) return '';
+                const d = new Date(timestamp);
+                if (Number.isNaN(d.getTime())) return '';
                 if (activePeriod === 'year') return format(d, 'MMM yyyy', { locale: pt });
                 return format(d, 'PPP', { locale: pt });
               }}
