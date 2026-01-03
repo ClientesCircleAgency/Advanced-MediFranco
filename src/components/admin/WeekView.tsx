@@ -2,7 +2,6 @@ import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Card, CardContent } from '@/components/ui/card';
 import { useClinic } from '@/context/ClinicContext';
-import { StatusBadge } from './StatusBadge';
 import type { ClinicAppointment } from '@/types/clinic';
 
 interface WeekViewProps {
@@ -20,7 +19,7 @@ export function WeekView({
   searchQuery,
   onAppointmentClick,
 }: WeekViewProps) {
-  const { appointments, getPatientById, getProfessionalById, getConsultationTypeById } = useClinic();
+  const { appointments, getPatientById, getProfessionalById } = useClinic();
 
   // Calcular dias da semana (segunda a domingo)
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -51,22 +50,22 @@ export function WeekView({
   };
 
   return (
-    <Card>
-      <CardContent className="p-2">
-        <div className="grid grid-cols-7 gap-1">
+    <Card className="border-0 shadow-none lg:border lg:shadow-sm">
+      <CardContent className="p-0 lg:p-2">
+        <div className="grid grid-cols-7">
           {/* Header dos dias */}
           {weekDays.map((day) => (
             <div
               key={day.toISOString()}
-              className={`text-center p-2 rounded-t-md ${
+              className={`text-center py-2 px-0.5 lg:p-2 lg:rounded-t-md ${
                 isSameDay(day, new Date()) ? 'bg-primary/10' : 'bg-muted/50'
               }`}
             >
-              <p className="text-xs font-medium text-muted-foreground uppercase">
+              <p className="text-[10px] lg:text-xs font-medium text-muted-foreground uppercase">
                 {format(day, 'EEE', { locale: pt })}
               </p>
               <p
-                className={`text-lg font-bold ${
+                className={`text-base lg:text-lg font-bold ${
                   isSameDay(day, new Date()) ? 'text-primary' : ''
                 }`}
               >
@@ -81,7 +80,7 @@ export function WeekView({
             return (
               <div
                 key={`content-${day.toISOString()}`}
-                className="min-h-48 border border-border rounded-b-md p-1 space-y-1"
+                className="min-h-32 lg:min-h-48 border border-border/50 lg:border-border lg:rounded-b-md p-0.5 lg:p-1 space-y-0.5 lg:space-y-1"
               >
                 {dayAppointments.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-4">-</p>
@@ -93,14 +92,15 @@ export function WeekView({
                       <div
                         key={apt.id}
                         onClick={() => onAppointmentClick(apt)}
-                        className="p-1.5 rounded text-xs cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                        className="p-1 lg:p-1.5 rounded text-[10px] lg:text-xs cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
                         style={{
                           backgroundColor: `${professional?.color}20`,
-                          borderLeft: `3px solid ${professional?.color}`,
+                          borderLeft: `2px solid ${professional?.color}`,
                         }}
                       >
-                        <p className="font-medium">{apt.time}</p>
-                        <p className="truncate">{patient?.name}</p>
+                        <p className="font-medium">{apt.time.slice(0, 5)}</p>
+                        <p className="truncate hidden lg:block">{patient?.name}</p>
+                        <p className="truncate lg:hidden">{patient?.name?.split(' ')[0]?.charAt(0)}.</p>
                       </div>
                     );
                   })
