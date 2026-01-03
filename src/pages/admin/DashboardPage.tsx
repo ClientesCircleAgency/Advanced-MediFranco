@@ -7,7 +7,6 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { RevenueChart } from '@/components/admin/RevenueChart';
 import type { AppointmentStatus } from '@/types/clinic';
 
 export default function DashboardPage() {
@@ -102,9 +101,6 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Revenue Chart - Full Width */}
-      <RevenueChart />
-
       {/* Bottom Cards Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Consultas de Hoje */}
@@ -170,7 +166,7 @@ export default function DashboardPage() {
           <div className="space-y-2">
             {pendingRequests.slice(0, 5).map((req) => (
               <div key={req.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 border border-border/50">
-                <div className="w-2 h-2 rounded-full bg-chart-1 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-sans text-sm font-medium text-foreground truncate">
                     {req.name}
