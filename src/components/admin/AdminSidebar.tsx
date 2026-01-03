@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useClinic } from '@/context/ClinicContext';
 import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
+import { PlanBadge } from './PlanBadge';
 
 const navItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -60,20 +61,25 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
         !isMobile && (isCollapsed ? 'w-16' : 'w-64')
       )}
     >
-      {/* Logo */}
+      {/* Logo - DentalHub */}
       <div className="h-14 lg:h-16 flex items-center px-4 border-b border-sidebar-border">
         {isCollapsed ? (
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center mx-auto">
-            <span className="text-sm font-bold text-primary-foreground">M</span>
+            <span className="text-sm font-bold text-primary-foreground">D</span>
           </div>
         ) : (
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-              <span className="text-sm font-bold text-primary-foreground">M</span>
+              <span className="text-sm font-bold text-primary-foreground">D</span>
             </div>
-            <span className="text-lg font-bold text-foreground">MediFranco</span>
+            <span className="text-lg font-bold text-foreground">DentalHub</span>
           </div>
         )}
+      </div>
+
+      {/* Plan Badge */}
+      <div className="px-3 py-2">
+        <PlanBadge plan="advanced" collapsed={isCollapsed} />
       </div>
 
       {/* Botão Nova Consulta */}
