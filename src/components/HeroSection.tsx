@@ -39,10 +39,10 @@ export function HeroSection() {
           {/* Main Tagline */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight tracking-tight">
             Cuidamos da sua{' '}
-            <span className="text-primary">visão</span>
+            <span className="text-primary-gradient">visão</span>
             {' '}e do seu{' '}
-            <span className="text-primary">sorriso</span>
-            <span className="text-primary">.</span>
+            <span className="text-primary-gradient">sorriso</span>
+            <span className="text-primary-gradient">.</span>
           </h1>
 
           {/* Subtitle */}
@@ -70,13 +70,6 @@ export function HeroSection() {
               <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
-        </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-1">
-          <div className="w-1.5 h-3 bg-primary rounded-full animate-pulse" />
         </div>
       </div>
     </section>

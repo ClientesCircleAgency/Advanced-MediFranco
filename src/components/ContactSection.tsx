@@ -96,7 +96,7 @@ export function ContactSection() {
               <span className="text-sm font-medium text-accent-foreground">Contactos</span>
             </div>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 tracking-tight">
-              Entre em <span className="text-primary">Contacto</span>
+              Entre em <span className="text-primary-gradient">Contacto</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
               Tem alguma questão? Estamos aqui para ajudar.
