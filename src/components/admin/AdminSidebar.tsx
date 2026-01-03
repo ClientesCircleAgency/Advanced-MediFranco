@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Plus,
   LogOut,
+  Inbox,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,12 +20,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useClinic } from '@/context/ClinicContext';
+import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
 
 const navItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/admin/agenda', label: 'Agenda', icon: CalendarDays },
+  { path: '/admin/pedidos', label: 'Pedidos', icon: Inbox, badgeKey: 'requests' },
   { path: '/admin/pacientes', label: 'Pacientes', icon: Users },
-  { path: '/admin/mensagens', label: 'Mensagens', icon: MessageSquare, badge: 3 },
+  { path: '/admin/mensagens', label: 'Mensagens', icon: MessageSquare },
   { path: '/admin/sala-espera', label: 'Sala de Espera', icon: Armchair },
 ];
 
@@ -39,11 +42,13 @@ interface AdminSidebarProps {
 export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, isMobile = false }: AdminSidebarProps) {
   const location = useLocation();
   const { appointments } = useClinic();
+  const { data: requests = [] } = useAppointmentRequests();
 
   const todayDate = new Date().toISOString().split('T')[0];
   const pendingToday = appointments.filter(
     (a) => a.date === todayDate && (a.status === 'scheduled' || a.status === 'confirmed')
   ).length;
+  const pendingRequests = requests.filter(r => r.status === 'pending').length;
 
   const isCollapsed = collapsed && !isMobile;
 
@@ -103,10 +108,11 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
           const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
           const Icon = item.icon;
           const badge =
-            item.badge ? item.badge
-            : item.path === '/admin/agenda' && pendingToday > 0
-              ? pendingToday
-              : null;
+            item.badgeKey === 'requests' && pendingRequests > 0
+              ? pendingRequests
+              : item.path === '/admin/agenda' && pendingToday > 0
+                ? pendingToday
+                : null;
 
           if (isCollapsed) {
             return (

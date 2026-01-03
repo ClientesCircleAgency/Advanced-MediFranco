@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
@@ -48,12 +48,13 @@ interface AppointmentWizardProps {
   preselectedDate?: Date | null;
 }
 
-export function AppointmentWizard({
-  open,
-  onOpenChange,
-  preselectedPatient,
-  preselectedDate,
-}: AppointmentWizardProps) {
+export const AppointmentWizard = React.forwardRef<HTMLDivElement, AppointmentWizardProps>(
+  function AppointmentWizard({
+    open,
+    onOpenChange,
+    preselectedPatient,
+    preselectedDate,
+  }, ref) {
   const { toast } = useToast();
   const {
     professionals,
@@ -515,4 +516,4 @@ export function AppointmentWizard({
       </DialogContent>
     </Dialog>
   );
-}
+});

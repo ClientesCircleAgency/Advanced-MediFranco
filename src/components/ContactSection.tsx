@@ -3,8 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { ContactMessage } from '@/types';
+import { useAddContactMessage } from '@/hooks/useContactMessages';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,7 +45,7 @@ const contactInfo = [
 
 export function ContactSection() {
   const { ref, isVisible } = useIntersectionObserver({ threshold: 0.1 });
-  const [messages, setMessages] = useLocalStorage<ContactMessage[]>('medifranco_messages', []);
+  const addMessage = useAddContactMessage();
   const { toast } = useToast();
 
   const {
@@ -59,24 +58,27 @@ export function ContactSection() {
   });
 
   const onSubmit = async (data: ContactFormData) => {
-    const newMessage: ContactMessage = {
-      id: crypto.randomUUID(),
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      message: data.message,
-      status: 'new',
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      await addMessage.mutateAsync({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        message: data.message,
+      });
 
-    setMessages([...messages, newMessage]);
+      toast({
+        title: 'Mensagem enviada!',
+        description: 'Obrigado pelo seu contacto. Responderemos brevemente.',
+      });
 
-    toast({
-      title: 'Mensagem enviada!',
-      description: 'Obrigado pelo seu contacto. Responderemos brevemente.',
-    });
-
-    reset();
+      reset();
+    } catch {
+      toast({
+        title: 'Erro ao enviar',
+        description: 'Ocorreu um erro. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
