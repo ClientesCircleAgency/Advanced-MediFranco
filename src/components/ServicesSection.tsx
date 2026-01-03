@@ -62,7 +62,7 @@ export function ServicesSection() {
               <span className="text-sm font-medium text-accent-foreground">Serviços</span>
             </div>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 tracking-tight">
-              Os Nossos <span className="text-primary">Serviços</span>
+              Os Nossos <span className="text-primary-gradient">Serviços</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
               Oferecemos uma gama completa de serviços de medicina dentária e

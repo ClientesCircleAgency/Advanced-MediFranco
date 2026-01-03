@@ -112,7 +112,7 @@ export function AppointmentSection() {
               <span className="text-sm font-medium text-accent-foreground">Marcação</span>
             </div>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 tracking-tight">
-              Marque a sua <span className="text-primary">Consulta</span>
+              Marque a sua <span className="text-primary-gradient">Consulta</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
               Preencha o formulário abaixo e entraremos em contacto para confirmar

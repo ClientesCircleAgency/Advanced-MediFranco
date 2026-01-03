@@ -27,7 +27,7 @@ export function AboutSection() {
               <span className="text-sm font-medium text-accent-foreground">Sobre Nós</span>
             </div>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 tracking-tight">
-              Conheça a <span className="text-primary">MediFranco</span>
+              Conheça a <span className="text-primary-gradient">MediFranco</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
               Há mais de 15 anos a cuidar da sua saúde oral e visual, com uma equipa
@@ -54,7 +54,7 @@ export function AboutSection() {
               {/* Founders Story */}
               <div className="space-y-6">
                 <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground tracking-tight">
-                  A Nossa <span className="text-primary">História</span>
+                  A Nossa <span className="text-primary-gradient">História</span>
                 </h3>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p>
