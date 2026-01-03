@@ -1,3 +1,4 @@
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -29,7 +30,8 @@ interface NewPatientModalProps {
   onPatientCreated?: (patientId: string) => void;
 }
 
-export function NewPatientModal({ open, onOpenChange, onPatientCreated }: NewPatientModalProps) {
+export const NewPatientModal = React.forwardRef<HTMLDivElement, NewPatientModalProps>(
+  function NewPatientModal({ open, onOpenChange, onPatientCreated }, ref) {
   const { addPatient, findPatientByNif } = useClinic();
 
   const form = useForm<PatientFormData>({
@@ -224,4 +226,4 @@ export function NewPatientModal({ open, onOpenChange, onPatientCreated }: NewPat
       </DialogContent>
     </Dialog>
   );
-}
+});

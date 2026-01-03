@@ -6,8 +6,7 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { CalendarIcon, Clock, Send, Smile, Eye } from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { Appointment } from '@/types';
+import { useAddAppointmentRequest } from '@/hooks/useAppointmentRequests';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,7 +45,7 @@ const timeSlots = [
 
 export function AppointmentSection() {
   const { ref, isVisible } = useIntersectionObserver({ threshold: 0.1 });
-  const [appointments, setAppointments] = useLocalStorage<Appointment[]>('medifranco_appointments', []);
+  const addRequest = useAddAppointmentRequest();
   const [selectedDate, setSelectedDate] = useState<Date>();
   const { toast } = useToast();
 
@@ -64,28 +63,31 @@ export function AppointmentSection() {
   const watchServiceType = watch('serviceType');
 
   const onSubmit = async (data: AppointmentFormData) => {
-    const newAppointment: Appointment = {
-      id: crypto.randomUUID(),
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      nif: data.nif,
-      serviceType: data.serviceType,
-      preferredDate: data.preferredDate,
-      preferredTime: data.preferredTime,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      await addRequest.mutateAsync({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        nif: data.nif,
+        service_type: data.serviceType,
+        preferred_date: data.preferredDate,
+        preferred_time: data.preferredTime,
+      });
 
-    setAppointments([...appointments, newAppointment]);
-    
-    toast({
-      title: 'Marcação enviada!',
-      description: 'Entraremos em contacto brevemente para confirmar a sua consulta.',
-    });
+      toast({
+        title: 'Marcação enviada!',
+        description: 'Entraremos em contacto brevemente para confirmar a sua consulta.',
+      });
 
-    reset();
-    setSelectedDate(undefined);
+      reset();
+      setSelectedDate(undefined);
+    } catch {
+      toast({
+        title: 'Erro ao enviar',
+        description: 'Ocorreu um erro. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDateSelect = (date: Date | undefined) => {

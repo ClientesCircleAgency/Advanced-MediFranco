@@ -15,6 +15,7 @@ import WaitlistPage from "./pages/admin/WaitlistPage";
 import WaitingRoomPage from "./pages/admin/WaitingRoomPage";
 import MessagesPage from "./pages/admin/MessagesPage";
 import SettingsPage from "./pages/admin/SettingsPage";
+import RequestsPage from "./pages/admin/RequestsPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="agenda" element={<AgendaPage />} />
+            <Route path="pedidos" element={<RequestsPage />} />
             <Route path="pacientes" element={<PatientsPage />} />
             <Route path="pacientes/:id" element={<PatientDetailPage />} />
             <Route path="lista-espera" element={<WaitlistPage />} />
