@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { StatusBadge } from '@/components/admin/StatusBadge';
+import { RevenueChart } from '@/components/admin/RevenueChart';
 import type { AppointmentStatus } from '@/types/clinic';
 
 export default function DashboardPage() {
@@ -80,6 +81,9 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
+
+      {/* Revenue Chart - Full Width */}
+      <RevenueChart />
 
       {/* Grid de cards inferiores */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">

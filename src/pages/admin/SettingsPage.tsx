@@ -33,6 +33,7 @@ export default function SettingsPage() {
     defaultDuration: 30,
     bufferTime: 5,
     minAdvanceTime: 2,
+    averageConsultationValue: 50,
   });
 
   const [rules, setRules] = useState({

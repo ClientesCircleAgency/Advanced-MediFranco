@@ -62,20 +62,18 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
       )}
     >
       {/* Logo - MediFranco */}
-      <div className="h-14 lg:h-16 flex items-center px-4 border-b border-sidebar-border">
-        {isCollapsed ? (
-          <img 
-            src="/logo-medifranco.png" 
-            alt="MediFranco" 
-            className="h-8 w-8 object-contain mx-auto"
-          />
-        ) : (
-          <img 
-            src="/logo-medifranco.png" 
-            alt="MediFranco" 
-            className="h-10 object-contain"
-          />
-        )}
+      <div className={cn(
+        "flex items-center justify-center border-b border-sidebar-border",
+        isCollapsed ? "h-16 p-2" : "h-20 p-4"
+      )}>
+        <img 
+          src="/logo-medifranco.png" 
+          alt="MediFranco" 
+          className={cn(
+            "object-contain",
+            isCollapsed ? "h-10 w-10" : "h-14 max-w-full"
+          )}
+        />
       </div>
 
       {/* Plan Badge */}
