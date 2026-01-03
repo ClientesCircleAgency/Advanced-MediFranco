@@ -172,7 +172,7 @@ export default function AgendaPage() {
           </Tabs>
 
           <Select value={selectedProfessional} onValueChange={setSelectedProfessional}>
-            <SelectTrigger className="w-[120px] lg:w-[180px] h-8 text-xs">
+            <SelectTrigger className="w-auto min-w-[100px] max-w-[200px] h-8 text-xs">
               <SelectValue placeholder="Médico" />
             </SelectTrigger>
             <SelectContent>
@@ -181,10 +181,10 @@ export default function AgendaPage() {
                 <SelectItem key={prof.id} value={prof.id}>
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-2 h-2 rounded-full"
+                      className="w-2 h-2 rounded-full shrink-0"
                       style={{ backgroundColor: prof.color }}
                     />
-                    <span className="truncate">{prof.name.split(' ')[0]}</span>
+                    <span>{prof.name}</span>
                   </div>
                 </SelectItem>
               ))}

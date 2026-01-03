@@ -299,16 +299,17 @@ export function RevenueChart() {
               domain={['dataMin', 'dataMax']}
               axisLine={false}
               tickLine={false}
-              minTickGap={24}
+              minTickGap={50}
               interval="preserveStartEnd"
+              tickCount={activePeriod === 'day' ? 5 : activePeriod === 'week' ? 7 : activePeriod === 'month' ? 6 : 6}
               tick={{
-                fontSize: 11,
+                fontSize: 10,
                 fontFamily: 'var(--font-mono)',
                 fill: 'hsl(var(--muted-foreground))',
               }}
               tickFormatter={(value: number) => {
                 const d = new Date(value);
-                if (activePeriod === 'day') return format(d, 'HH:mm', { locale: pt });
+                if (activePeriod === 'day') return format(d, 'HH\'h\'', { locale: pt });
                 if (activePeriod === 'week') return format(d, 'EEE', { locale: pt });
                 if (activePeriod === 'month') return format(d, 'd', { locale: pt });
                 return format(d, 'MMM', { locale: pt });
