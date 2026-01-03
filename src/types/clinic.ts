@@ -3,13 +3,14 @@
 
 // Estados da consulta
 export type AppointmentStatus = 
-  | 'scheduled'    // Marcada
-  | 'confirmed'    // Confirmada
-  | 'waiting'      // Em espera (check-in feito)
-  | 'in_progress'  // Em atendimento
-  | 'completed'    // Concluída
-  | 'cancelled'    // Cancelada
-  | 'no_show';     // Não compareceu
+  | 'scheduled'      // Marcada
+  | 'pre_confirmed'  // Pré-confirmada (aguarda confirmação 24h antes)
+  | 'confirmed'      // Confirmada (cliente respondeu "Vou")
+  | 'waiting'        // Em espera (check-in feito)
+  | 'in_progress'    // Em atendimento
+  | 'completed'      // Concluída
+  | 'cancelled'      // Cancelada
+  | 'no_show';       // Não compareceu
 
 // Prioridade para lista de espera
 export type WaitlistPriority = 'low' | 'medium' | 'high';
@@ -103,6 +104,7 @@ export interface AgendaSettings {
 // Labels para estados (para UI)
 export const appointmentStatusLabels: Record<AppointmentStatus, string> = {
   scheduled: 'Marcada',
+  pre_confirmed: 'Pré-confirmada',
   confirmed: 'Confirmada',
   waiting: 'Em espera',
   in_progress: 'Em atendimento',

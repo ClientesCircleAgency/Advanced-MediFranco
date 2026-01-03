@@ -427,6 +427,62 @@ export type Database = {
           },
         ]
       }
+      whatsapp_workflows: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          id: string
+          message_payload: Json | null
+          patient_id: string
+          phone: string
+          responded_at: string | null
+          response: string | null
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+          workflow_type: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          message_payload?: Json | null
+          patient_id: string
+          phone: string
+          responded_at?: string | null
+          response?: string | null
+          scheduled_at: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          workflow_type: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          id?: string
+          message_payload?: Json | null
+          patient_id?: string
+          phone?: string
+          responded_at?: string | null
+          response?: string | null
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          workflow_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_workflows_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -450,6 +506,7 @@ export type Database = {
         | "completed"
         | "cancelled"
         | "no_show"
+        | "pre_confirmed"
       time_preference: "morning" | "afternoon" | "any"
       waitlist_priority: "low" | "medium" | "high"
     }
@@ -588,6 +645,7 @@ export const Constants = {
         "completed",
         "cancelled",
         "no_show",
+        "pre_confirmed",
       ],
       time_preference: ["morning", "afternoon", "any"],
       waitlist_priority: ["low", "medium", "high"],
