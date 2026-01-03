@@ -199,16 +199,16 @@ export default function WaitingRoomPage() {
     const newStatus = over.id as AppointmentStatus;
     if (appointment.status === newStatus) return;
 
-    // Validar transições
+    // Validar transições (permite avançar e recuar)
     const validTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
       scheduled: ['pre_confirmed', 'confirmed'],
       pre_confirmed: ['confirmed', 'cancelled'],
       confirmed: ['waiting', 'cancelled'],
-      waiting: ['in_progress', 'no_show'],
-      in_progress: ['completed'],
-      completed: [],
+      waiting: ['confirmed', 'in_progress', 'no_show'],
+      in_progress: ['waiting', 'completed'],
+      completed: ['in_progress'],
       cancelled: [],
-      no_show: [],
+      no_show: ['waiting'],
     };
 
     if (!validTransitions[appointment.status]?.includes(newStatus)) {

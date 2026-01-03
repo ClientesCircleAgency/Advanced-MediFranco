@@ -88,14 +88,14 @@ export default function DashboardPage() {
           <div className="space-y-2 lg:space-y-3">
             {todayAppointments.slice(0, 5).map((apt) => (
               <div key={apt.id} className="flex items-center gap-3 p-2.5 lg:p-3 rounded-lg bg-muted/30">
-                <div className="text-base lg:text-lg font-mono font-medium text-foreground w-12 lg:w-14 shrink-0">
-                  {apt.time}
+                <div className="text-sm font-mono font-medium text-foreground shrink-0">
+                  {apt.time.slice(0, 5)}
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 ml-2">
                   <p className="font-medium text-foreground text-xs lg:text-sm truncate">Consulta agendada</p>
                   <p className="text-xs text-muted-foreground">{apt.duration} min</p>
                 </div>
-                <Badge variant="outline" className="text-xs shrink-0">
+                <Badge variant="outline" className="text-xs shrink-0 ml-2">
                   {apt.status === 'confirmed' ? 'Confirmado' : apt.status === 'waiting' ? 'Em espera' : 'Agendado'}
                 </Badge>
               </div>
