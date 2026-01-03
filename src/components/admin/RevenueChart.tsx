@@ -1,25 +1,26 @@
 import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Euro } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useClinic } from '@/context/ClinicContext';
 import { useSettings } from '@/hooks/useSettings';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval, parseISO, subMonths, eachDayOfInterval, subDays } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts';
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 
-type Period = 'day' | 'week' | 'month' | 'year';
+type Period = 'week' | 'month' | 'year';
 
 const periodLabels: Record<Period, string> = {
-  day: 'Hoje',
-  week: 'Esta Semana',
-  month: 'Este Mês',
-  year: 'Este Ano',
+  week: 'Últimos 7 dias',
+  month: 'Últimos 30 dias',
+  year: 'Últimos 3 meses',
 };
 
 export function RevenueChart() {
@@ -33,143 +34,157 @@ export function RevenueChart() {
     return appointments.filter(a => a.status === 'completed');
   }, [appointments]);
 
-  const revenueData = useMemo(() => {
-    const today = new Date();
-    
-    const getCompletedInPeriod = (start: Date, end: Date) => {
-      return completedAppointments.filter(apt => {
-        const aptDate = parseISO(apt.date);
-        return isWithinInterval(aptDate, { start, end });
-      }).length;
-    };
-
-    // Today
-    const dayCount = completedAppointments.filter(apt => apt.date === format(today, 'yyyy-MM-dd')).length;
-    
-    // This week
-    const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-    const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
-    const weekCount = getCompletedInPeriod(weekStart, weekEnd);
-    
-    // This month
-    const monthStart = startOfMonth(today);
-    const monthEnd = endOfMonth(today);
-    const monthCount = getCompletedInPeriod(monthStart, monthEnd);
-    
-    // This year
-    const yearStart = startOfYear(today);
-    const yearEnd = endOfYear(today);
-    const yearCount = getCompletedInPeriod(yearStart, yearEnd);
-
-    return {
-      day: { count: dayCount, revenue: dayCount * averageValue },
-      week: { count: weekCount, revenue: weekCount * averageValue },
-      month: { count: monthCount, revenue: monthCount * averageValue },
-      year: { count: yearCount, revenue: yearCount * averageValue },
-    };
-  }, [completedAppointments, averageValue]);
-
   const chartData = useMemo(() => {
-    return [
-      { name: 'Hoje', value: revenueData.day.revenue, fill: 'hsl(var(--primary))' },
-      { name: 'Semana', value: revenueData.week.revenue, fill: 'hsl(var(--primary) / 0.8)' },
-      { name: 'Mês', value: revenueData.month.revenue, fill: 'hsl(var(--primary) / 0.6)' },
-      { name: 'Ano', value: revenueData.year.revenue, fill: 'hsl(var(--primary) / 0.4)' },
-    ];
-  }, [revenueData]);
+    const today = new Date();
+    let days: Date[] = [];
 
-  const chartConfig = {
-    value: {
-      label: 'Faturação',
-      color: 'hsl(var(--primary))',
-    },
-  };
+    if (activePeriod === 'week') {
+      days = eachDayOfInterval({ start: subDays(today, 6), end: today });
+    } else if (activePeriod === 'month') {
+      days = eachDayOfInterval({ start: subDays(today, 29), end: today });
+    } else {
+      days = eachDayOfInterval({ start: subMonths(today, 3), end: today });
+    }
 
-  const activeData = revenueData[activePeriod];
+    return days.map(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const count = completedAppointments.filter(apt => apt.date === dateStr).length;
+      return {
+        date: format(day, activePeriod === 'year' ? 'dd MMM' : 'dd', { locale: pt }),
+        revenue: count * averageValue,
+        count,
+      };
+    });
+  }, [completedAppointments, averageValue, activePeriod]);
+
+  const totalRevenue = useMemo(() => {
+    return chartData.reduce((sum, d) => sum + d.revenue, 0);
+  }, [chartData]);
+
+  const previousPeriodRevenue = useMemo(() => {
+    const today = new Date();
+    let start: Date, end: Date;
+
+    if (activePeriod === 'week') {
+      end = subDays(today, 7);
+      start = subDays(today, 13);
+    } else if (activePeriod === 'month') {
+      end = subDays(today, 30);
+      start = subDays(today, 59);
+    } else {
+      end = subMonths(today, 3);
+      start = subMonths(today, 6);
+    }
+
+    const prevDays = eachDayOfInterval({ start, end });
+    return prevDays.reduce((sum, day) => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const count = completedAppointments.filter(apt => apt.date === dateStr).length;
+      return sum + count * averageValue;
+    }, 0);
+  }, [completedAppointments, averageValue, activePeriod]);
+
+  const percentageChange = previousPeriodRevenue > 0
+    ? ((totalRevenue - previousPeriodRevenue) / previousPeriodRevenue) * 100
+    : totalRevenue > 0 ? 100 : 0;
+
+  const isPositive = percentageChange >= 0;
 
   return (
-    <Card className="p-4 lg:p-5 bg-card border-border">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
-            <Euro className="h-5 w-5 text-green-600" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground text-sm lg:text-base">Faturação Estimada</h3>
-            <p className="text-xs text-muted-foreground">Baseado em {averageValue}€/consulta</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 text-green-600">
-          <TrendingUp className="h-4 w-4" />
-        </div>
-      </div>
-
-      {/* Period Toggle */}
-      <div className="flex gap-1 p-1 bg-muted rounded-lg mb-4">
-        {(Object.keys(periodLabels) as Period[]).map((period) => (
-          <Button
-            key={period}
-            variant="ghost"
-            size="sm"
-            onClick={() => setActivePeriod(period)}
-            className={`flex-1 text-xs ${
-              activePeriod === period
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {periodLabels[period]}
-          </Button>
-        ))}
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="p-3 rounded-xl bg-muted/50">
-          <p className="text-2xl lg:text-3xl font-bold text-foreground">
-            {activeData.revenue.toLocaleString('pt-PT')}€
+    <Card className="p-5 lg:p-6 bg-card border-border shadow-md">
+      {/* Header */}
+      <div className="flex items-start justify-between mb-1">
+        <div>
+          <p className="text-sm text-muted-foreground font-medium">Faturação Total</p>
+          <p className="text-3xl lg:text-4xl font-bold text-foreground mt-1">
+            {totalRevenue.toLocaleString('pt-PT')}€
           </p>
-          <p className="text-xs text-muted-foreground">{periodLabels[activePeriod]}</p>
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className={`inline-flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded ${
+              isPositive 
+                ? 'bg-accent text-primary' 
+                : 'bg-destructive/10 text-destructive'
+            }`}>
+              {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              {isPositive ? '+' : ''}{percentageChange.toFixed(1)}%
+            </span>
+            <span className="text-xs text-muted-foreground">
+              vs período anterior
+            </span>
+          </div>
         </div>
-        <div className="p-3 rounded-xl bg-muted/50">
-          <p className="text-2xl lg:text-3xl font-bold text-foreground">
-            {activeData.count}
-          </p>
-          <p className="text-xs text-muted-foreground">Consultas concluídas</p>
+
+        {/* Period Toggle */}
+        <div className="flex gap-1 p-0.5 bg-secondary rounded-lg">
+          {(Object.keys(periodLabels) as Period[]).map((period) => (
+            <Button
+              key={period}
+              variant="ghost"
+              size="sm"
+              onClick={() => setActivePeriod(period)}
+              className={`text-xs px-3 py-1.5 h-auto ${
+                activePeriod === period
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+              }`}
+            >
+              {period === 'week' ? '7 dias' : period === 'month' ? '30 dias' : '3 meses'}
+            </Button>
+          ))}
         </div>
       </div>
 
       {/* Chart */}
-      <div className="h-40">
-        <ChartContainer config={chartConfig} className="h-full w-full">
-          <BarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11 }}
-              className="text-muted-foreground"
+      <div className="h-48 mt-6">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
+            <XAxis
+              dataKey="date"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
+              tickMargin={10}
+              interval={activePeriod === 'week' ? 0 : activePeriod === 'month' ? 4 : 10}
             />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11 }}
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }}
               tickFormatter={(value) => `${value}€`}
-              className="text-muted-foreground"
-              width={45}
+              width={50}
             />
-            <ChartTooltip 
-              content={<ChartTooltipContent />}
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)',
+                boxShadow: 'var(--shadow-md)',
+              }}
+              labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
               formatter={(value: number) => [`${value.toLocaleString('pt-PT')}€`, 'Faturação']}
             />
-            <Bar 
-              dataKey="value" 
-              radius={[6, 6, 0, 0]}
-              maxBarSize={50}
+            <Area
+              type="monotone"
+              dataKey="revenue"
+              stroke="var(--chart-1)"
+              strokeWidth={2.5}
+              fill="url(#revenueGradient)"
+              dot={{ r: 0 }}
+              activeDot={{
+                r: 5,
+                fill: 'var(--chart-1)',
+                stroke: 'var(--card)',
+                strokeWidth: 2,
+              }}
             />
-          </BarChart>
-        </ChartContainer>
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     </Card>
   );
