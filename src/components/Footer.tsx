@@ -12,7 +12,7 @@ export function Footer() {
           {/* Logo & Social */}
           <div className="space-y-6 text-center md:text-left">
             <div className="flex justify-center md:justify-start">
-              <img src={logo} alt="MediFranco" className="h-14 w-auto brightness-0 invert" />
+              <img src={logo} alt="MediFranco" className="h-28 w-auto brightness-0 invert" />
             </div>
             <p className="text-background/70 text-sm hidden md:block leading-relaxed">
               Cuidamos da sua visão e do seu sorriso há mais de 15 anos, com dedicação e tecnologia de ponta.

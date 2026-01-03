@@ -49,7 +49,7 @@ export function Header() {
 
           {/* Logo */}
           <a href="#hero" className="flex items-center absolute left-1/2 -translate-x-1/2 md:relative md:left-0 md:translate-x-0">
-            <img src={logo} alt="MediFranco" className="h-10 md:h-12 w-auto" />
+            <img src={logo} alt="MediFranco" className="h-20 md:h-24 w-auto" />
           </a>
 
           {/* Desktop Navigation */}

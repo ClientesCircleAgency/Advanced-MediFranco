@@ -33,7 +33,7 @@ export function HeroSection() {
           <img
             src={logo}
             alt="MediFranco"
-            className="h-24 md:h-32 lg:h-40 w-auto mx-auto mb-8 drop-shadow-lg"
+            className="h-48 md:h-64 lg:h-80 w-auto mx-auto mb-8 drop-shadow-lg"
           />
 
           {/* Main Tagline */}
