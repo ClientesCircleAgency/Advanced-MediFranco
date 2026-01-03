@@ -61,7 +61,7 @@ export function ServicesSection() {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-full mb-4">
               <span className="text-sm font-medium text-accent-foreground">Serviços</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 tracking-tight">
               Os Nossos <span className="text-primary">Serviços</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
