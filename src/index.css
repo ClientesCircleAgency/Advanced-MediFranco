@@ -46,14 +46,14 @@
     --chart-4: 162.9166 93.3500% 24.3358%;
     --chart-5: 163.1561 88.2586% 19.7900%;
 
-    /* Sidebar */
-    --sidebar-background: 220 25% 94%;
+    /* Sidebar - Lighter background */
+    --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 216.9230 19.1072% 26.6630%;
     --sidebar-primary: 142.0873 70.5712% 45.2882%;
     --sidebar-primary-foreground: 300 50% 100.0000%;
-    --sidebar-accent: 149.2666 80.3963% 90.0088%;
+    --sidebar-accent: 149.2666 60% 94%;
     --sidebar-accent-foreground: 216.9230 19.1072% 26.6630%;
-    --sidebar-border: 220.0000 13.0150% 90.9817%;
+    --sidebar-border: 220.0000 13.0150% 94%;
     --sidebar-ring: 142.0873 70.5712% 45.2882%;
 
     /* Fonts */
@@ -79,7 +79,7 @@
     --status-completed: 220 70% 50%;
     --status-cancelled: 0 84% 60%;
     --status-no-show: 220 10% 50%;
-    --sidebar: 204.0003 93.5907% 93.7231%;
+    --sidebar: 0 0% 99%;
     --tracking-normal: 0em;
     --spacing: 0.25rem;
     --shadow-x: 0px;
