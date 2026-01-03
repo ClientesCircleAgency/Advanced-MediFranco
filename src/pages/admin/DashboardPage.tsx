@@ -1,5 +1,4 @@
 import { CalendarDays, Users, TrendingUp, Clock, Inbox, ArrowUpRight } from 'lucide-react';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useClinic } from '@/context/ClinicContext';
 import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
@@ -20,10 +19,10 @@ export default function DashboardPage() {
   const currentDate = format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: pt });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Sophisticated Header */}
-      <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-        <p className="font-serif italic text-foreground text-xl lg:text-2xl">
+      <div className="bg-card border border-border rounded-xl p-4 lg:p-6 shadow-sm">
+        <p className="font-serif italic text-foreground text-lg lg:text-2xl">
           Bem-vindo de volta, Dr. Franco
         </p>
         <p className="font-mono text-xs text-muted-foreground mt-1 uppercase tracking-wide">
@@ -31,105 +30,105 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* HUD-style KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* HUD-style KPI Cards - 2 cols mobile, 4 cols desktop */}
+      <div className="grid grid-cols-2 gap-3 lg:gap-4">
         {/* Consultas Hoje */}
-        <Card className="p-5 bg-card border border-border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-          <div className="absolute top-4 right-4">
-            <CalendarDays className="h-5 w-5 text-muted-foreground" />
+        <div className="bg-card border border-border rounded-xl p-4 lg:p-5 shadow-sm relative overflow-hidden">
+          <div className="absolute top-3 right-3 lg:top-4 lg:right-4">
+            <CalendarDays className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground" />
           </div>
-          <div className="space-y-2">
-            <p className="font-mono text-4xl lg:text-5xl font-semibold text-primary tracking-tight">
+          <div className="space-y-1">
+            <p className="font-mono text-2xl lg:text-4xl font-semibold text-primary tracking-tight">
               {todayAppointments.length}
             </p>
-            <p className="text-sm font-sans font-medium text-foreground">
+            <p className="text-xs lg:text-sm font-medium text-foreground">
               Consultas Hoje
             </p>
           </div>
-        </Card>
+        </div>
 
         {/* Pedidos Pendentes */}
         <Link to="/admin/pedidos" className="block">
-          <Card className="p-5 bg-card border border-primary/30 shadow-sm relative overflow-hidden group hover:shadow-md transition-all cursor-pointer h-full">
-            <div className="absolute top-4 right-4 flex items-center gap-2">
+          <div className="bg-card border border-primary/30 rounded-xl p-4 lg:p-5 shadow-sm relative overflow-hidden h-full">
+            <div className="absolute top-3 right-3 lg:top-4 lg:right-4 flex items-center gap-1">
               {pendingRequests.length > 0 && (
-                <Badge className="bg-destructive text-destructive-foreground text-xs px-2 py-0.5">
+                <Badge className="bg-destructive text-destructive-foreground text-[10px] lg:text-xs px-1.5 py-0">
                   Novo
                 </Badge>
               )}
-              <Inbox className="h-5 w-5 text-primary" />
+              <Inbox className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
             </div>
-            <div className="space-y-2">
-              <p className="font-mono text-4xl lg:text-5xl font-semibold text-primary tracking-tight">
+            <div className="space-y-1">
+              <p className="font-mono text-2xl lg:text-4xl font-semibold text-primary tracking-tight">
                 {pendingRequests.length}
               </p>
-              <p className="text-sm font-sans font-medium text-foreground">
-                Pedidos Pendentes
+              <p className="text-xs lg:text-sm font-medium text-foreground">
+                Pedidos
               </p>
             </div>
-          </Card>
+          </div>
         </Link>
 
         {/* Pacientes Registados */}
-        <Card className="p-5 bg-card border border-border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-          <div className="absolute top-4 right-4">
-            <Users className="h-5 w-5 text-muted-foreground" />
+        <div className="bg-card border border-border rounded-xl p-4 lg:p-5 shadow-sm relative overflow-hidden">
+          <div className="absolute top-3 right-3 lg:top-4 lg:right-4">
+            <Users className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground" />
           </div>
-          <div className="space-y-2">
-            <p className="font-mono text-4xl lg:text-5xl font-semibold text-foreground tracking-tight">
+          <div className="space-y-1">
+            <p className="font-mono text-2xl lg:text-4xl font-semibold text-foreground tracking-tight">
               {patients.length}
             </p>
-            <p className="text-sm font-sans font-medium text-foreground">
-              Pacientes Registados
+            <p className="text-xs lg:text-sm font-medium text-foreground">
+              Pacientes
             </p>
           </div>
-        </Card>
+        </div>
 
         {/* Total Consultas */}
-        <Card className="p-5 bg-card border border-border shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-          <div className="absolute top-4 right-4">
-            <TrendingUp className="h-5 w-5 text-muted-foreground" />
+        <div className="bg-card border border-border rounded-xl p-4 lg:p-5 shadow-sm relative overflow-hidden">
+          <div className="absolute top-3 right-3 lg:top-4 lg:right-4">
+            <TrendingUp className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground" />
           </div>
-          <div className="space-y-2">
-            <p className="font-mono text-4xl lg:text-5xl font-semibold text-foreground tracking-tight">
+          <div className="space-y-1">
+            <p className="font-mono text-2xl lg:text-4xl font-semibold text-foreground tracking-tight">
               {appointments.length}
             </p>
-            <p className="text-sm font-sans font-medium text-foreground">
-              Total Consultas
+            <p className="text-xs lg:text-sm font-medium text-foreground">
+              Total
             </p>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Bottom Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-4 lg:gap-6">
         {/* Consultas de Hoje */}
-        <Card className="p-5 bg-card border border-border shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-4 lg:p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
-                <Clock className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 lg:gap-3">
+              <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-lg bg-accent flex items-center justify-center">
+                <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
               </div>
-              <h3 className="font-sans font-semibold text-foreground">
+              <h3 className="font-medium text-sm lg:text-base text-foreground">
                 Consultas de Hoje
               </h3>
             </div>
             <Link to="/admin/agenda" className="text-xs text-primary hover:underline flex items-center gap-1">
-              Ver agenda
+              Ver
               <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="space-y-2">
-            {todayAppointments.slice(0, 5).map((apt) => (
-              <div key={apt.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 border border-border/50">
-                <div className="font-mono text-sm font-medium text-primary shrink-0 w-12">
+            {todayAppointments.slice(0, 4).map((apt) => (
+              <div key={apt.id} className="flex items-center gap-3 p-2.5 lg:p-3 rounded-lg bg-muted/50 border border-border/50">
+                <div className="font-mono text-xs lg:text-sm font-medium text-primary shrink-0 w-10 lg:w-12">
                   {apt.time.slice(0, 5)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-sans font-medium text-foreground text-sm truncate">
-                    Consulta agendada
+                  <p className="font-medium text-foreground text-xs lg:text-sm truncate">
+                    Consulta
                   </p>
-                  <p className="font-mono text-xs text-muted-foreground">
+                  <p className="font-mono text-[10px] lg:text-xs text-muted-foreground">
                     {apt.duration} min
                   </p>
                 </div>
@@ -137,59 +136,59 @@ export default function DashboardPage() {
               </div>
             ))}
             {todayAppointments.length === 0 && (
-              <div className="py-8 text-center bg-muted/30 rounded-lg border border-border/50">
-                <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm font-sans">
-                  Nenhuma consulta agendada para hoje
+              <div className="py-6 lg:py-8 text-center bg-muted/30 rounded-lg border border-border/50">
+                <Clock className="h-6 w-6 lg:h-8 lg:w-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-xs lg:text-sm">
+                  Nenhuma consulta para hoje
                 </p>
               </div>
             )}
           </div>
-        </Card>
+        </div>
 
         {/* Pedidos Recentes */}
-        <Card className="p-5 bg-card border border-border shadow-sm">
+        <div className="bg-card border border-border rounded-xl p-4 lg:p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
-                <Inbox className="h-5 w-5 text-primary" />
+            <div className="flex items-center gap-2 lg:gap-3">
+              <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-lg bg-accent flex items-center justify-center">
+                <Inbox className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
               </div>
-              <h3 className="font-sans font-semibold text-foreground">
+              <h3 className="font-medium text-sm lg:text-base text-foreground">
                 Pedidos Recentes
               </h3>
             </div>
             <Link to="/admin/pedidos" className="text-xs text-primary hover:underline flex items-center gap-1">
-              Ver todos
+              Ver
               <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="space-y-2">
-            {pendingRequests.slice(0, 5).map((req) => (
-              <div key={req.id} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 border border-border/50">
+            {pendingRequests.slice(0, 4).map((req) => (
+              <div key={req.id} className="flex items-center gap-3 p-2.5 lg:p-3 rounded-lg bg-muted/50 border border-border/50">
                 <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="font-sans text-sm font-medium text-foreground truncate">
+                  <p className="text-xs lg:text-sm font-medium text-foreground truncate">
                     {req.name}
                   </p>
-                  <p className="font-mono text-xs text-muted-foreground">
-                    {req.service_type === 'oftalmologia' ? 'Oftalmologia' : 'Dentária'} • {format(new Date(req.preferred_date), "d MMM", { locale: pt })}
+                  <p className="font-mono text-[10px] lg:text-xs text-muted-foreground">
+                    {req.service_type === 'oftalmologia' ? 'Oftalmo' : 'Dentária'} • {format(new Date(req.preferred_date), "d MMM", { locale: pt })}
                   </p>
                 </div>
-                <Badge variant="secondary" className="shrink-0 font-mono text-xs">
+                <Badge variant="secondary" className="shrink-0 font-mono text-[10px] lg:text-xs px-1.5">
                   Pendente
                 </Badge>
               </div>
             ))}
             {pendingRequests.length === 0 && (
-              <div className="py-8 text-center bg-muted/30 rounded-lg border border-border/50">
-                <Inbox className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-sm font-sans">
+              <div className="py-6 lg:py-8 text-center bg-muted/30 rounded-lg border border-border/50">
+                <Inbox className="h-6 w-6 lg:h-8 lg:w-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-xs lg:text-sm">
                   Nenhum pedido pendente
                 </p>
               </div>
             )}
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

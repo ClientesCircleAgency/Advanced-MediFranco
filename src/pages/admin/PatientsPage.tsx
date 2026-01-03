@@ -62,107 +62,136 @@ export default function PatientsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Barra de pesquisa e filtros */}
-      <div className="flex items-center gap-4">
+    <div className="space-y-4">
+      {/* Barra de pesquisa - Full width mobile */}
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Pesquisar por nome, telemóvel ou email..."
+            placeholder="Pesquisar paciente..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-11 h-12 bg-card border-border rounded-xl"
+            className="pl-10 h-10 bg-card border-border rounded-xl text-sm"
           />
         </div>
-        <Button variant="outline" className="gap-2 h-12 px-5">
+        <Button variant="outline" size="sm" className="gap-2 h-10 shrink-0">
           <Filter className="h-4 w-4" />
-          Filtros
+          <span className="hidden sm:inline">Filtros</span>
         </Button>
       </div>
 
-      {/* Área de conteúdo */}
-      <div className="bg-card border border-border rounded-2xl min-h-[400px]">
+      {/* Lista de Pacientes - Cards em mobile, tabela em desktop */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
         {filteredPatients.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Users className="h-8 w-8 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center py-12 lg:py-20">
+            <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Users className="h-6 w-6 lg:h-8 lg:w-8 text-muted-foreground" />
             </div>
-            <h3 className="font-semibold text-foreground mb-1">Base de Pacientes</h3>
-            <p className="text-sm text-muted-foreground">
-              {search ? `Nenhum resultado para "${search}"` : 'A sua lista está sincronizada. Comece a digitar para encontrar fichas.'}
+            <h3 className="font-semibold text-foreground text-sm lg:text-base mb-1">Base de Pacientes</h3>
+            <p className="text-xs lg:text-sm text-muted-foreground text-center px-4">
+              {search ? `Nenhum resultado para "${search}"` : 'Comece a digitar para encontrar fichas.'}
             </p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="font-semibold">Nome</TableHead>
-                <TableHead className="font-semibold">NIF</TableHead>
-                <TableHead className="font-semibold">Contacto</TableHead>
-                <TableHead className="font-semibold">Última Consulta</TableHead>
-                <TableHead className="font-semibold">Próxima Consulta</TableHead>
-                <TableHead className="text-right font-semibold">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+          <>
+            {/* Mobile View - Cards */}
+            <div className="lg:hidden divide-y divide-border">
               {filteredPatients.map((patient) => {
                 const { last, next } = getPatientAppointments(patient.id);
                 return (
-                  <TableRow
+                  <div
                     key={patient.id}
-                    className="cursor-pointer hover:bg-accent/30 transition-colors"
+                    className="p-3 active:bg-accent/50 cursor-pointer"
                     onClick={() => navigate(`/admin/pacientes/${patient.id}`)}
                   >
-                    <TableCell className="font-medium text-foreground">{patient.name}</TableCell>
-                    <TableCell className="font-mono text-muted-foreground">{patient.nif}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {patient.phone}
-                        </span>
-                        {patient.email && (
-                          <span className="flex items-center gap-1 truncate max-w-32">
-                            <Mail className="h-3 w-3" />
-                            {patient.email}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {last ? (
-                        <span className="text-muted-foreground">
-                          {format(new Date(last.date), 'dd/MM/yyyy', { locale: pt })}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {next ? (
-                        <span className="text-primary font-medium">
-                          {format(new Date(next.date), 'dd/MM/yyyy', { locale: pt })}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="font-medium text-foreground text-sm">{patient.name}</p>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         onClick={(e) => handleNewAppointment(patient, e)}
-                        className="gap-1"
+                        className="h-7 w-7 p-0"
                       >
-                        <Plus className="h-3 w-3" />
-                        Consulta
+                        <Plus className="h-4 w-4" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span className="font-mono">{patient.nif}</span>
+                      <span className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {patient.phone}
+                      </span>
+                    </div>
+                    {next && (
+                      <p className="text-xs text-primary mt-1.5">
+                        Próx: {format(new Date(next.date), 'dd/MM', { locale: pt })}
+                      </p>
+                    )}
+                  </div>
                 );
               })}
-            </TableBody>
-          </Table>
+            </div>
+
+            {/* Desktop View - Table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="font-semibold">Nome</TableHead>
+                    <TableHead className="font-semibold">NIF</TableHead>
+                    <TableHead className="font-semibold">Contacto</TableHead>
+                    <TableHead className="font-semibold">Última</TableHead>
+                    <TableHead className="font-semibold">Próxima</TableHead>
+                    <TableHead className="text-right font-semibold">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredPatients.map((patient) => {
+                    const { last, next } = getPatientAppointments(patient.id);
+                    return (
+                      <TableRow
+                        key={patient.id}
+                        className="cursor-pointer hover:bg-accent/30 transition-colors"
+                        onClick={() => navigate(`/admin/pacientes/${patient.id}`)}
+                      >
+                        <TableCell className="font-medium text-foreground">{patient.name}</TableCell>
+                        <TableCell className="font-mono text-muted-foreground text-sm">{patient.nif}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            {patient.phone}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {last ? format(new Date(last.date), 'dd/MM/yy', { locale: pt }) : '—'}
+                        </TableCell>
+                        <TableCell>
+                          {next ? (
+                            <span className="text-primary font-medium text-sm">
+                              {format(new Date(next.date), 'dd/MM/yy', { locale: pt })}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => handleNewAppointment(patient, e)}
+                            className="gap-1 h-8"
+                          >
+                            <Plus className="h-3 w-3" />
+                            Consulta
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         )}
       </div>
 
