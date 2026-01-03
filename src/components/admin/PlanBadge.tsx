@@ -47,7 +47,7 @@ export function PlanBadge({ plan, collapsed = false }: PlanBadgeProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
-            to="/admin/configuracoes?tab=plano"
+            to="/admin/plano"
             className={cn(
               'flex items-center justify-center w-10 h-10 rounded-xl border transition-all hover:scale-105',
               config.bgColor,
@@ -68,7 +68,7 @@ export function PlanBadge({ plan, collapsed = false }: PlanBadgeProps) {
 
   return (
     <Link
-      to="/admin/configuracoes?tab=plano"
+      to="/admin/plano"
       className={cn(
         'flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all hover:scale-[1.02]',
         config.bgColor,

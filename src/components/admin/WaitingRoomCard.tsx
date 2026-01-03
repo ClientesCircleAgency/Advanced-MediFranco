@@ -1,6 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Clock } from 'lucide-react';
+import { GripVertical, Clock, User } from 'lucide-react';
 import type { AppointmentRow, PatientRow, ProfessionalRow, ConsultationTypeRow } from '@/types/database';
 import { cn } from '@/lib/utils';
 
@@ -27,7 +27,7 @@ export function WaitingRoomCard({
 
   const style = {
     transform: CSS.Translate.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 100 : 'auto',
   };
 
   return (
@@ -35,35 +35,67 @@ export function WaitingRoomCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'bg-card border border-border rounded-xl p-4 transition-all cursor-grab active:cursor-grabbing',
-        isDragging ? 'shadow-xl ring-2 ring-primary/50 scale-105' : 'hover:shadow-md hover:border-primary/30'
+        'group relative bg-card rounded-xl border transition-all duration-200',
+        isDragging 
+          ? 'shadow-2xl ring-2 ring-primary/50 scale-[1.02] opacity-95' 
+          : 'hover:shadow-lg hover:border-primary/30 border-border',
+        'cursor-grab active:cursor-grabbing'
       )}
     >
-      <div className="flex items-start gap-3">
-        <div
-          {...attributes}
-          {...listeners}
-          className="mt-1 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <GripVertical className="h-4 w-4" />
-        </div>
-        <div 
-          className="w-1 h-12 rounded-full shrink-0"
-          style={{ backgroundColor: professional?.color || '#94a3b8' }}
-        />
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-foreground truncate">
-            {patient?.name || 'Paciente desconhecido'}
-          </p>
-          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            <span>{appointment.time}</span>
-            <span>•</span>
-            <span className="truncate">{consultationType?.name || 'Consulta'}</span>
+      {/* Colored top bar */}
+      <div 
+        className="absolute top-0 left-0 right-0 h-1 rounded-t-xl"
+        style={{ backgroundColor: professional?.color || '#94a3b8' }}
+      />
+      
+      <div className="p-4 pt-3">
+        <div className="flex items-start gap-3">
+          {/* Drag handle */}
+          <div
+            {...attributes}
+            {...listeners}
+            className={cn(
+              'mt-0.5 p-1.5 rounded-lg transition-all',
+              'text-muted-foreground/50 hover:text-muted-foreground',
+              'hover:bg-muted group-hover:text-muted-foreground',
+              isDragging && 'text-primary bg-primary/10'
+            )}
+          >
+            <GripVertical className="h-4 w-4" />
           </div>
-          <p className="text-xs text-muted-foreground mt-1 truncate">
-            {professional?.name || 'Profissional'}
-          </p>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0 space-y-2">
+            {/* Patient name */}
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0">
+                <User className="h-3.5 w-3.5 text-muted-foreground" />
+              </div>
+              <p className="font-semibold text-foreground truncate text-sm">
+                {patient?.name || 'Paciente desconhecido'}
+              </p>
+            </div>
+
+            {/* Time and type */}
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+                <Clock className="h-3 w-3" />
+                <span className="font-medium">{appointment.time.slice(0, 5)}</span>
+              </div>
+              <span className="truncate">{consultationType?.name || 'Consulta'}</span>
+            </div>
+
+            {/* Professional */}
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{ backgroundColor: professional?.color || '#94a3b8' }}
+              />
+              <p className="text-xs text-muted-foreground truncate">
+                {professional?.name || 'Profissional'}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

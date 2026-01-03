@@ -1,5 +1,4 @@
-import { CalendarDays, Euro, Star, RefreshCw, Send, Inbox } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { CalendarDays, Star, RefreshCw, Inbox } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useClinic } from '@/context/ClinicContext';
@@ -7,6 +6,8 @@ import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import { StatusBadge } from '@/components/admin/StatusBadge';
+import type { AppointmentStatus } from '@/types/clinic';
 
 export default function DashboardPage() {
   const { appointments, patients } = useClinic();
@@ -95,9 +96,7 @@ export default function DashboardPage() {
                   <p className="font-medium text-foreground text-xs lg:text-sm truncate">Consulta agendada</p>
                   <p className="text-xs text-muted-foreground">{apt.duration} min</p>
                 </div>
-                <Badge variant="outline" className="text-xs shrink-0 ml-2">
-                  {apt.status === 'confirmed' ? 'Confirmado' : apt.status === 'waiting' ? 'Em espera' : 'Agendado'}
-                </Badge>
+                <StatusBadge status={apt.status as AppointmentStatus} size="sm" className="shrink-0 ml-2" />
               </div>
             ))}
             {todayAppointments.length === 0 && (
