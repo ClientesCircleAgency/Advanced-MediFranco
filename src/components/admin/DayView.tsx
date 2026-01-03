@@ -26,13 +26,13 @@ interface DayViewProps {
 // Status display configuration
 const statusConfig: Record<string, { label: string; shortLabel: string; bgClass: string; textClass: string; showDoubleCheck?: boolean }> = {
   scheduled: { label: 'Enviado', shortLabel: 'Env.', bgClass: 'bg-card', textClass: 'text-muted-foreground' },
-  pre_confirmed: { label: 'Pré-confirmado', shortLabel: 'Pré-conf.', bgClass: 'bg-amber-50', textClass: 'text-amber-600' },
+  pre_confirmed: { label: 'Pré-confirmado', shortLabel: 'Pré', bgClass: 'bg-amber-50', textClass: 'text-amber-600' },
   confirmed: { label: 'Confirmado', shortLabel: 'Conf.', bgClass: 'bg-primary/5', textClass: 'text-primary', showDoubleCheck: true },
-  waiting: { label: 'Em espera', shortLabel: 'Espera', bgClass: 'bg-yellow-50', textClass: 'text-yellow-700' },
-  in_progress: { label: 'Em atendimento', shortLabel: 'Atend.', bgClass: 'bg-orange-50', textClass: 'text-orange-700' },
+  waiting: { label: 'Em espera', shortLabel: 'Esp.', bgClass: 'bg-yellow-50', textClass: 'text-yellow-700' },
+  in_progress: { label: 'Em atendimento', shortLabel: 'At.', bgClass: 'bg-orange-50', textClass: 'text-orange-700' },
   completed: { label: 'Concluída', shortLabel: 'Concl.', bgClass: 'bg-muted/50', textClass: 'text-muted-foreground' },
   cancelled: { label: 'Cancelada', shortLabel: 'Canc.', bgClass: 'bg-destructive/5', textClass: 'text-destructive' },
-  no_show: { label: 'Faltou', shortLabel: 'Faltou', bgClass: 'bg-destructive/5', textClass: 'text-destructive' },
+  no_show: { label: 'Faltou', shortLabel: 'Falt.', bgClass: 'bg-destructive/5', textClass: 'text-destructive' },
 };
 
 export function DayView({ appointments, onAppointmentClick }: DayViewProps) {
@@ -71,7 +71,7 @@ export function DayView({ appointments, onAppointmentClick }: DayViewProps) {
   }, [appointments]);
 
   return (
-    <div className="bg-card border border-border rounded-2xl overflow-hidden">
+    <div className="bg-card border border-border rounded-xl lg:rounded-2xl overflow-hidden">
       {TIME_SLOTS.map((slot) => {
         const occupancy = slotOccupancy[slot];
         
@@ -87,55 +87,55 @@ export function DayView({ appointments, onAppointmentClick }: DayViewProps) {
         const slotSpan = apt ? getAppointmentSlotSpan(apt) : 1;
         const status = apt ? statusConfig[apt.status] || statusConfig.scheduled : null;
         
-        // Calculate row height based on span (smaller on mobile)
-        const rowHeight = slotSpan > 1 ? `${slotSpan * 56}px` : undefined;
+        // Calculate row height based on span
+        const rowHeight = slotSpan > 1 ? `${slotSpan * 48}px` : undefined;
         
         return (
           <div
             key={slot}
             className="flex items-stretch border-b border-border/50 last:border-b-0"
-            style={rowHeight ? { minHeight: rowHeight } : { minHeight: '56px' }}
+            style={rowHeight ? { minHeight: rowHeight } : { minHeight: '48px' }}
           >
-            {/* Time column - narrower on mobile */}
-            <div className="w-12 sm:w-16 lg:w-20 shrink-0 flex items-start justify-end pr-2 sm:pr-4 py-3 sm:py-4 text-muted-foreground text-xs sm:text-sm font-medium">
+            {/* Time column - compact on mobile */}
+            <div className="w-10 lg:w-16 shrink-0 flex items-start justify-end pr-1.5 lg:pr-3 py-2.5 lg:py-3 text-muted-foreground text-[11px] lg:text-sm font-medium">
               {slot}
             </div>
 
             {/* Appointment area */}
-            <div className="flex-1 py-1.5 sm:py-2 pr-2 sm:pr-4">
+            <div className="flex-1 py-1 lg:py-1.5 pr-2 lg:pr-3">
               {apt && status ? (
                 <div
                   onClick={() => onAppointmentClick(apt)}
                   className={cn(
-                    'h-full flex flex-col sm:flex-row sm:items-center sm:justify-between px-3 sm:px-4 py-2 sm:py-3 rounded-xl cursor-pointer transition-all hover:shadow-md border-l-4',
+                    'h-full flex items-center justify-between px-2 lg:px-3 py-1.5 lg:py-2 rounded-lg lg:rounded-xl cursor-pointer transition-all hover:shadow-md border-l-[3px]',
                     status.bgClass
                   )}
                   style={{
                     borderLeftColor: professional?.color || 'hsl(var(--primary))',
                   }}
                 >
-                  {/* Patient info */}
+                  {/* Patient info - stacked on mobile */}
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-foreground text-sm sm:text-base truncate">
+                    <p className="font-semibold text-foreground text-xs lg:text-sm truncate">
                       {patient?.name || 'Paciente'}
                     </p>
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                      {type?.name} • {professional?.name}
+                    <p className="text-[10px] lg:text-xs text-muted-foreground truncate">
+                      <span className="lg:hidden">{type?.name?.split(' ')[0]}</span>
+                      <span className="hidden lg:inline">{type?.name} • {professional?.name}</span>
                     </p>
                   </div>
                   
-                  {/* Status - mobile optimized */}
-                  <div className="flex items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-0 shrink-0 sm:ml-4">
-                    <span className={cn('text-xs sm:text-sm font-medium', status.textClass)}>
-                      {/* Show short label on mobile, full label on larger screens */}
-                      <span className="sm:hidden">{status.shortLabel}</span>
-                      <span className="hidden sm:inline">{status.label}</span>
+                  {/* Status indicator */}
+                  <div className="flex items-center gap-1 shrink-0 ml-2">
+                    <span className={cn('text-[10px] lg:text-xs font-medium', status.textClass)}>
+                      <span className="lg:hidden">{status.shortLabel}</span>
+                      <span className="hidden lg:inline">{status.label}</span>
                     </span>
                     {status.showDoubleCheck && (
-                      <CheckCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                      <CheckCheck className="h-3 w-3 lg:h-4 lg:w-4 text-primary" />
                     )}
                     {!status.showDoubleCheck && apt.status === 'scheduled' && (
-                      <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
+                      <Check className="h-3 w-3 lg:h-4 lg:w-4 text-muted-foreground" />
                     )}
                   </div>
                 </div>

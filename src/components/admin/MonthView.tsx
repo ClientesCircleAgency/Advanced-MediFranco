@@ -70,50 +70,75 @@ export function MonthView({
       .sort((a, b) => a.time.localeCompare(b.time));
   };
 
-  const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  const weekDaysFull = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
 
   return (
-    <Card>
-      <CardContent className="p-2">
+    <Card className="border-0 shadow-none lg:border lg:shadow-sm">
+      <CardContent className="p-0 lg:p-2">
         {/* Header dos dias da semana */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
-          {weekDays.map((d) => (
-            <div key={d} className="text-center p-2 text-xs font-medium text-muted-foreground uppercase">
+        <div className="grid grid-cols-7 mb-0.5 lg:mb-1">
+          {weekDaysFull.map((d) => (
+            <div key={d} className="text-center py-2 text-[10px] lg:text-xs font-medium text-muted-foreground">
               {d}
             </div>
           ))}
         </div>
 
         {/* Grid do calendário */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7">
           {days.map((d) => {
             const dayAppointments = getAppointmentsForDay(d);
             const isCurrentMonth = isSameMonth(d, currentDate);
             const isToday = isSameDay(d, new Date());
-            const maxVisible = 3;
+            const maxVisibleMobile = 1;
+            const maxVisibleDesktop = 3;
 
             return (
               <div
                 key={d.toISOString()}
-                className={`min-h-24 border rounded p-1 cursor-pointer transition-colors ${
+                className={`min-h-16 lg:min-h-24 border border-border/30 lg:border-border p-0.5 lg:p-1 cursor-pointer transition-colors ${
                   isCurrentMonth ? 'bg-background' : 'bg-muted/30'
-                } ${isToday ? 'border-primary' : 'border-border'} hover:bg-accent/30`}
+                } ${isToday ? 'border-primary' : ''} hover:bg-accent/30`}
                 onClick={() => onDateClick?.(d)}
               >
-                <p
-                  className={`text-sm font-medium mb-1 ${
-                    isToday
-                      ? 'bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center'
-                      : isCurrentMonth
-                      ? ''
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  {format(d, 'd')}
-                </p>
+                <div className="flex items-center justify-center lg:justify-start mb-0.5 lg:mb-1">
+                  <span
+                    className={`text-xs lg:text-sm font-medium ${
+                      isToday
+                        ? 'bg-primary text-primary-foreground w-5 h-5 lg:w-6 lg:h-6 rounded-full flex items-center justify-center text-[10px] lg:text-sm'
+                        : isCurrentMonth
+                        ? ''
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {format(d, 'd')}
+                  </span>
+                </div>
 
-                <div className="space-y-0.5">
-                  {dayAppointments.slice(0, maxVisible).map((apt) => {
+                {/* Mobile: show dot indicator only */}
+                <div className="lg:hidden flex justify-center gap-0.5 flex-wrap">
+                  {dayAppointments.slice(0, 3).map((apt) => {
+                    const professional = getProfessionalById(apt.professionalId);
+                    return (
+                      <div
+                        key={apt.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onAppointmentClick(apt);
+                        }}
+                        className="w-1.5 h-1.5 rounded-full cursor-pointer"
+                        style={{ backgroundColor: professional?.color }}
+                      />
+                    );
+                  })}
+                  {dayAppointments.length > 3 && (
+                    <span className="text-[8px] text-muted-foreground">+{dayAppointments.length - 3}</span>
+                  )}
+                </div>
+
+                {/* Desktop: show appointment details */}
+                <div className="hidden lg:block space-y-0.5">
+                  {dayAppointments.slice(0, maxVisibleDesktop).map((apt) => {
                     const professional = getProfessionalById(apt.professionalId);
                     const patient = getPatientById(apt.patientId);
                     return (
@@ -130,13 +155,13 @@ export function MonthView({
                         }}
                         title={`${apt.time} - ${patient?.name}`}
                       >
-                        {apt.time} {patient?.name?.split(' ')[0]}
+                        {apt.time.slice(0, 5)} {patient?.name?.split(' ')[0]}
                       </div>
                     );
                   })}
-                  {dayAppointments.length > maxVisible && (
+                  {dayAppointments.length > maxVisibleDesktop && (
                     <p className="text-[10px] text-muted-foreground text-center">
-                      +{dayAppointments.length - maxVisible} mais
+                      +{dayAppointments.length - maxVisibleDesktop} mais
                     </p>
                   )}
                 </div>
