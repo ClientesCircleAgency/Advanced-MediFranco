@@ -105,22 +105,20 @@ export default function AgendaPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-card border border-border rounded-xl p-4 lg:p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-serif italic text-foreground text-lg lg:text-2xl">
-              {viewMode === 'day' ? 'Agenda do Dia' : viewMode === 'week' ? 'Semana' : 'Mês'}
-            </h1>
-            <p className="font-mono text-xs text-muted-foreground mt-1 uppercase tracking-wide capitalize">
-              {getTitle()}
-            </p>
-          </div>
-          
-          <Button onClick={() => setWizardOpen(true)} size="sm" className="gap-1.5 bg-primary-gradient hover:opacity-90">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Nova</span>
-          </Button>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-serif italic text-foreground text-lg lg:text-2xl">
+            {viewMode === 'day' ? 'Agenda do Dia' : viewMode === 'week' ? 'Semana' : 'Mês'}
+          </h1>
+          <p className="font-mono text-[10px] text-muted-foreground mt-1 uppercase tracking-widest capitalize">
+            {getTitle()}
+          </p>
         </div>
+        
+        <Button onClick={() => setWizardOpen(true)} size="sm" className="gap-1.5 bg-primary-gradient hover:opacity-90">
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Nova</span>
+        </Button>
       </div>
 
       {/* Controls - Stacked on mobile */}
