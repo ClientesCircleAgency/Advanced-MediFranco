@@ -1,58 +1,133 @@
-import { useState } from 'react';
-import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Check, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useClinic } from '@/context/ClinicContext';
 import { AppointmentWizard } from '@/components/admin/AppointmentWizard';
 import { AppointmentDetailDrawer } from '@/components/admin/AppointmentDetailDrawer';
-import { format, addDays, subDays, isToday, isTomorrow } from 'date-fns';
+import { format, addDays, isToday, isTomorrow, parse, addMinutes } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import type { ClinicAppointment } from '@/types/clinic';
 import { cn } from '@/lib/utils';
 
+// Generate time slots from 08:00 to 20:00 in 30-minute intervals
+const generateTimeSlots = (): string[] => {
+  const slots: string[] = [];
+  for (let h = 8; h <= 20; h++) {
+    slots.push(`${h.toString().padStart(2, '0')}:00`);
+    if (h < 20) {
+      slots.push(`${h.toString().padStart(2, '0')}:30`);
+    }
+  }
+  return slots;
+};
+
+const TIME_SLOTS = generateTimeSlots();
+
 export default function AgendaPage() {
-  const { appointments, getPatientById, getProfessionalById, getConsultationTypeById } = useClinic();
+  const { appointments, professionals, getPatientById, getProfessionalById, getConsultationTypeById } = useClinic();
 
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedProfessional, setSelectedProfessional] = useState<string>('all');
   const [wizardOpen, setWizardOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<ClinicAppointment | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const dateStr = format(currentDate, 'yyyy-MM-dd');
 
-  // Filtrar consultas do dia
-  const dayAppointments = appointments
-    .filter((apt) => apt.date === dateStr)
-    .sort((a, b) => a.time.localeCompare(b.time));
+  // Filter appointments by date and professional
+  const dayAppointments = useMemo(() => {
+    return appointments
+      .filter((apt) => {
+        if (apt.date !== dateStr) return false;
+        if (selectedProfessional !== 'all' && apt.professionalId !== selectedProfessional) return false;
+        return true;
+      })
+      .sort((a, b) => a.time.localeCompare(b.time));
+  }, [appointments, dateStr, selectedProfessional]);
+
+  // Get professionals to show in selector
+  const activeProfessionals = useMemo(() => {
+    return professionals.filter(p => p.name && p.name.trim() !== '');
+  }, [professionals]);
 
   const handleAppointmentClick = (apt: ClinicAppointment) => {
     setSelectedAppointment(apt);
     setDrawerOpen(true);
   };
 
-  // Agrupar por hora
-  const timeSlots = dayAppointments.reduce((acc, apt) => {
-    const hour = apt.time.split(':')[0] + ':' + apt.time.split(':')[1];
-    if (!acc[hour]) {
-      acc[hour] = [];
+  // Calculate which time slots an appointment occupies
+  const getAppointmentTimeSlotIndex = (time: string): number => {
+    return TIME_SLOTS.findIndex((slot) => slot === time);
+  };
+
+  // Group appointments by their time slot for display
+  const getAppointmentForSlot = (slot: string): ClinicAppointment | null => {
+    return dayAppointments.find((apt) => apt.time === slot) || null;
+  };
+
+  // Check if a slot is occupied by an ongoing appointment (for duration spanning)
+  const isSlotOccupied = (slot: string): ClinicAppointment | null => {
+    for (const apt of dayAppointments) {
+      const aptStart = parse(apt.time, 'HH:mm', new Date());
+      const aptEnd = addMinutes(aptStart, apt.duration);
+      const slotTime = parse(slot, 'HH:mm', new Date());
+      
+      if (slotTime >= aptStart && slotTime < aptEnd) {
+        return apt;
+      }
     }
-    acc[hour].push(apt);
-    return acc;
-  }, {} as Record<string, ClinicAppointment[]>);
+    return null;
+  };
+
+  // Calculate how many slots an appointment spans
+  const getAppointmentSlotSpan = (apt: ClinicAppointment): number => {
+    return Math.ceil(apt.duration / 30);
+  };
+
+  // Build a map of which slots are "taken" and should be skipped
+  const slotOccupancy = useMemo(() => {
+    const map: Record<string, { appointment: ClinicAppointment; isStart: boolean }> = {};
+    
+    for (const apt of dayAppointments) {
+      const startIdx = getAppointmentTimeSlotIndex(apt.time);
+      const span = getAppointmentSlotSpan(apt);
+      
+      for (let i = 0; i < span && startIdx + i < TIME_SLOTS.length; i++) {
+        const slot = TIME_SLOTS[startIdx + i];
+        map[slot] = { appointment: apt, isStart: i === 0 };
+      }
+    }
+    
+    return map;
+  }, [dayAppointments]);
 
   return (
-    <div className="space-y-6">
-      {/* Header com tabs Hoje/Amanhã */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl lg:text-2xl font-bold text-foreground">Agenda do Dia</h1>
+          <p className="text-sm text-muted-foreground">
+            {format(currentDate, "EEEE, d 'de' MMMM", { locale: pt })}
+          </p>
+        </div>
+        
+        <Button onClick={() => setWizardOpen(true)} className="gap-2 self-start sm:self-auto">
+          <Plus className="h-4 w-4" />
+          Nova Consulta
+        </Button>
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Date tabs */}
         <div className="flex items-center gap-2">
           <Button
             variant={isToday(currentDate) ? 'default' : 'outline'}
             size="sm"
             onClick={() => setCurrentDate(new Date())}
-            className={cn(
-              'rounded-full px-6',
-              isToday(currentDate) && 'bg-card text-foreground border border-border shadow-sm hover:bg-card'
-            )}
+            className="rounded-full px-6"
           >
             Hoje
           </Button>
@@ -60,92 +135,121 @@ export default function AgendaPage() {
             variant={isTomorrow(currentDate) ? 'default' : 'outline'}
             size="sm"
             onClick={() => setCurrentDate(addDays(new Date(), 1))}
-            className={cn(
-              'rounded-full px-6',
-              isTomorrow(currentDate) && 'bg-card text-foreground border border-border shadow-sm hover:bg-card'
-            )}
+            className="rounded-full px-6"
           >
             Amanhã
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-primary">
-          <Check className="h-4 w-4" />
-          <span>Confirmado WhatsApp</span>
+        <div className="flex items-center gap-4">
+          {/* Professional filter */}
+          <Select value={selectedProfessional} onValueChange={setSelectedProfessional}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Todos os médicos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os médicos</SelectItem>
+              {activeProfessionals.map((prof) => (
+                <SelectItem key={prof.id} value={prof.id}>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: prof.color }}
+                    />
+                    {prof.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Legend */}
+          <div className="hidden lg:flex items-center gap-2 text-sm text-primary">
+            <Check className="h-4 w-4" />
+            <Check className="h-4 w-4 -ml-3" />
+            <span>Confirmado WhatsApp</span>
+          </div>
         </div>
       </div>
 
-      {/* Lista de Consultas */}
+      {/* Timeline Grid */}
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        {Object.keys(timeSlots).length === 0 ? (
-          <div className="p-12 text-center">
-            <p className="text-muted-foreground">Sem consultas agendadas para este dia</p>
-            <Button className="mt-4" onClick={() => setWizardOpen(true)}>
-              Agendar Consulta
-            </Button>
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {Object.entries(timeSlots)
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([time, apts]) =>
-                apts.map((apt) => {
-                  const patient = getPatientById(apt.patientId);
-                  const professional = getProfessionalById(apt.professionalId);
-                  const type = getConsultationTypeById(apt.consultationTypeId);
-                  const isConfirmed = apt.status === 'confirmed';
+        {TIME_SLOTS.map((slot) => {
+          const occupancy = slotOccupancy[slot];
+          
+          // If this slot is occupied but not the start, skip rendering
+          if (occupancy && !occupancy.isStart) {
+            return null;
+          }
+          
+          const apt = occupancy?.appointment;
+          const patient = apt ? getPatientById(apt.patientId) : null;
+          const professional = apt ? getProfessionalById(apt.professionalId) : null;
+          const type = apt ? getConsultationTypeById(apt.consultationTypeId) : null;
+          const isConfirmed = apt?.status === 'confirmed';
+          const slotSpan = apt ? getAppointmentSlotSpan(apt) : 1;
+          
+          // Calculate row height based on span
+          const rowHeight = slotSpan > 1 ? `${slotSpan * 64}px` : undefined;
+          
+          return (
+            <div
+              key={slot}
+              className="flex items-stretch border-b border-border last:border-b-0"
+              style={rowHeight ? { minHeight: rowHeight } : { minHeight: '64px' }}
+            >
+              {/* Time column */}
+              <div className="w-16 lg:w-20 shrink-0 flex items-start justify-end pr-4 py-4 text-muted-foreground text-sm">
+                {slot}
+              </div>
 
-                  return (
-                    <div
-                      key={apt.id}
-                      onClick={() => handleAppointmentClick(apt)}
-                      className="flex items-center gap-6 px-6 py-4 hover:bg-accent/30 transition-colors cursor-pointer"
-                    >
-                      {/* Hora */}
-                      <div className="w-16 text-muted-foreground text-sm shrink-0">
-                        {apt.time}
-                      </div>
-
-                      {/* Card da consulta */}
-                      <div
+              {/* Appointment area */}
+              <div className="flex-1 py-2 pr-4">
+                {apt ? (
+                  <div
+                    onClick={() => handleAppointmentClick(apt)}
+                    className={cn(
+                      'h-full flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:shadow-md',
+                      isConfirmed
+                        ? 'bg-primary/5 border-l-4 border-l-primary'
+                        : 'bg-muted/30 border-l-4'
+                    )}
+                    style={{
+                      borderLeftColor: isConfirmed ? undefined : professional?.color || '#f59e0b',
+                    }}
+                  >
+                    <div>
+                      <p className="font-semibold text-foreground">{patient?.name || 'Paciente'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {type?.name} • {professional?.name}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
                         className={cn(
-                          'flex-1 flex items-center justify-between p-4 rounded-xl border-l-4',
-                          isConfirmed
-                            ? 'bg-primary/5 border-l-primary'
-                            : 'bg-muted/30 border-l-orange-400'
+                          'text-sm',
+                          isConfirmed ? 'text-primary' : 'text-muted-foreground'
                         )}
                       >
-                        <div>
-                          <p className="font-semibold text-foreground">{patient?.name || 'Paciente'}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {type?.name} • {professional?.name}
-                          </p>
+                        {isConfirmed ? 'Confirmado' : 'Enviado'}
+                      </span>
+                      {isConfirmed ? (
+                        <div className="flex">
+                          <Check className="h-4 w-4 text-primary" />
+                          <Check className="h-4 w-4 text-primary -ml-2" />
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              'text-sm',
-                              isConfirmed ? 'text-primary' : 'text-muted-foreground'
-                            )}
-                          >
-                            {isConfirmed ? 'Confirmado' : 'Enviado'}
-                          </span>
-                          {isConfirmed ? (
-                            <div className="flex">
-                              <Check className="h-4 w-4 text-primary" />
-                              <Check className="h-4 w-4 text-primary -ml-2" />
-                            </div>
-                          ) : (
-                            <Check className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </div>
-                      </div>
+                      ) : (
+                        <Check className="h-4 w-4 text-muted-foreground" />
+                      )}
                     </div>
-                  );
-                })
-              )}
-          </div>
-        )}
+                  </div>
+                ) : (
+                  <div className="h-full" />
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <AppointmentWizard open={wizardOpen} onOpenChange={setWizardOpen} preselectedDate={currentDate} />
