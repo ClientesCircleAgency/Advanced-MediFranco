@@ -41,7 +41,8 @@ export function HeroSection() {
             Cuidamos da sua{' '}
             <span className="text-primary">visão</span>
             {' '}e do seu{' '}
-            <span className="text-primary">sorriso</span>.
+            <span className="text-primary">sorriso</span>
+            <span className="text-primary">.</span>
           </h1>
 
           {/* Subtitle */}
