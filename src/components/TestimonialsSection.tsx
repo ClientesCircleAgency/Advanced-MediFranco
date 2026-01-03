@@ -34,7 +34,7 @@ export function TestimonialsSection() {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-full mb-4">
               <span className="text-sm font-medium text-accent-foreground">Testemunhos</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 tracking-tight">
               O que dizem os nossos <span className="text-primary">Pacientes</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
