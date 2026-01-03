@@ -69,7 +69,7 @@ export function Header() {
           <div className="hidden md:flex items-center gap-4">
             <Button
               onClick={() => handleNavClick('#marcacao')}
-              className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all rounded-xl"
+              className="bg-primary-gradient hover:opacity-90 shadow-lg hover:shadow-xl transition-all rounded-xl"
             >
               <Phone className="w-4 h-4 mr-2" />
               Marcar Consulta
@@ -96,7 +96,7 @@ export function Header() {
               <div className="pt-3 mt-2 border-t border-border">
                 <Button
                   onClick={() => handleNavClick('#marcacao')}
-                  className="w-full bg-primary hover:bg-primary/90 rounded-xl"
+                  className="w-full bg-primary-gradient hover:opacity-90 rounded-xl"
                 >
                   <Phone className="w-4 h-4 mr-2" />
                   Marcar Consulta

@@ -75,14 +75,14 @@ export function ServicesSection() {
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-10 h-14 p-1 bg-card border border-border rounded-2xl">
               <TabsTrigger
                 value="dentaria"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl h-12 text-sm font-medium transition-all"
+                className="data-[state=active]:bg-primary-gradient data-[state=active]:text-primary-foreground rounded-xl h-12 text-sm font-medium transition-all"
               >
                 <Icons.Smile className="w-4 h-4 mr-2" />
                 Medicina Dentária
               </TabsTrigger>
               <TabsTrigger
                 value="oftalmologia"
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl h-12 text-sm font-medium transition-all"
+                className="data-[state=active]:bg-primary-gradient data-[state=active]:text-primary-foreground rounded-xl h-12 text-sm font-medium transition-all"
               >
                 <Icons.Eye className="w-4 h-4 mr-2" />
                 Oftalmologia

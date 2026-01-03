@@ -91,7 +91,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
               <Button
                 onClick={onNewAppointment}
                 size="icon"
-                className="w-full bg-primary hover:bg-primary/90 shadow-md font-sans"
+                className="w-full bg-primary-gradient hover:opacity-90 shadow-md font-sans"
               >
                 <Plus className="h-5 w-5" />
               </Button>
@@ -101,7 +101,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
         ) : (
           <Button 
             onClick={onNewAppointment} 
-            className="w-full gap-2 bg-primary hover:bg-primary/90 shadow-md transition-all hover:shadow-lg font-sans font-medium"
+            className="w-full gap-2 bg-primary-gradient hover:opacity-90 shadow-md transition-all hover:shadow-lg font-sans font-medium"
           >
             <Plus className="h-4 w-4" />
             Nova Consulta

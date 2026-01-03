@@ -206,7 +206,7 @@ export function ContactSection() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all rounded-xl h-14 text-base"
+                  className="w-full bg-primary-gradient hover:opacity-90 shadow-lg hover:shadow-xl transition-all rounded-xl h-14 text-base"
                   size="lg"
                 >
                   <Send className="w-5 h-5 mr-2" />
