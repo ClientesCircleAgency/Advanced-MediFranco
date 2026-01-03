@@ -17,6 +17,10 @@ import {
   endOfDay,
   eachDayOfInterval,
   eachMonthOfInterval,
+  eachHourOfInterval,
+  setHours,
+  setMinutes,
+  setSeconds,
   isWithinInterval,
   parseISO,
 } from 'date-fns';
@@ -48,6 +52,7 @@ export function RevenueChart() {
     return appointments.filter((a) => a.status === 'completed');
   }, [appointments]);
 
+  // Map por data
   const completedCountByDate = useMemo(() => {
     const map = new Map<string, number>();
     for (const apt of completedAppointments) {
@@ -55,6 +60,31 @@ export function RevenueChart() {
     }
     return map;
   }, [completedAppointments]);
+
+  // Map por data+hora (para gráfico diário)
+  const completedCountByHour = useMemo(() => {
+    const map = new Map<string, number>();
+    const today = format(new Date(), 'yyyy-MM-dd');
+    for (const apt of completedAppointments) {
+      if (apt.date === today && apt.time) {
+        const hour = apt.time.substring(0, 2); // "09:30" -> "09"
+        const key = `${apt.date}-${hour}`;
+        map.set(key, (map.get(key) ?? 0) + 1);
+      }
+    }
+    return map;
+  }, [completedAppointments]);
+
+  // Horário de funcionamento da clínica (defaults: 09:00 - 19:00)
+  const clinicOpenHour = useMemo(() => {
+    const openingHours = settings?.openingHours as { start?: string; end?: string } | undefined;
+    const startStr = openingHours?.start || '09:00';
+    const endStr = openingHours?.end || '19:00';
+    return {
+      start: parseInt(startStr.split(':')[0], 10),
+      end: parseInt(endStr.split(':')[0], 10),
+    };
+  }, [settings]);
 
   const revenueData = useMemo(() => {
     const today = new Date();
@@ -94,14 +124,33 @@ export function RevenueChart() {
 
   const chartData = useMemo(() => {
     const now = new Date();
+    const todayStr = format(now, 'yyyy-MM-dd');
+
+    // Para o período DIÁRIO: usar horas de funcionamento da clínica
+    if (activePeriod === 'day') {
+      const dayStart = setSeconds(setMinutes(setHours(startOfDay(now), clinicOpenHour.start), 0), 0);
+      const dayEnd = setSeconds(setMinutes(setHours(startOfDay(now), clinicOpenHour.end), 0), 0);
+
+      const points: Array<{ t: number; value: number }> = [
+        { t: dayStart.getTime(), value: 0 },
+      ];
+
+      let cumulative = 0;
+      const hours = eachHourOfInterval({ start: dayStart, end: dayEnd });
+
+      for (const hourDate of hours) {
+        const hour = format(hourDate, 'HH');
+        const key = `${todayStr}-${hour}`;
+        const count = completedCountByHour.get(key) ?? 0;
+        cumulative += count * averageValue;
+        points.push({ t: hourDate.getTime(), value: cumulative });
+      }
+
+      return points;
+    }
 
     const interval = (() => {
       switch (activePeriod) {
-        case 'day': {
-          const start = startOfDay(now);
-          const end = endOfDay(now);
-          return { start, end };
-        }
         case 'week': {
           const start = startOfDay(startOfWeek(now, { weekStartsOn: 1 }));
           const end = endOfDay(endOfWeek(now, { weekStartsOn: 1 }));
@@ -117,10 +166,11 @@ export function RevenueChart() {
           const end = endOfDay(endOfYear(now));
           return { start, end };
         }
+        default:
+          return { start: startOfDay(now), end: endOfDay(now) };
       }
     })();
 
-    // Linha sempre começa a 0 no início do período.
     const points: Array<{ t: number; value: number }> = [
       { t: interval.start.getTime(), value: 0 },
     ];
@@ -129,7 +179,6 @@ export function RevenueChart() {
     let cumulative = 0;
 
     if (activePeriod === 'year') {
-      // No ano mostramos por mês (Jan–Dez), mas respeitando o intervalo completo.
       const months = eachMonthOfInterval(interval);
       for (const monthStart of months) {
         const mStart = startOfMonth(monthStart);
@@ -148,7 +197,7 @@ export function RevenueChart() {
       return points;
     }
 
-    // Dia / Semana / Mês: pontos diários (Seg–Dom; 1–30/31; hoje).
+    // Semana / Mês: pontos diários
     const days = eachDayOfInterval(interval);
     for (const d of days) {
       const count = completedCountByDate.get(dateKey(d)) ?? 0;
@@ -157,7 +206,7 @@ export function RevenueChart() {
     }
 
     return points;
-  }, [activePeriod, completedCountByDate, averageValue]);
+  }, [activePeriod, completedCountByDate, completedCountByHour, averageValue, clinicOpenHour]);
 
   const chartConfig = {
     value: {
