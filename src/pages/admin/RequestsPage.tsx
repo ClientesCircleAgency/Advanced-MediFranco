@@ -20,7 +20,7 @@ import { useAppointmentRequests, useUpdateAppointmentRequestStatus, type Appoint
 import { useContactMessages, useUpdateContactMessageStatus, type ContactMessage } from '@/hooks/useContactMessages';
 import { usePatients, useAddPatient } from '@/hooks/usePatients';
 import { useAddAppointment } from '@/hooks/useAppointments';
-import { useAddWhatsappWorkflow, scheduleConfirmation24h } from '@/hooks/useWhatsappWorkflows';
+
 import { useSpecialties } from '@/hooks/useSpecialties';
 import { useConsultationTypes } from '@/hooks/useConsultationTypes';
 import { useProfessionals } from '@/hooks/useProfessionals';
@@ -40,7 +40,7 @@ export default function RequestsPage() {
   const updateMessageStatus = useUpdateContactMessageStatus();
   const addPatient = useAddPatient();
   const addAppointment = useAddAppointment();
-  const addWhatsappWorkflow = useAddWhatsappWorkflow();
+  
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<AppointmentRequest | null>(null);
@@ -92,8 +92,8 @@ export default function RequestsPage() {
         return;
       }
 
-      // 3. Create pre-confirmed appointment
-      const appointment = await addAppointment.mutateAsync({
+      // 3. Create confirmed appointment
+      await addAppointment.mutateAsync({
         patient_id: patient.id,
         professional_id: professional.id,
         specialty_id: specialty.id,
@@ -101,24 +101,14 @@ export default function RequestsPage() {
         date: selectedRequest.preferred_date,
         time: selectedRequest.preferred_time,
         duration: consultationType.default_duration,
-        status: 'pre_confirmed',
+        status: 'confirmed',
         notes: `Convertido de pedido online. NIF: ${selectedRequest.nif}`,
       });
 
-      // 4. Schedule 24h confirmation WhatsApp
-      const confirmationWorkflow = scheduleConfirmation24h(
-        patient.id,
-        selectedRequest.phone,
-        appointment.id,
-        `${selectedRequest.preferred_date}T${selectedRequest.preferred_time}`
-      );
-      
-      await addWhatsappWorkflow.mutateAsync(confirmationWorkflow);
-
-      // 5. Update request status
+      // 4. Update request status
       await updateRequestStatus.mutateAsync({ id: selectedRequest.id, status: 'converted' });
       
-      toast.success('Consulta pré-confirmada criada. Confirmação automática será enviada 24h antes.');
+      toast.success('Consulta confirmada criada com sucesso.');
       setSelectedRequest(null);
     } catch (error) {
       console.error('Error converting request:', error);
