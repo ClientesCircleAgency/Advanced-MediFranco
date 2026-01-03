@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Euro } from 'lucide-react';
 import { useClinic } from '@/context/ClinicContext';
 import { useSettings } from '@/hooks/useSettings';
@@ -11,15 +12,15 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 type Period = 'day' | 'week' | 'month' | 'year';
 
 const periodLabels: Record<Period, string> = {
   day: 'Hoje',
-  week: 'Esta Semana',
-  month: 'Este Mês',
-  year: 'Este Ano',
+  week: 'Semana',
+  month: 'Mês',
+  year: 'Ano',
 };
 
 export function RevenueChart() {
@@ -71,50 +72,58 @@ export function RevenueChart() {
 
   const chartData = useMemo(() => {
     return [
-      { name: 'Hoje', value: revenueData.day.revenue, fill: 'hsl(var(--primary))' },
-      { name: 'Semana', value: revenueData.week.revenue, fill: 'hsl(var(--primary) / 0.8)' },
-      { name: 'Mês', value: revenueData.month.revenue, fill: 'hsl(var(--primary) / 0.6)' },
-      { name: 'Ano', value: revenueData.year.revenue, fill: 'hsl(var(--primary) / 0.4)' },
+      { name: 'Hoje', value: revenueData.day.revenue },
+      { name: 'Semana', value: revenueData.week.revenue },
+      { name: 'Mês', value: revenueData.month.revenue },
+      { name: 'Ano', value: revenueData.year.revenue },
     ];
   }, [revenueData]);
 
   const chartConfig = {
     value: {
       label: 'Faturação',
-      color: 'hsl(var(--primary))',
+      color: 'oklch(var(--chart-1))',
     },
   };
 
   const activeData = revenueData[activePeriod];
 
+  // Calculate percentage change (mock for now)
+  const percentageChange = 12.5;
+
   return (
-    <Card className="p-4 lg:p-5 bg-card border-border">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
-            <Euro className="h-5 w-5 text-green-600" />
+    <Card className="p-6 bg-card border border-border shadow-sm">
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+        <div className="flex items-center gap-4">
+          <div className="h-12 w-12 rounded-lg bg-accent flex items-center justify-center">
+            <Euro className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground text-sm lg:text-base">Faturação Estimada</h3>
-            <p className="text-xs text-muted-foreground">Baseado em {averageValue}€/consulta</p>
+            <h3 className="font-sans font-semibold text-foreground text-lg">
+              Faturação Estimada
+            </h3>
+            <p className="font-mono text-xs text-muted-foreground">
+              Baseado em {averageValue}€/consulta
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-1 text-green-600">
-          <TrendingUp className="h-4 w-4" />
-        </div>
+        <Badge variant="secondary" className="font-mono text-sm px-3 py-1 flex items-center gap-1 w-fit">
+          <TrendingUp className="h-3 w-3 text-chart-1" />
+          +{percentageChange}%
+        </Badge>
       </div>
 
       {/* Period Toggle */}
-      <div className="flex gap-1 p-1 bg-muted rounded-lg mb-4">
+      <div className="flex gap-1 p-1 bg-muted rounded-lg mb-6">
         {(Object.keys(periodLabels) as Period[]).map((period) => (
           <Button
             key={period}
             variant="ghost"
             size="sm"
             onClick={() => setActivePeriod(period)}
-            className={`flex-1 text-xs ${
+            className={`flex-1 font-sans text-sm ${
               activePeriod === period
-                ? 'bg-background text-foreground shadow-sm'
+                ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -123,52 +132,62 @@ export function RevenueChart() {
         ))}
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="p-3 rounded-xl bg-muted/50">
-          <p className="text-2xl lg:text-3xl font-bold text-foreground">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
+          <p className="font-mono text-3xl lg:text-4xl font-semibold text-primary">
             {activeData.revenue.toLocaleString('pt-PT')}€
           </p>
-          <p className="text-xs text-muted-foreground">{periodLabels[activePeriod]}</p>
+          <p className="font-sans text-sm text-muted-foreground mt-1">
+            {periodLabels[activePeriod]}
+          </p>
         </div>
-        <div className="p-3 rounded-xl bg-muted/50">
-          <p className="text-2xl lg:text-3xl font-bold text-foreground">
+        <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
+          <p className="font-mono text-3xl lg:text-4xl font-semibold text-foreground">
             {activeData.count}
           </p>
-          <p className="text-xs text-muted-foreground">Consultas concluídas</p>
+          <p className="font-sans text-sm text-muted-foreground mt-1">
+            Consultas concluídas
+          </p>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="h-40">
+      {/* Futuristic Chart */}
+      <div className="h-48 bg-muted/30 rounded-lg p-4 border border-border/50">
         <ChartContainer config={chartConfig} className="h-full w-full">
-          <BarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="oklch(var(--chart-1))" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="oklch(var(--chart-1))" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
             <XAxis 
               dataKey="name" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 11 }}
-              className="text-muted-foreground"
+              tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: 'oklch(var(--muted-foreground))' }}
             />
             <YAxis 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: 'oklch(var(--muted-foreground))' }}
               tickFormatter={(value) => `${value}€`}
-              className="text-muted-foreground"
-              width={45}
+              width={50}
             />
             <ChartTooltip 
               content={<ChartTooltipContent />}
               formatter={(value: number) => [`${value.toLocaleString('pt-PT')}€`, 'Faturação']}
             />
-            <Bar 
+            <Area 
+              type="monotone"
               dataKey="value" 
-              radius={[6, 6, 0, 0]}
-              maxBarSize={50}
+              stroke="oklch(var(--chart-1))"
+              strokeWidth={2}
+              fill="url(#chartGradient)"
             />
-          </BarChart>
+          </AreaChart>
         </ChartContainer>
       </div>
     </Card>
