@@ -57,13 +57,19 @@ export default function AgendaPage() {
   };
 
   // Calculate which time slots an appointment occupies
+  // Normalize time to HH:mm format (strip seconds if present)
+  const normalizeTime = (time: string): string => {
+    return time.slice(0, 5);
+  };
+
   const getAppointmentTimeSlotIndex = (time: string): number => {
-    return TIME_SLOTS.findIndex((slot) => slot === time);
+    const normalized = normalizeTime(time);
+    return TIME_SLOTS.findIndex((slot) => slot === normalized);
   };
 
   // Group appointments by their time slot for display
   const getAppointmentForSlot = (slot: string): ClinicAppointment | null => {
-    return dayAppointments.find((apt) => apt.time === slot) || null;
+    return dayAppointments.find((apt) => normalizeTime(apt.time) === slot) || null;
   };
 
   // Check if a slot is occupied by an ongoing appointment (for duration spanning)
