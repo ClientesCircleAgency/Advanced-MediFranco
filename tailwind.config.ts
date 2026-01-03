@@ -18,6 +18,7 @@ export default {
   	extend: {
   		fontFamily: {
   			sans: [
+  				'Poppins',
   				'ui-sans-serif',
   				'system-ui',
   				'sans-serif',
@@ -27,6 +28,7 @@ export default {
   				'Noto Color Emoji'
   			],
   			serif: [
+  				'Libre Baskerville',
   				'ui-serif',
   				'Georgia',
   				'Cambria',
@@ -35,6 +37,7 @@ export default {
   				'serif'
   			],
   			mono: [
+  				'Cascadia Code',
   				'ui-monospace',
   				'SFMono-Regular',
   				'Menlo',
