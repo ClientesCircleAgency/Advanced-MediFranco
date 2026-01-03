@@ -61,19 +61,20 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
         !isMobile && (isCollapsed ? 'w-16' : 'w-64')
       )}
     >
-      {/* Logo - DentalHub */}
+      {/* Logo - MediFranco */}
       <div className="h-14 lg:h-16 flex items-center px-4 border-b border-sidebar-border">
         {isCollapsed ? (
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center mx-auto">
-            <span className="text-sm font-bold text-primary-foreground">D</span>
-          </div>
+          <img 
+            src="/logo-medifranco.png" 
+            alt="MediFranco" 
+            className="h-8 w-8 object-contain mx-auto"
+          />
         ) : (
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-              <span className="text-sm font-bold text-primary-foreground">D</span>
-            </div>
-            <span className="text-lg font-bold text-foreground">DentalHub</span>
-          </div>
+          <img 
+            src="/logo-medifranco.png" 
+            alt="MediFranco" 
+            className="h-10 object-contain"
+          />
         )}
       </div>
 

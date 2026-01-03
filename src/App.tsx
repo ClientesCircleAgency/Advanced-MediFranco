@@ -16,6 +16,7 @@ import WaitingRoomPage from "./pages/admin/WaitingRoomPage";
 import MessagesPage from "./pages/admin/MessagesPage";
 import SettingsPage from "./pages/admin/SettingsPage";
 import RequestsPage from "./pages/admin/RequestsPage";
+import PlanPage from "./pages/admin/PlanPage";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="sala-espera" element={<WaitingRoomPage />} />
             <Route path="mensagens" element={<MessagesPage />} />
             <Route path="configuracoes" element={<SettingsPage />} />
+            <Route path="plano" element={<PlanPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
