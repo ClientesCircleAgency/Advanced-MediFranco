@@ -65,8 +65,8 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
     >
       {/* Logo - MediFranco */}
       <div className={cn(
-        "flex items-center justify-center border-b border-sidebar-border",
-        isCollapsed ? "h-24 p-2" : "h-32 p-4"
+        "flex items-center justify-center border-b border-sidebar-border overflow-visible",
+        isCollapsed ? "h-16 p-1" : "h-20 p-2"
       )}>
         <img 
           src="/logo-medifranco.png" 
