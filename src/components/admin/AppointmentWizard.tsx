@@ -48,13 +48,12 @@ interface AppointmentWizardProps {
   preselectedDate?: Date | null;
 }
 
-export const AppointmentWizard = React.forwardRef<HTMLDivElement, AppointmentWizardProps>(
-  function AppointmentWizard({
-    open,
-    onOpenChange,
-    preselectedPatient,
-    preselectedDate,
-  }, ref) {
+export function AppointmentWizard({
+  open,
+  onOpenChange,
+  preselectedPatient,
+  preselectedDate,
+}: AppointmentWizardProps) {
   const { toast } = useToast();
   const {
     professionals,
@@ -516,4 +515,4 @@ export const AppointmentWizard = React.forwardRef<HTMLDivElement, AppointmentWiz
       </DialogContent>
     </Dialog>
   );
-});
+}
