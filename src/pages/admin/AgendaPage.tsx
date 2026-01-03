@@ -186,8 +186,20 @@ export default function AgendaPage() {
           const patient = apt ? getPatientById(apt.patientId) : null;
           const professional = apt ? getProfessionalById(apt.professionalId) : null;
           const type = apt ? getConsultationTypeById(apt.consultationTypeId) : null;
-          const isConfirmed = apt?.status === 'confirmed';
           const slotSpan = apt ? getAppointmentSlotSpan(apt) : 1;
+          
+          // Status display config
+          const statusConfig: Record<string, { label: string; bg: string; text: string; icon?: 'confirmed' | 'waiting' | 'progress' | 'done' }> = {
+            scheduled: { label: 'Agendado', bg: 'bg-muted/30', text: 'text-muted-foreground' },
+            pre_confirmed: { label: 'Pré-confirmado', bg: 'bg-yellow-50', text: 'text-yellow-600' },
+            confirmed: { label: 'Confirmado', bg: 'bg-primary/5', text: 'text-primary', icon: 'confirmed' },
+            waiting: { label: 'Em espera', bg: 'bg-yellow-100', text: 'text-yellow-700', icon: 'waiting' },
+            in_progress: { label: 'Em atendimento', bg: 'bg-orange-100', text: 'text-orange-700', icon: 'progress' },
+            completed: { label: 'Concluída', bg: 'bg-muted', text: 'text-muted-foreground', icon: 'done' },
+            cancelled: { label: 'Cancelada', bg: 'bg-destructive/10', text: 'text-destructive' },
+            no_show: { label: 'Faltou', bg: 'bg-destructive/10', text: 'text-destructive' },
+          };
+          const status = apt ? statusConfig[apt.status] || statusConfig.scheduled : null;
           
           // Calculate row height based on span
           const rowHeight = slotSpan > 1 ? `${slotSpan * 64}px` : undefined;
@@ -205,17 +217,15 @@ export default function AgendaPage() {
 
               {/* Appointment area */}
               <div className="flex-1 py-2 pr-4">
-                {apt ? (
+                {apt && status ? (
                   <div
                     onClick={() => handleAppointmentClick(apt)}
                     className={cn(
-                      'h-full flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:shadow-md',
-                      isConfirmed
-                        ? 'bg-primary/5 border-l-4 border-l-primary'
-                        : 'bg-muted/30 border-l-4'
+                      'h-full flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:shadow-md border-l-4',
+                      status.bg
                     )}
                     style={{
-                      borderLeftColor: isConfirmed ? undefined : professional?.color || '#f59e0b',
+                      borderLeftColor: professional?.color || '#3b82f6',
                     }}
                   >
                     <div>
@@ -225,20 +235,22 @@ export default function AgendaPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          'text-sm',
-                          isConfirmed ? 'text-primary' : 'text-muted-foreground'
-                        )}
-                      >
-                        {isConfirmed ? 'Confirmado' : 'Enviado'}
+                      <span className={cn('text-sm', status.text)}>
+                        {status.label}
                       </span>
-                      {isConfirmed ? (
+                      {status.icon === 'confirmed' && (
                         <div className="flex">
                           <Check className="h-4 w-4 text-primary" />
                           <Check className="h-4 w-4 text-primary -ml-2" />
                         </div>
-                      ) : (
+                      )}
+                      {status.icon === 'waiting' && (
+                        <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                      )}
+                      {status.icon === 'progress' && (
+                        <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                      )}
+                      {status.icon === 'done' && (
                         <Check className="h-4 w-4 text-muted-foreground" />
                       )}
                     </div>
