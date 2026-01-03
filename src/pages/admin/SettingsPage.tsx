@@ -8,6 +8,7 @@ import { EditHoursModal } from '@/components/admin/EditHoursModal';
 import { EditSettingsModal } from '@/components/admin/EditSettingsModal';
 import { ManageProfessionalsModal } from '@/components/admin/ManageProfessionalsModal';
 import { ManageConsultationTypesModal } from '@/components/admin/ManageConsultationTypesModal';
+import { PageHeader } from '@/components/admin/PageHeader';
 
 export default function SettingsPage() {
   const { professionals, consultationTypes } = useClinic();
@@ -42,16 +43,16 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-4 lg:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-lg lg:text-xl font-bold text-foreground">Definições</h1>
-          <p className="text-xs lg:text-sm text-muted-foreground">Gerencie horários e equipa.</p>
-        </div>
-        <Button size="sm" className="gap-2 self-start sm:self-auto bg-primary-gradient hover:opacity-90">
-          <Save className="h-4 w-4" />
-          <span className="hidden sm:inline">Guardar</span>
-        </Button>
-      </div>
+      <PageHeader
+        title="Definições"
+        subtitle="Gerencie horários e equipa"
+        actions={
+          <Button size="sm" className="gap-2 bg-primary-gradient hover:opacity-90">
+            <Save className="h-4 w-4" />
+            <span className="hidden sm:inline">Guardar</span>
+          </Button>
+        }
+      />
 
       <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
         {/* Coluna esquerda */}

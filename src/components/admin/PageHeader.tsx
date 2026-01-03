@@ -9,15 +9,21 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, badge, actions }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-          {badge}
+    <div className="bg-card border border-border rounded-xl p-4 lg:p-6 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="font-serif italic text-foreground text-lg lg:text-2xl">{title}</h1>
+            {badge}
+          </div>
+          {subtitle && (
+            <p className="font-mono text-xs text-muted-foreground mt-1 uppercase tracking-wide">
+              {subtitle}
+            </p>
+          )}
         </div>
-        {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
+        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
       </div>
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
     </div>
   );
 }

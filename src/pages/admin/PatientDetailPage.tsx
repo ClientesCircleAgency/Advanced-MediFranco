@@ -46,18 +46,26 @@ export default function PatientDetailPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin/pacientes')}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div className="flex-1">
-          <h2 className="text-2xl font-bold">{patient.name}</h2>
-          <p className="text-muted-foreground">NIF: {patient.nif}</p>
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header */}
+      <div className="bg-card border border-border rounded-xl p-4 lg:p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/admin/pacientes')} className="shrink-0">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="font-serif italic text-foreground text-lg lg:text-2xl">{patient.name}</h1>
+              <p className="font-mono text-xs text-muted-foreground mt-1 uppercase tracking-wide">
+                NIF: {patient.nif}
+              </p>
+            </div>
+          </div>
+          <Button className="gap-2 bg-primary-gradient hover:opacity-90 shrink-0" onClick={() => setWizardOpen(true)}>
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nova Consulta</span>
+          </Button>
         </div>
-        <Button className="gap-2" onClick={() => setWizardOpen(true)}>
-          <Plus className="h-4 w-4" />Nova Consulta
-        </Button>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
