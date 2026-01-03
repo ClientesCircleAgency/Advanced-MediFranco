@@ -10,6 +10,7 @@ import { useAppointments, useUpdateAppointmentStatus } from '@/hooks/useAppointm
 import { usePatients } from '@/hooks/usePatients';
 import { useProfessionals } from '@/hooks/useProfessionals';
 import { useConsultationTypes } from '@/hooks/useConsultationTypes';
+import { useAddWhatsappWorkflow, scheduleReviewReminder } from '@/hooks/useWhatsappWorkflows';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -157,6 +158,7 @@ export default function WaitingRoomPage() {
   const { data: professionals = [] } = useProfessionals();
   const { data: consultationTypes = [] } = useConsultationTypes();
   const updateAppointmentStatus = useUpdateAppointmentStatus();
+  const addWhatsappWorkflow = useAddWhatsappWorkflow();
 
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -199,7 +201,8 @@ export default function WaitingRoomPage() {
 
     // Validar transições
     const validTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
-      scheduled: ['confirmed'],
+      scheduled: ['pre_confirmed', 'confirmed'],
+      pre_confirmed: ['confirmed', 'cancelled'],
       confirmed: ['waiting', 'cancelled'],
       waiting: ['in_progress', 'no_show'],
       in_progress: ['completed'],
@@ -216,9 +219,24 @@ export default function WaitingRoomPage() {
     updateAppointmentStatus.mutate(
       { id: appointment.id, status: newStatus },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           const patient = getPatient(appointment.patient_id);
           toast.success(`${patient?.name || 'Paciente'} movido para ${columns.find((c) => c.id === newStatus)?.title}`);
+          
+          // If moved to completed, schedule review reminder for 2h later
+          if (newStatus === 'completed' && patient?.phone) {
+            try {
+              const reviewWorkflow = scheduleReviewReminder(
+                appointment.patient_id,
+                patient.phone,
+                appointment.id
+              );
+              await addWhatsappWorkflow.mutateAsync(reviewWorkflow);
+              toast.info('Lembrete de review agendado para 2h');
+            } catch (error) {
+              console.error('Failed to schedule review reminder:', error);
+            }
+          }
         },
         onError: () => {
           toast.error('Erro ao atualizar estado');

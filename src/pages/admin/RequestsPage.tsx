@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Check, X, Clock, Eye, Smile, Search, Calendar, Phone, Mail, User } from 'lucide-react';
+import { Check, X, Clock, Eye, Smile, Search, Calendar, Phone, Mail, User, MessageCircle, CalendarPlus } from 'lucide-react';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,21 +14,39 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { useAppointmentRequests, useUpdateAppointmentRequestStatus, type AppointmentRequest } from '@/hooks/useAppointmentRequests';
 import { useContactMessages, useUpdateContactMessageStatus, type ContactMessage } from '@/hooks/useContactMessages';
+import { usePatients, useAddPatient } from '@/hooks/usePatients';
+import { useAddAppointment } from '@/hooks/useAppointments';
+import { useAddWhatsappWorkflow, scheduleConfirmation24h } from '@/hooks/useWhatsappWorkflows';
+import { useSpecialties } from '@/hooks/useSpecialties';
+import { useConsultationTypes } from '@/hooks/useConsultationTypes';
+import { useProfessionals } from '@/hooks/useProfessionals';
+import { SuggestAlternativesModal } from '@/components/admin/SuggestAlternativesModal';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 export default function RequestsPage() {
   const { data: requests = [], isLoading: loadingRequests } = useAppointmentRequests();
   const { data: messages = [], isLoading: loadingMessages } = useContactMessages();
+  const { data: patients = [] } = usePatients();
+  const { data: specialties = [] } = useSpecialties();
+  const { data: consultationTypes = [] } = useConsultationTypes();
+  const { data: professionals = [] } = useProfessionals();
+  
   const updateRequestStatus = useUpdateAppointmentRequestStatus();
   const updateMessageStatus = useUpdateContactMessageStatus();
+  const addPatient = useAddPatient();
+  const addAppointment = useAddAppointment();
+  const addWhatsappWorkflow = useAddWhatsappWorkflow();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<AppointmentRequest | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [showAlternativesModal, setShowAlternativesModal] = useState(false);
+  const [isConverting, setIsConverting] = useState(false);
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const processedRequests = requests.filter(r => r.status !== 'pending');
@@ -40,13 +58,73 @@ export default function RequestsPage() {
     r.phone.includes(searchQuery)
   );
 
-  const handleApprove = async (id: string) => {
+  // Convert request to pre-confirmed appointment
+  const handleConvertToAppointment = async () => {
+    if (!selectedRequest) return;
+    
+    setIsConverting(true);
     try {
-      await updateRequestStatus.mutateAsync({ id, status: 'approved' });
-      toast.success('Pedido aprovado');
+      // 1. Find or create patient
+      let patient = patients.find(p => p.nif === selectedRequest.nif);
+      
+      if (!patient) {
+        const newPatient = await addPatient.mutateAsync({
+          nif: selectedRequest.nif,
+          name: selectedRequest.name,
+          phone: selectedRequest.phone,
+          email: selectedRequest.email,
+        });
+        patient = newPatient;
+      }
+
+      // 2. Determine specialty and consultation type
+      const specialty = specialties.find(s => 
+        selectedRequest.service_type === 'oftalmologia' 
+          ? s.name.toLowerCase().includes('oftalmo')
+          : s.name.toLowerCase().includes('dent')
+      );
+      
+      const consultationType = consultationTypes[0]; // Use first available
+      const professional = professionals.find(p => p.specialty_id === specialty?.id) || professionals[0];
+
+      if (!specialty || !consultationType || !professional) {
+        toast.error('Configuração incompleta. Verifique especialidades e profissionais.');
+        return;
+      }
+
+      // 3. Create pre-confirmed appointment
+      const appointment = await addAppointment.mutateAsync({
+        patient_id: patient.id,
+        professional_id: professional.id,
+        specialty_id: specialty.id,
+        consultation_type_id: consultationType.id,
+        date: selectedRequest.preferred_date,
+        time: selectedRequest.preferred_time,
+        duration: consultationType.default_duration,
+        status: 'pre_confirmed',
+        notes: `Convertido de pedido online. NIF: ${selectedRequest.nif}`,
+      });
+
+      // 4. Schedule 24h confirmation WhatsApp
+      const confirmationWorkflow = scheduleConfirmation24h(
+        patient.id,
+        selectedRequest.phone,
+        appointment.id,
+        `${selectedRequest.preferred_date}T${selectedRequest.preferred_time}`
+      );
+      
+      await addWhatsappWorkflow.mutateAsync(confirmationWorkflow);
+
+      // 5. Update request status
+      await updateRequestStatus.mutateAsync({ id: selectedRequest.id, status: 'converted' });
+      
+      toast.success('Consulta pré-confirmada criada. Confirmação automática será enviada 24h antes.');
       setSelectedRequest(null);
-    } catch {
-      toast.error('Erro ao aprovar pedido');
+    } catch (error) {
+      console.error('Error converting request:', error);
+      toast.error('Erro ao converter pedido');
+    } finally {
+      setIsConverting(false);
     }
   };
 
@@ -76,6 +154,18 @@ export default function RequestsPage() {
     } catch {
       toast.error('Erro ao arquivar mensagem');
     }
+  };
+
+  const handleSendWhatsApp = (message: string, phone: string) => {
+    // Format phone for WhatsApp (remove spaces, add country code if needed)
+    const formattedPhone = phone.replace(/\s/g, '').replace(/^0/, '351');
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/${formattedPhone}?text=${encodedMessage}`, '_blank');
+    toast.success('WhatsApp aberto com mensagem');
+  };
+
+  const handleSuggestAlternatives = () => {
+    setShowAlternativesModal(true);
   };
 
   const getStatusBadge = (status: AppointmentRequest['status']) => {
@@ -262,6 +352,9 @@ export default function RequestsPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Pedido de Marcação</DialogTitle>
+            <DialogDescription>
+              Reveja os detalhes e escolha uma ação
+            </DialogDescription>
           </DialogHeader>
           {selectedRequest && (
             <div className="space-y-4">
@@ -314,21 +407,36 @@ export default function RequestsPage() {
               </div>
 
               {selectedRequest.status === 'pending' && (
-                <DialogFooter className="gap-2">
+                <DialogFooter className="flex-col gap-2 sm:flex-col">
+                  {/* Primary Actions */}
+                  <div className="flex gap-2 w-full">
+                    <Button
+                      className="flex-1 gap-2"
+                      onClick={handleConvertToAppointment}
+                      disabled={isConverting}
+                    >
+                      <CalendarPlus className="w-4 h-4" />
+                      {isConverting ? 'A converter...' : 'Confirmar Horário'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1 gap-2 border-green-500 text-green-600 hover:bg-green-50"
+                      onClick={handleSuggestAlternatives}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      Sugerir Alternativas
+                    </Button>
+                  </div>
+                  
+                  {/* Secondary Action */}
                   <Button
-                    variant="destructive"
+                    variant="ghost"
+                    className="text-destructive hover:bg-destructive/10 w-full"
                     onClick={() => handleReject(selectedRequest.id)}
                     disabled={updateRequestStatus.isPending}
                   >
                     <X className="w-4 h-4 mr-1" />
-                    Rejeitar
-                  </Button>
-                  <Button
-                    onClick={() => handleApprove(selectedRequest.id)}
-                    disabled={updateRequestStatus.isPending}
-                  >
-                    <Check className="w-4 h-4 mr-1" />
-                    Aprovar
+                    Rejeitar Pedido
                   </Button>
                 </DialogFooter>
               )}
@@ -342,6 +450,9 @@ export default function RequestsPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Mensagem</DialogTitle>
+            <DialogDescription>
+              Mensagem de contacto recebida
+            </DialogDescription>
           </DialogHeader>
           {selectedMessage && (
             <div className="space-y-4">
@@ -384,6 +495,14 @@ export default function RequestsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Suggest Alternatives Modal */}
+      <SuggestAlternativesModal
+        open={showAlternativesModal}
+        onOpenChange={setShowAlternativesModal}
+        request={selectedRequest}
+        onSendWhatsApp={handleSendWhatsApp}
+      />
     </div>
   );
 }
