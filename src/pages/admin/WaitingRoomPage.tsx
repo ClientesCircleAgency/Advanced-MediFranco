@@ -246,29 +246,34 @@ export default function WaitingRoomPage() {
 
   return (
     <div className="space-y-4 lg:space-y-6">
-      {/* Header simplificado para mobile */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs lg:text-sm text-muted-foreground">{formattedDate}</span>
-        </div>
-        {activeProfessionals.length > 0 && (
-          <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
-            {activeProfessionals.slice(0, 3).map((prof) => (
-              <Avatar key={prof.id} className="h-6 w-6 lg:h-7 lg:w-7 border-2 border-background">
-                <AvatarFallback 
-                  className="text-[9px] lg:text-[10px] font-medium text-white"
-                  style={{ backgroundColor: prof.color }}
-                >
-                  {prof.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-            ))}
-            {activeProfessionals.length > 3 && (
-              <span className="text-xs text-muted-foreground">+{activeProfessionals.length - 3}</span>
-            )}
+      {/* Header */}
+      <div className="bg-card border border-border rounded-xl p-4 lg:p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="font-serif italic text-foreground text-lg lg:text-2xl">Sala de Espera</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="font-mono text-xs text-muted-foreground uppercase tracking-wide">{formattedDate}</span>
+            </div>
           </div>
-        )}
+          {activeProfessionals.length > 0 && (
+            <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
+              {activeProfessionals.slice(0, 3).map((prof) => (
+                <Avatar key={prof.id} className="h-6 w-6 lg:h-7 lg:w-7 border-2 border-background">
+                  <AvatarFallback 
+                    className="text-[9px] lg:text-[10px] font-medium text-white"
+                    style={{ backgroundColor: prof.color }}
+                  >
+                    {prof.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+              {activeProfessionals.length > 3 && (
+                <span className="text-xs text-muted-foreground">+{activeProfessionals.length - 3}</span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <DndContext

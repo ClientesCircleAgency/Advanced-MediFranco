@@ -91,18 +91,14 @@ export default function WaitlistPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       <PageHeader
         title="Lista de Espera"
-        badge={
-          <Badge variant="secondary" className="text-sm font-medium">
-            {waitlist.length} Pacientes
-          </Badge>
-        }
+        subtitle={`${waitlist.length} pacientes aguardando vaga`}
         actions={
-          <Button className="gap-2" onClick={() => setAddModalOpen(true)}>
+          <Button className="gap-2 bg-primary-gradient hover:opacity-90" onClick={() => setAddModalOpen(true)}>
             <Plus className="h-4 w-4" />
-            Adicionar à Lista
+            <span className="hidden sm:inline">Adicionar</span>
           </Button>
         }
       />

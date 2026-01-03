@@ -62,8 +62,20 @@ export default function PatientsPage() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Barra de pesquisa - Full width mobile */}
+    <div className="space-y-4 lg:space-y-6">
+      {/* Header */}
+      <div className="bg-card border border-border rounded-xl p-4 lg:p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-serif italic text-foreground text-lg lg:text-2xl">Pacientes</h1>
+            <p className="font-mono text-xs text-muted-foreground mt-1 uppercase tracking-wide">
+              {patients.length} pacientes registados
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Barra de pesquisa */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
