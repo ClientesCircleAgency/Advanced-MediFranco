@@ -110,7 +110,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
       </div>
 
       {/* Navegação */}
-      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
           const Icon = item.icon;
@@ -131,18 +131,18 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
                       'flex items-center justify-center h-10 w-full rounded-lg transition-all relative',
                       isActive
                         ? 'bg-sidebar-accent text-sidebar-primary'
-                        : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
                     )}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                     {badge && (
-                      <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-mono text-xs">
+                      <span className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-mono text-[10px]">
                         {badge}
                       </span>
                     )}
                   </NavLink>
                 </TooltipTrigger>
-                <TooltipContent side="right" className="font-sans">{item.label}</TooltipContent>
+                <TooltipContent side="right" className="font-sans text-xs">{item.label}</TooltipContent>
               </Tooltip>
             );
           }
@@ -152,16 +152,16 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
               key={item.path}
               to={item.path}
               className={cn(
-                'flex items-center gap-3 h-11 px-3 rounded-lg transition-all font-sans font-medium text-sm',
+                'flex items-center gap-3 h-10 px-3 rounded-lg transition-all font-sans text-sm',
                 isActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground border-l-4 border-sidebar-primary pl-2'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
+                  ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
               )}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-4 w-4 shrink-0" />
               <span className="flex-1">{item.label}</span>
               {badge && (
-                <span className="h-5 min-w-5 px-1.5 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-mono text-xs">
+                <span className="h-4 min-w-4 px-1 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-mono text-[10px]">
                   {badge}
                 </span>
               )}
@@ -171,12 +171,12 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
       </nav>
 
       {/* Separador */}
-      <div className="px-3">
-        <div className="border-t border-sidebar-border" />
+      <div className="px-3 py-1">
+        <div className="border-t border-sidebar-border/50" />
       </div>
 
       {/* Configurações e Footer */}
-      <div className="p-3 space-y-1">
+      <div className="p-3 space-y-0.5">
         {isCollapsed ? (
           <>
             <Tooltip>
@@ -187,13 +187,13 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
                     'flex items-center justify-center h-10 w-full rounded-lg transition-all',
                     location.pathname === '/admin/configuracoes'
                       ? 'bg-sidebar-accent text-sidebar-primary'
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
                   )}
                 >
-                  <Settings className="h-5 w-5" />
+                  <Settings className="h-4 w-4" />
                 </NavLink>
               </TooltipTrigger>
-              <TooltipContent side="right" className="font-sans">Configurações</TooltipContent>
+              <TooltipContent side="right" className="font-sans text-xs">Configurações</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -201,12 +201,12 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
                   variant="ghost"
                   size="icon"
                   onClick={onLogout}
-                  className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  className="w-full h-10 text-destructive hover:bg-destructive/10 hover:text-destructive"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="font-sans">Sair</TooltipContent>
+              <TooltipContent side="right" className="font-sans text-xs">Sair</TooltipContent>
             </Tooltip>
           </>
         ) : (
@@ -214,37 +214,34 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
             <NavLink
               to="/admin/configuracoes"
               className={cn(
-                'flex items-center gap-3 h-11 px-3 rounded-lg transition-all font-sans font-medium text-sm',
+                'flex items-center gap-3 h-10 px-3 rounded-lg transition-all font-sans text-sm',
                 location.pathname === '/admin/configuracoes'
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground border-l-4 border-sidebar-primary pl-2'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
+                  ? 'bg-sidebar-accent text-sidebar-primary font-medium'
+                  : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-primary'
               )}
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-4 w-4" />
               <span>Configurações</span>
             </NavLink>
-            <Button
-              variant="ghost"
+            <button
               onClick={onLogout}
-              className="w-full justify-start gap-3 text-destructive hover:bg-destructive/10 hover:text-destructive font-sans"
+              className="flex items-center gap-3 h-10 px-3 w-full rounded-lg transition-all font-sans text-sm text-destructive hover:bg-destructive/10"
             >
-              <LogOut className="h-5 w-5" />
-              Sair
-            </Button>
+              <LogOut className="h-4 w-4" />
+              <span>Sair</span>
+            </button>
           </>
         )}
       </div>
 
       {/* Toggle - only on desktop */}
       {!isMobile && (
-        <div className="p-3 border-t border-sidebar-border">
-          <Button
-            variant="ghost"
-            size="sm"
+        <div className="p-3 border-t border-sidebar-border/50">
+          <button
             onClick={onToggle}
             className={cn(
-              'w-full text-muted-foreground hover:text-foreground font-sans',
-              isCollapsed ? 'justify-center' : 'justify-start gap-3'
+              'flex items-center w-full h-9 rounded-lg transition-all font-sans text-xs text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/30',
+              isCollapsed ? 'justify-center' : 'justify-start gap-2 px-3'
             )}
           >
             {isCollapsed ? (
@@ -255,7 +252,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
                 <span>Recolher</span>
               </>
             )}
-          </Button>
+          </button>
         </div>
       )}
     </aside>
