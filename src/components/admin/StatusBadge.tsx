@@ -10,14 +10,14 @@ interface StatusBadgeProps {
 }
 
 const statusStyles: Record<AppointmentStatus, string> = {
-  scheduled: 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100',
+  scheduled: 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100',
   pre_confirmed: 'bg-cyan-100 text-cyan-800 border-cyan-200 hover:bg-cyan-100',
   confirmed: 'bg-green-100 text-green-800 border-green-200 hover:bg-green-100',
-  waiting: 'bg-yellow-100 text-yellow-800 border-yellow-200 hover:bg-yellow-100',
-  in_progress: 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100',
-  completed: 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-100',
+  waiting: 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100',
+  in_progress: 'bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100',
+  completed: 'bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100',
   cancelled: 'bg-red-100 text-red-800 border-red-200 hover:bg-red-100',
-  no_show: 'bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100',
+  no_show: 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100',
 };
 
 export function StatusBadge({ status, size = 'default', className }: StatusBadgeProps) {

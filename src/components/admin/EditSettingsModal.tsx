@@ -21,6 +21,7 @@ interface GeneralSettings {
   defaultDuration: number;
   bufferTime: number;
   minAdvanceTime: number;
+  averageConsultationValue: number;
 }
 
 interface EditSettingsModalProps {
@@ -113,6 +114,29 @@ export function EditSettingsModal({
                 <SelectItem value="4">4 horas</SelectItem>
                 <SelectItem value="24">24 horas</SelectItem>
                 <SelectItem value="48">48 horas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Valor médio por consulta */}
+          <div className="space-y-2">
+            <Label>Valor médio por consulta (€)</Label>
+            <Select
+              value={settings.averageConsultationValue.toString()}
+              onValueChange={(v) =>
+                setSettings({ ...settings, averageConsultationValue: parseInt(v) })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25€</SelectItem>
+                <SelectItem value="35">35€</SelectItem>
+                <SelectItem value="50">50€</SelectItem>
+                <SelectItem value="75">75€</SelectItem>
+                <SelectItem value="100">100€</SelectItem>
+                <SelectItem value="150">150€</SelectItem>
               </SelectContent>
             </Select>
           </div>
