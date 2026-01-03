@@ -3,9 +3,7 @@ import { Clock, Users, Settings2, Tag, Plus, MoreHorizontal, Save, SlidersHorizo
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { useClinic } from '@/context/ClinicContext';
-import { PageHeader } from '@/components/admin/PageHeader';
 import { EditHoursModal } from '@/components/admin/EditHoursModal';
 import { EditSettingsModal } from '@/components/admin/EditSettingsModal';
 import { ManageProfessionalsModal } from '@/components/admin/ManageProfessionalsModal';
@@ -43,107 +41,101 @@ export default function SettingsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Definições da Clínica"
-        subtitle="Gerencie horários, equipa e regras do sistema."
-        actions={
-          <Button className="gap-2">
-            <Save className="h-4 w-4" />
-            Guardar Alterações
-          </Button>
-        }
-      />
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-lg lg:text-xl font-bold text-foreground">Definições</h1>
+          <p className="text-xs lg:text-sm text-muted-foreground">Gerencie horários e equipa.</p>
+        </div>
+        <Button size="sm" className="gap-2 self-start sm:self-auto bg-primary-gradient hover:opacity-90">
+          <Save className="h-4 w-4" />
+          <span className="hidden sm:inline">Guardar</span>
+        </Button>
+      </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="space-y-4 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-6">
         {/* Coluna esquerda */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Horário de Funcionamento */}
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="p-5 flex items-start gap-4">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Clock className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground">Horário de Funcionamento</h3>
-                <div className="mt-4 space-y-3">
-                  {workingHours.slice(0, 3).map((schedule) => (
-                    <div key={schedule.day} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Switch 
-                          checked={schedule.enabled} 
-                          onCheckedChange={(checked) => {
-                            setWorkingHours(prev => prev.map(h => 
-                              h.day === schedule.day ? { ...h, enabled: checked } : h
-                            ));
-                          }}
-                          className="data-[state=checked]:bg-primary"
-                        />
-                        <span className={schedule.enabled ? 'font-medium text-foreground' : 'text-muted-foreground'}>
-                          {schedule.day}
-                        </span>
-                      </div>
-                      {schedule.enabled ? (
-                        <span className="text-sm text-muted-foreground font-mono bg-muted px-2 py-1 rounded">
-                          {schedule.start} - {schedule.end}
-                        </span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Fechado</span>
-                      )}
-                    </div>
-                  ))}
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <div className="flex items-center gap-3">
-                      <Switch disabled checked={false} />
-                      <span>Domingo</span>
-                    </div>
-                    <span className="text-sm">Fechado</span>
-                  </div>
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="p-4 lg:p-5">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
                 </div>
-                <Button 
-                  variant="link" 
-                  className="mt-4 p-0 h-auto text-primary"
-                  onClick={() => setHoursModalOpen(true)}
-                >
-                  Editar exceções de feriados
-                </Button>
+                <h3 className="font-semibold text-sm lg:text-base text-foreground pt-1">Horário</h3>
               </div>
+              <div className="space-y-2.5">
+                {workingHours.slice(0, 3).map((schedule) => (
+                  <div key={schedule.day} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={schedule.enabled} 
+                        onCheckedChange={(checked) => {
+                          setWorkingHours(prev => prev.map(h => 
+                            h.day === schedule.day ? { ...h, enabled: checked } : h
+                          ));
+                        }}
+                        className="data-[state=checked]:bg-primary scale-90"
+                      />
+                      <span className={`text-sm ${schedule.enabled ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+                        {schedule.day.slice(0, 3)}
+                      </span>
+                    </div>
+                    {schedule.enabled ? (
+                      <span className="text-xs text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
+                        {schedule.start}-{schedule.end}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Fechado</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Button 
+                variant="link" 
+                size="sm"
+                className="mt-3 p-0 h-auto text-primary text-xs"
+                onClick={() => setHoursModalOpen(true)}
+              >
+                Ver tudo
+              </Button>
             </div>
           </div>
 
           {/* Regras Automáticas */}
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="p-5 flex items-start gap-4">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <SlidersHorizontal className="h-5 w-5 text-primary" />
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="p-4 lg:p-5">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <SlidersHorizontal className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-sm lg:text-base text-foreground pt-1">Regras</h3>
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground">Regras Automáticas</h3>
-                <div className="mt-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">Evitar sobreposição de horários</span>
-                    <Switch 
-                      checked={rules.preventOverlap} 
-                      onCheckedChange={(checked) => setRules(prev => ({ ...prev, preventOverlap: checked }))}
-                      className="data-[state=checked]:bg-primary"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">Lembretes por SMS</span>
-                    <Switch 
-                      checked={rules.smsReminders} 
-                      onCheckedChange={(checked) => setRules(prev => ({ ...prev, smsReminders: checked }))}
-                      className="data-[state=checked]:bg-primary"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">Sugerir próxima vaga livre</span>
-                    <Switch 
-                      checked={rules.suggestNextSlot} 
-                      onCheckedChange={(checked) => setRules(prev => ({ ...prev, suggestNextSlot: checked }))}
-                      className="data-[state=checked]:bg-primary"
-                    />
-                  </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs lg:text-sm text-foreground">Evitar sobreposição</span>
+                  <Switch 
+                    checked={rules.preventOverlap} 
+                    onCheckedChange={(checked) => setRules(prev => ({ ...prev, preventOverlap: checked }))}
+                    className="data-[state=checked]:bg-primary scale-90"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs lg:text-sm text-foreground">Lembretes SMS</span>
+                  <Switch 
+                    checked={rules.smsReminders} 
+                    onCheckedChange={(checked) => setRules(prev => ({ ...prev, smsReminders: checked }))}
+                    className="data-[state=checked]:bg-primary scale-90"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs lg:text-sm text-foreground">Sugerir vaga</span>
+                  <Switch 
+                    checked={rules.suggestNextSlot} 
+                    onCheckedChange={(checked) => setRules(prev => ({ ...prev, suggestNextSlot: checked }))}
+                    className="data-[state=checked]:bg-primary scale-90"
+                  />
                 </div>
               </div>
             </div>
@@ -151,44 +143,41 @@ export default function SettingsPage() {
         </div>
 
         {/* Coluna direita */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Equipa Médica */}
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="p-5">
-              <div className="flex items-start justify-between mb-1">
-                <div className="flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                    <Users className="h-5 w-5 text-blue-600" />
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="p-4 lg:p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 lg:gap-3">
+                  <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                    <Users className="h-4 w-4 lg:h-5 lg:w-5 text-blue-600" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground">Equipa Médica</h3>
-                    <p className="text-sm text-muted-foreground">Gerir acesso e disponibilidade dos doutores.</p>
-                  </div>
+                  <h3 className="font-semibold text-sm lg:text-base text-foreground">Equipa</h3>
                 </div>
-                <Button variant="outline" size="sm" className="gap-1" onClick={() => setProfessionalsModalOpen(true)}>
+                <Button variant="outline" size="sm" className="gap-1 h-7 text-xs" onClick={() => setProfessionalsModalOpen(true)}>
                   <Plus className="h-3 w-3" />
-                  Adicionar Novo
+                  <span className="hidden sm:inline">Novo</span>
                 </Button>
               </div>
-              <div className="mt-4 space-y-3">
+              <div className="space-y-2">
                 {professionals.map((prof) => (
-                  <div key={prof.id} className="flex items-center justify-between py-2">
-                    <div className="flex items-center gap-3">
+                  <div key={prof.id} className="flex items-center justify-between py-1.5">
+                    <div className="flex items-center gap-2">
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-xs"
                         style={{ backgroundColor: prof.color }}
                       >
                         {prof.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground">{prof.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {prof.specialty} • <span className="text-green-600">Ativo</span>
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground text-sm truncate">{prof.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {prof.specialty}
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                      <MoreHorizontal className="h-4 w-4" />
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground shrink-0">
+                      <MoreHorizontal className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 ))}
@@ -197,21 +186,19 @@ export default function SettingsPage() {
           </div>
 
           {/* Tipos de Consulta */}
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="p-5">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
-                  <Tag className="h-5 w-5 text-purple-600" />
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="p-4 lg:p-5">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                  <Tag className="h-4 w-4 lg:h-5 lg:w-5 text-purple-600" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Tipos de Consulta</h3>
-                </div>
+                <h3 className="font-semibold text-sm lg:text-base text-foreground pt-1">Tipos</h3>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {consultationTypes.map((type) => (
-                  <div key={type.id} className="flex items-center justify-between p-3 rounded-xl border border-border">
-                    <span className="text-sm font-medium text-foreground">{type.name}</span>
-                    <span className="text-sm text-primary font-medium">{type.defaultDuration} min</span>
+                  <div key={type.id} className="flex items-center justify-between p-2.5 rounded-lg border border-border">
+                    <span className="text-xs lg:text-sm font-medium text-foreground truncate">{type.name}</span>
+                    <span className="text-xs text-primary font-medium shrink-0 ml-2">{type.defaultDuration}m</span>
                   </div>
                 ))}
               </div>
@@ -219,65 +206,63 @@ export default function SettingsPage() {
           </div>
 
           {/* Parâmetros Gerais */}
-          <div className="bg-card border border-border rounded-2xl overflow-hidden">
-            <div className="p-5">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-                  <Settings2 className="h-5 w-5 text-muted-foreground" />
+          <div className="bg-card border border-border rounded-xl overflow-hidden">
+            <div className="p-4 lg:p-5">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                  <Settings2 className="h-4 w-4 lg:h-5 lg:w-5 text-muted-foreground" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Parâmetros Gerais</h3>
-                </div>
+                <h3 className="font-semibold text-sm lg:text-base text-foreground pt-1">Parâmetros</h3>
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Duração Padrão</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs lg:text-sm text-muted-foreground">Duração</label>
                   <Select 
                     value={String(generalSettings.defaultDuration)} 
                     onValueChange={(v) => setGeneralSettings(prev => ({ ...prev, defaultDuration: Number(v) }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="15">15 minutos</SelectItem>
-                      <SelectItem value="30">30 minutos</SelectItem>
-                      <SelectItem value="45">45 minutos</SelectItem>
-                      <SelectItem value="60">60 minutos</SelectItem>
+                      <SelectItem value="15">15 min</SelectItem>
+                      <SelectItem value="30">30 min</SelectItem>
+                      <SelectItem value="45">45 min</SelectItem>
+                      <SelectItem value="60">60 min</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Intervalo (Buffer)</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs lg:text-sm text-muted-foreground">Buffer</label>
                   <Select 
                     value={String(generalSettings.bufferTime)} 
                     onValueChange={(v) => setGeneralSettings(prev => ({ ...prev, bufferTime: Number(v) }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="0">0 minutos</SelectItem>
-                      <SelectItem value="5">5 minutos</SelectItem>
-                      <SelectItem value="10">10 minutos</SelectItem>
-                      <SelectItem value="15">15 minutos</SelectItem>
+                      <SelectItem value="0">0 min</SelectItem>
+                      <SelectItem value="5">5 min</SelectItem>
+                      <SelectItem value="10">10 min</SelectItem>
+                      <SelectItem value="15">15 min</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground">Antecedência Mínima</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs lg:text-sm text-muted-foreground">Antecedência</label>
                   <Select 
                     value={String(generalSettings.minAdvanceTime)} 
                     onValueChange={(v) => setGeneralSettings(prev => ({ ...prev, minAdvanceTime: Number(v) }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">1 hora</SelectItem>
-                      <SelectItem value="2">2 horas</SelectItem>
-                      <SelectItem value="4">4 horas</SelectItem>
-                      <SelectItem value="24">24 horas</SelectItem>
+                      <SelectItem value="1">1h</SelectItem>
+                      <SelectItem value="2">2h</SelectItem>
+                      <SelectItem value="4">4h</SelectItem>
+                      <SelectItem value="24">24h</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

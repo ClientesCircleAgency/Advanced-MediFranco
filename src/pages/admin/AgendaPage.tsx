@@ -103,83 +103,80 @@ export default function AgendaPage() {
   };
 
   return (
-    <div className="space-y-4 lg:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl lg:text-2xl font-bold text-foreground capitalize">
-            {viewMode === 'day' ? 'Agenda do Dia' : viewMode === 'week' ? 'Agenda Semanal' : 'Agenda Mensal'}
-          </h1>
-          <p className="text-sm text-muted-foreground capitalize">{getTitle()}</p>
+    <div className="space-y-4">
+      {/* Header - Compact on mobile */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg lg:text-xl font-bold text-foreground">
+              {viewMode === 'day' ? 'Agenda' : viewMode === 'week' ? 'Semana' : 'Mês'}
+            </h1>
+            <p className="text-xs lg:text-sm text-muted-foreground capitalize">{getTitle()}</p>
+          </div>
+          
+          <Button onClick={() => setWizardOpen(true)} size="sm" className="gap-1.5 bg-primary-gradient hover:opacity-90">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Nova</span>
+          </Button>
         </div>
-        
-        <Button onClick={() => setWizardOpen(true)} className="gap-2 self-start sm:self-auto">
-          <Plus className="h-4 w-4" />
-          Nova Consulta
-        </Button>
       </div>
 
-      {/* Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Left side: Navigation + View Tabs */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          {/* Date Navigation */}
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" onClick={goPrevious} className="h-9 w-9">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            
-            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="min-w-[140px] gap-2">
-                  <CalendarDays className="h-4 w-4" />
-                  {format(currentDate, 'd MMM yyyy', { locale: pt })}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={currentDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setCurrentDate(date);
-                      setCalendarOpen(false);
-                    }
-                  }}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <Button variant="outline" size="icon" onClick={goNext} className="h-9 w-9">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            
-            <Button variant="ghost" size="sm" onClick={goToToday} className="ml-1">
-              Hoje
-            </Button>
-          </div>
-
-          {/* View Mode Tabs */}
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
-            <TabsList className="grid w-full grid-cols-3 sm:w-auto">
-              <TabsTrigger value="day" className="px-4">Dia</TabsTrigger>
-              <TabsTrigger value="week" className="px-4">Semana</TabsTrigger>
-              <TabsTrigger value="month" className="px-4">Mês</TabsTrigger>
-            </TabsList>
-          </Tabs>
+      {/* Controls - Stacked on mobile */}
+      <div className="space-y-3">
+        {/* Row 1: Navigation */}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={goPrevious} className="h-8 w-8 shrink-0">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="flex-1 justify-start gap-2 text-xs lg:text-sm h-8">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {format(currentDate, 'd MMM', { locale: pt })}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={currentDate}
+                onSelect={(date) => {
+                  if (date) {
+                    setCurrentDate(date);
+                    setCalendarOpen(false);
+                  }
+                }}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+          
+          <Button variant="outline" size="icon" onClick={goNext} className="h-8 w-8 shrink-0">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          
+          <Button variant="ghost" size="sm" onClick={goToToday} className="h-8 text-xs shrink-0">
+            Hoje
+          </Button>
         </div>
 
-        {/* Right side: Filters */}
-        <div className="flex items-center gap-3">
-          {/* Professional filter */}
+        {/* Row 2: View Mode + Filter */}
+        <div className="flex items-center gap-2">
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="flex-1">
+            <TabsList className="grid w-full grid-cols-3 h-8">
+              <TabsTrigger value="day" className="text-xs h-7">Dia</TabsTrigger>
+              <TabsTrigger value="week" className="text-xs h-7">Sem</TabsTrigger>
+              <TabsTrigger value="month" className="text-xs h-7">Mês</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <Select value={selectedProfessional} onValueChange={setSelectedProfessional}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Todos os médicos" />
+            <SelectTrigger className="w-[120px] lg:w-[180px] h-8 text-xs">
+              <SelectValue placeholder="Médico" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos os médicos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {activeProfessionals.map((prof) => (
                 <SelectItem key={prof.id} value={prof.id}>
                   <div className="flex items-center gap-2">
@@ -187,7 +184,7 @@ export default function AgendaPage() {
                       className="w-2 h-2 rounded-full"
                       style={{ backgroundColor: prof.color }}
                     />
-                    {prof.name}
+                    <span className="truncate">{prof.name.split(' ')[0]}</span>
                   </div>
                 </SelectItem>
               ))}
