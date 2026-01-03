@@ -55,7 +55,7 @@ export function HeroSection() {
             <Button
               size="lg"
               onClick={scrollToMarcacao}
-              className="bg-primary hover:bg-primary/90 text-base font-semibold px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl gap-2"
+              className="bg-primary-gradient hover:opacity-90 text-base font-semibold px-8 py-6 shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl gap-2"
             >
               <Calendar className="w-5 h-5" />
               Marcar Consulta
