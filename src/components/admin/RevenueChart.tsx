@@ -5,7 +5,21 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, Euro } from 'lucide-react';
 import { useClinic } from '@/context/ClinicContext';
 import { useSettings } from '@/hooks/useSettings';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval, parseISO } from 'date-fns';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  startOfDay,
+  endOfDay,
+  eachDayOfInterval,
+  eachMonthOfInterval,
+  isWithinInterval,
+  parseISO,
+} from 'date-fns';
 import { pt } from 'date-fns/locale';
 import {
   ChartContainer,
@@ -31,8 +45,16 @@ export function RevenueChart() {
   const averageValue = (settings?.averageConsultationValue as number) || 50;
 
   const completedAppointments = useMemo(() => {
-    return appointments.filter(a => a.status === 'completed');
+    return appointments.filter((a) => a.status === 'completed');
   }, [appointments]);
+
+  const completedCountByDate = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const apt of completedAppointments) {
+      map.set(apt.date, (map.get(apt.date) ?? 0) + 1);
+    }
+    return map;
+  }, [completedAppointments]);
 
   const revenueData = useMemo(() => {
     const today = new Date();
@@ -71,13 +93,71 @@ export function RevenueChart() {
   }, [completedAppointments, averageValue]);
 
   const chartData = useMemo(() => {
-    return [
-      { name: 'Hoje', value: revenueData.day.revenue },
-      { name: 'Semana', value: revenueData.week.revenue },
-      { name: 'Mês', value: revenueData.month.revenue },
-      { name: 'Ano', value: revenueData.year.revenue },
+    const now = new Date();
+
+    const interval = (() => {
+      switch (activePeriod) {
+        case 'day': {
+          const start = startOfDay(now);
+          const end = endOfDay(now);
+          return { start, end };
+        }
+        case 'week': {
+          const start = startOfDay(startOfWeek(now, { weekStartsOn: 1 }));
+          const end = endOfDay(endOfWeek(now, { weekStartsOn: 1 }));
+          return { start, end };
+        }
+        case 'month': {
+          const start = startOfDay(startOfMonth(now));
+          const end = endOfDay(endOfMonth(now));
+          return { start, end };
+        }
+        case 'year': {
+          const start = startOfDay(startOfYear(now));
+          const end = endOfDay(endOfYear(now));
+          return { start, end };
+        }
+      }
+    })();
+
+    // Linha sempre começa a 0 no início do período.
+    const points: Array<{ t: number; value: number }> = [
+      { t: interval.start.getTime(), value: 0 },
     ];
-  }, [revenueData]);
+
+    const dateKey = (d: Date) => format(d, 'yyyy-MM-dd');
+    let cumulative = 0;
+
+    if (activePeriod === 'year') {
+      // No ano mostramos por mês (Jan–Dez), mas respeitando o intervalo completo.
+      const months = eachMonthOfInterval(interval);
+      for (const monthStart of months) {
+        const mStart = startOfMonth(monthStart);
+        const mEnd = endOfMonth(monthStart);
+        const days = eachDayOfInterval({ start: mStart, end: mEnd });
+
+        let monthCount = 0;
+        for (const d of days) {
+          monthCount += completedCountByDate.get(dateKey(d)) ?? 0;
+        }
+
+        cumulative += monthCount * averageValue;
+        points.push({ t: mEnd.getTime(), value: cumulative });
+      }
+
+      return points;
+    }
+
+    // Dia / Semana / Mês: pontos diários (Seg–Dom; 1–30/31; hoje).
+    const days = eachDayOfInterval(interval);
+    for (const d of days) {
+      const count = completedCountByDate.get(dateKey(d)) ?? 0;
+      cumulative += count * averageValue;
+      points.push({ t: endOfDay(d).getTime(), value: cumulative });
+    }
+
+    return points;
+  }, [activePeriod, completedCountByDate, averageValue]);
 
   const chartConfig = {
     value: {
@@ -163,26 +243,52 @@ export function RevenueChart() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-            <XAxis 
-              dataKey="name" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: 'hsl(var(--muted-foreground))' }}
+            <XAxis
+              dataKey="t"
+              type="number"
+              scale="time"
+              domain={['dataMin', 'dataMax']}
+              axisLine={false}
+              tickLine={false}
+              minTickGap={24}
+              interval="preserveStartEnd"
+              tick={{
+                fontSize: 11,
+                fontFamily: 'var(--font-mono)',
+                fill: 'hsl(var(--muted-foreground))',
+              }}
+              tickFormatter={(value: number) => {
+                const d = new Date(value);
+                if (activePeriod === 'day') return format(d, 'HH:mm', { locale: pt });
+                if (activePeriod === 'week') return format(d, 'EEE', { locale: pt });
+                if (activePeriod === 'month') return format(d, 'd', { locale: pt });
+                return format(d, 'MMM', { locale: pt });
+              }}
             />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: 'hsl(var(--muted-foreground))' }}
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              domain={[0, 'auto']}
+              tick={{
+                fontSize: 11,
+                fontFamily: 'var(--font-mono)',
+                fill: 'hsl(var(--muted-foreground))',
+              }}
               tickFormatter={(value) => `${value}€`}
               width={50}
             />
-            <ChartTooltip 
+            <ChartTooltip
               content={<ChartTooltipContent />}
+              labelFormatter={(label) => {
+                const d = new Date(Number(label));
+                if (activePeriod === 'year') return format(d, 'MMM yyyy', { locale: pt });
+                return format(d, 'PPP', { locale: pt });
+              }}
               formatter={(value: number) => [`${value.toLocaleString('pt-PT')}€`, 'Faturação']}
             />
-            <Area 
+            <Area
               type="monotone"
-              dataKey="value" 
+              dataKey="value"
               stroke="hsl(var(--chart-1))"
               strokeWidth={2}
               fill="url(#chartGradient)"
