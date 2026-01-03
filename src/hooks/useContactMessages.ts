@@ -33,14 +33,14 @@ export function useAddContactMessage() {
   
   return useMutation({
     mutationFn: async (message: ContactMessageInsert) => {
-      const { data, error } = await supabase
+      // Note: public users can INSERT but cannot SELECT from this table (PII).
+      // Avoid returning the inserted row to prevent RLS SELECT failures.
+      const { error } = await supabase
         .from('contact_messages')
-        .insert(message)
-        .select()
-        .single();
-      
+        .insert(message);
+
       if (error) throw error;
-      return data;
+      return null;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact_messages'] });

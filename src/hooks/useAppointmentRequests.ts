@@ -40,14 +40,14 @@ export function useAddAppointmentRequest() {
   
   return useMutation({
     mutationFn: async (request: AppointmentRequestInsert) => {
-      const { data, error } = await supabase
+      // Note: public users can INSERT but cannot SELECT from this table (PII).
+      // Avoid returning the inserted row to prevent RLS SELECT failures.
+      const { error } = await supabase
         .from('appointment_requests')
-        .insert(request)
-        .select()
-        .single();
-      
+        .insert(request);
+
       if (error) throw error;
-      return data;
+      return null;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointment_requests'] });
