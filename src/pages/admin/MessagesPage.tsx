@@ -23,63 +23,10 @@ interface Message {
   status?: 'sent' | 'delivered' | 'read';
 }
 
-// Mock data para demonstração
-const mockConversations: Conversation[] = [
-  {
-    id: '1',
-    name: 'Joana Martins',
-    lastMessage: 'Gostaria de remarcar para terça...',
-    time: '10:42',
-    unread: true,
-    isBot: true,
-  },
-  {
-    id: '2',
-    name: 'Pedro Nunes',
-    lastMessage: 'Qual é o preço do implante?',
-    time: 'Ontem',
-    unread: true,
-  },
-  {
-    id: '3',
-    name: 'Maria Silva',
-    lastMessage: 'Obrigada pela confirmação!',
-    time: 'Ontem',
-  },
-  {
-    id: '4',
-    name: 'António Costa',
-    lastMessage: 'Vou chegar 10 minutos atrasado',
-    time: 'Seg',
-  },
-  {
-    id: '5',
-    name: 'Ana Ferreira',
-    lastMessage: 'Preciso de uma receita médica',
-    time: 'Dom',
-  },
-];
-
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    content: 'Olá Joana! A sua consulta é amanhã às 10:00. Confirma?',
-    time: '10:30',
-    isOutgoing: true,
-    status: 'read',
-  },
-  {
-    id: '2',
-    content: 'Bom dia. Infelizmente não consigo ir. Gostaria de remarcar para terça.',
-    time: '10:42',
-    isOutgoing: false,
-  },
-];
-
 export default function MessagesPage() {
-  const [conversations] = useState<Conversation[]>(mockConversations);
+  const [conversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
-  const [messages] = useState<Message[]>(mockMessages);
+  const [messages] = useState<Message[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
 
@@ -123,43 +70,49 @@ export default function MessagesPage() {
         {/* Conversations list */}
         <ScrollArea className="flex-1">
           <div>
-            {filteredConversations.map((conversation) => (
-              <button
-                key={conversation.id}
-                onClick={() => setSelectedConversation(conversation)}
-                className={cn(
-                  'w-full px-3 py-3 flex items-center gap-3 text-left transition-colors hover:bg-accent/50 border-b border-border/50',
-                  selectedConversation?.id === conversation.id && 'bg-accent border-l-4 border-l-primary'
-                )}
-              >
-                <Avatar className="h-10 w-10 shrink-0">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                    {getInitials(conversation.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-sm text-foreground truncate">
-                      {conversation.name}
-                    </span>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-xs text-muted-foreground">
-                        {conversation.time}
+            {filteredConversations.length === 0 ? (
+              <div className="p-6 text-center text-muted-foreground text-sm">
+                Sem conversas
+              </div>
+            ) : (
+              filteredConversations.map((conversation) => (
+                <button
+                  key={conversation.id}
+                  onClick={() => setSelectedConversation(conversation)}
+                  className={cn(
+                    'w-full px-3 py-3 flex items-center gap-3 text-left transition-colors hover:bg-accent/50 border-b border-border/50',
+                    selectedConversation?.id === conversation.id && 'bg-accent border-l-4 border-l-primary'
+                  )}
+                >
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                      {getInitials(conversation.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-sm text-foreground truncate">
+                        {conversation.name}
                       </span>
-                      {conversation.unread && (
-                        <div className="w-2 h-2 rounded-full bg-destructive" />
-                      )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-xs text-muted-foreground">
+                          {conversation.time}
+                        </span>
+                        {conversation.unread && (
+                          <div className="w-2 h-2 rounded-full bg-destructive" />
+                        )}
+                      </div>
                     </div>
+                    <p className={cn(
+                      'text-sm truncate mt-0.5',
+                      conversation.unread ? 'text-foreground' : 'text-muted-foreground'
+                    )}>
+                      {conversation.lastMessage}
+                    </p>
                   </div>
-                  <p className={cn(
-                    'text-sm truncate mt-0.5',
-                    conversation.unread ? 'text-foreground' : 'text-muted-foreground'
-                  )}>
-                    {conversation.lastMessage}
-                  </p>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))
+            )}
           </div>
         </ScrollArea>
       </div>

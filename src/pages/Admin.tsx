@@ -18,7 +18,6 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Appointment, ContactMessage } from '@/types';
-import { mockAppointments, mockMessages } from '@/data/mockData';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
@@ -42,9 +41,9 @@ export default function Admin() {
   const { isAuthenticated, isLoading, logout } = useAuth();
   const { toast } = useToast();
   
-  // Initialize with mock data if empty
-  const [appointments, setAppointments] = useLocalStorage<Appointment[]>('medifranco_appointments', mockAppointments);
-  const [messages, setMessages] = useLocalStorage<ContactMessage[]>('medifranco_messages', mockMessages);
+  // Initialize with empty arrays
+  const [appointments, setAppointments] = useLocalStorage<Appointment[]>('medifranco_appointments', []);
+  const [messages, setMessages] = useLocalStorage<ContactMessage[]>('medifranco_messages', []);
   
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
