@@ -37,94 +37,94 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* HUD-style KPI Cards - Compact 3 cols layout */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 lg:gap-3">
+      {/* Minimalist Square KPI Cards */}
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Consultas Hoje */}
-        <div className="bg-card border border-border rounded-lg p-3 shadow-sm relative overflow-hidden">
-          <div className="absolute top-2 right-2">
-            <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
+          <CalendarDays className="h-4 w-4 text-primary" />
+          <div>
+            <p className="font-mono text-2xl lg:text-3xl font-semibold text-primary">
+              {todayAppointments.length}
+            </p>
+            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              Hoje
+            </p>
           </div>
-          <p className="font-mono text-xl lg:text-2xl font-semibold text-primary tracking-tight">
-            {todayAppointments.length}
-          </p>
-          <p className="text-[10px] lg:text-xs font-medium text-muted-foreground mt-0.5">
-            Consultas Hoje
-          </p>
         </div>
 
         {/* Pedidos Pendentes */}
         <Link to="/admin/pedidos" className="block">
-          <div className="bg-card border border-primary/30 rounded-lg p-3 shadow-sm relative overflow-hidden h-full">
-            <div className="absolute top-2 right-2 flex items-center gap-1">
+          <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between h-full hover:border-primary/50 transition-colors">
+            <div className="flex items-center justify-between">
+              <Inbox className="h-4 w-4 text-primary" />
               {pendingRequests.length > 0 && (
-                <Badge className="bg-destructive text-destructive-foreground text-[8px] px-1 py-0">
-                  Novo
-                </Badge>
+                <span className="h-2 w-2 rounded-full bg-destructive" />
               )}
-              <Inbox className="h-3.5 w-3.5 text-primary" />
             </div>
-            <p className="font-mono text-xl lg:text-2xl font-semibold text-primary tracking-tight">
-              {pendingRequests.length}
-            </p>
-            <p className="text-[10px] lg:text-xs font-medium text-muted-foreground mt-0.5">
-              Pedidos
-            </p>
+            <div>
+              <p className="font-mono text-2xl lg:text-3xl font-semibold text-primary">
+                {pendingRequests.length}
+              </p>
+              <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+                Pedidos
+              </p>
+            </div>
           </div>
         </Link>
 
         {/* Pacientes Registados */}
-        <div className="bg-card border border-border rounded-lg p-3 shadow-sm relative overflow-hidden">
-          <div className="absolute top-2 right-2">
-            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <p className="font-mono text-2xl lg:text-3xl font-semibold text-foreground">
+              {patients.length}
+            </p>
+            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              Pacientes
+            </p>
           </div>
-          <p className="font-mono text-xl lg:text-2xl font-semibold text-foreground tracking-tight">
-            {patients.length}
-          </p>
-          <p className="text-[10px] lg:text-xs font-medium text-muted-foreground mt-0.5">
-            Pacientes
-          </p>
         </div>
 
         {/* Total Consultas */}
-        <div className="bg-card border border-border rounded-lg p-3 shadow-sm relative overflow-hidden">
-          <div className="absolute top-2 right-2">
-            <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
+          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <p className="font-mono text-2xl lg:text-3xl font-semibold text-foreground">
+              {appointments.length}
+            </p>
+            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              Total
+            </p>
           </div>
-          <p className="font-mono text-xl lg:text-2xl font-semibold text-foreground tracking-tight">
-            {appointments.length}
-          </p>
-          <p className="text-[10px] lg:text-xs font-medium text-muted-foreground mt-0.5">
-            Total
-          </p>
         </div>
 
         {/* Google Rating */}
-        <div className="bg-card border border-border rounded-lg p-3 shadow-sm relative overflow-hidden">
-          <div className="absolute top-2 right-2">
-            <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-          </div>
-          <div className="flex items-baseline gap-1">
-            <p className="font-mono text-xl lg:text-2xl font-semibold text-foreground tracking-tight">
-              {googleRating}
+        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
+          <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+          <div>
+            <div className="flex items-baseline gap-0.5">
+              <p className="font-mono text-2xl lg:text-3xl font-semibold text-foreground">
+                {googleRating}
+              </p>
+              <span className="text-[10px] text-muted-foreground">/5</span>
+            </div>
+            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              Google
             </p>
-            <span className="text-[10px] text-muted-foreground">/5</span>
           </div>
-          <p className="text-[10px] lg:text-xs font-medium text-muted-foreground mt-0.5">
-            Google ({totalReviews} reviews)
-          </p>
         </div>
 
         {/* Chatbot Bookings Today */}
-        <div className="bg-card border border-border rounded-lg p-3 shadow-sm relative overflow-hidden">
-          <div className="absolute top-2 right-2">
-            <Bot className="h-3.5 w-3.5 text-primary" />
+        <div className="bg-card border border-border rounded-xl aspect-square p-4 shadow-sm flex flex-col justify-between">
+          <Bot className="h-4 w-4 text-primary" />
+          <div>
+            <p className="font-mono text-2xl lg:text-3xl font-semibold text-primary">
+              {chatbotBookingsToday}
+            </p>
+            <p className="text-[9px] lg:text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              Chatbot
+            </p>
           </div>
-          <p className="font-mono text-xl lg:text-2xl font-semibold text-primary tracking-tight">
-            {chatbotBookingsToday}
-          </p>
-          <p className="text-[10px] lg:text-xs font-medium text-muted-foreground mt-0.5">
-            Marcações Chatbot
-          </p>
         </div>
       </div>
 
