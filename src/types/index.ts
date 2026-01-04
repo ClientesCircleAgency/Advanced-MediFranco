@@ -36,6 +36,7 @@ export interface TeamMember {
   role: string;
   specialty: string;
   image: string;
+  shortBio: string;
   bio: string;
 }
 
