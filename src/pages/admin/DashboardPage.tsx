@@ -6,8 +6,8 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { StatusBadge } from '@/components/admin/StatusBadge';
+import { AppointmentsChart } from '@/components/admin/AppointmentsChart';
 import type { AppointmentStatus } from '@/types/clinic';
-
 export default function DashboardPage() {
   const { appointments, patients } = useClinic();
   const { data: requests = [] } = useAppointmentRequests();
@@ -137,6 +137,9 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {/* Appointments Chart */}
+      <AppointmentsChart />
 
       {/* Bottom Cards Grid */}
       <div className="grid grid-cols-1 gap-4 lg:gap-6">
