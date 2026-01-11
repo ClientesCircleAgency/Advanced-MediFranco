@@ -35,12 +35,12 @@ export default function RequestsPage() {
   const { data: specialties = [] } = useSpecialties();
   const { data: consultationTypes = [] } = useConsultationTypes();
   const { data: professionals = [] } = useProfessionals();
-  
+
   const updateRequestStatus = useUpdateAppointmentRequestStatus();
   const updateMessageStatus = useUpdateContactMessageStatus();
   const addPatient = useAddPatient();
   const addAppointment = useAddAppointment();
-  
+
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<AppointmentRequest | null>(null);
@@ -61,12 +61,12 @@ export default function RequestsPage() {
   // Convert request to pre-confirmed appointment
   const handleConvertToAppointment = async () => {
     if (!selectedRequest) return;
-    
+
     setIsConverting(true);
     try {
       // 1. Find or create patient
       let patient = patients.find(p => p.nif === selectedRequest.nif);
-      
+
       if (!patient) {
         const newPatient = await addPatient.mutateAsync({
           nif: selectedRequest.nif,
@@ -78,12 +78,12 @@ export default function RequestsPage() {
       }
 
       // 2. Determine specialty and consultation type
-      const specialty = specialties.find(s => 
-        selectedRequest.service_type === 'oftalmologia' 
+      const specialty = specialties.find(s =>
+        selectedRequest.service_type === 'oftalmologia'
           ? s.name.toLowerCase().includes('oftalmo')
           : s.name.toLowerCase().includes('dent')
       );
-      
+
       const consultationType = consultationTypes[0]; // Use first available
       const professional = professionals.find(p => p.specialty_id === specialty?.id) || professionals[0];
 
@@ -107,7 +107,7 @@ export default function RequestsPage() {
 
       // 4. Update request status
       await updateRequestStatus.mutateAsync({ id: selectedRequest.id, status: 'converted' });
-      
+
       toast.success('Consulta confirmada criada com sucesso.');
       setSelectedRequest(null);
     } catch (error) {
@@ -144,14 +144,6 @@ export default function RequestsPage() {
     } catch {
       toast.error('Erro ao arquivar mensagem');
     }
-  };
-
-  const handleSendWhatsApp = (message: string, phone: string) => {
-    // Format phone for WhatsApp (remove spaces, add country code if needed)
-    const formattedPhone = phone.replace(/\s/g, '').replace(/^0/, '351');
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${formattedPhone}?text=${encodedMessage}`, '_blank');
-    toast.success('WhatsApp aberto com mensagem');
   };
 
   const handleSuggestAlternatives = () => {
@@ -417,7 +409,7 @@ export default function RequestsPage() {
                       Sugerir Alternativas
                     </Button>
                   </div>
-                  
+
                   {/* Secondary Action */}
                   <Button
                     variant="ghost"
@@ -486,12 +478,10 @@ export default function RequestsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Suggest Alternatives Modal */}
       <SuggestAlternativesModal
         open={showAlternativesModal}
         onOpenChange={setShowAlternativesModal}
         request={selectedRequest}
-        onSendWhatsApp={handleSendWhatsApp}
       />
     </div>
   );

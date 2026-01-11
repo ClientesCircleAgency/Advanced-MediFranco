@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, addDays, parse, isSameDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Calendar, Clock, MessageCircle, Send, User } from 'lucide-react';
+import { Calendar, Clock, MessageCircle, User } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,6 @@ interface SuggestAlternativesModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   request: AppointmentRequest | null;
-  onSendWhatsApp: (message: string, phone: string) => void;
 }
 
 interface TimeSlot {
@@ -40,7 +39,6 @@ export function SuggestAlternativesModal({
   open,
   onOpenChange,
   request,
-  onSendWhatsApp,
 }: SuggestAlternativesModalProps) {
   const { data: appointments = [] } = useAppointments();
   const { data: professionals = [] } = useProfessionals();
@@ -50,48 +48,48 @@ export function SuggestAlternativesModal({
   // Find available slots at the same time on different days
   const sameTimeSlots = useMemo(() => {
     if (!request) return [];
-    
+
     const requestedTime = request.preferred_time;
     const slots: TimeSlot[] = [];
-    
+
     for (let i = 1; i <= 14; i++) {
       const date = addDays(new Date(), i);
       const dateStr = format(date, 'yyyy-MM-dd');
-      
+
       // Check if this time slot is available
       const hasAppointment = appointments.some(
         apt => apt.date === dateStr && apt.time === requestedTime
       );
-      
+
       slots.push({
         date,
         time: requestedTime,
         isAvailable: !hasAppointment,
       });
     }
-    
+
     return slots.filter(s => s.isAvailable).slice(0, 6);
   }, [request, appointments]);
 
   // Find available slots on the same day at different times
   const sameDaySlots = useMemo(() => {
     if (!request) return [];
-    
+
     const requestedDate = new Date(request.preferred_date);
     const dateStr = format(requestedDate, 'yyyy-MM-dd');
-    
+
     const slots: TimeSlot[] = WORKING_HOURS.map(time => {
       const hasAppointment = appointments.some(
         apt => apt.date === dateStr && apt.time === time
       );
-      
+
       return {
         date: requestedDate,
         time,
         isAvailable: !hasAppointment && time !== request.preferred_time,
       };
     });
-    
+
     return slots.filter(s => s.isAvailable).slice(0, 8);
   }, [request, appointments]);
 
@@ -101,37 +99,6 @@ export function SuggestAlternativesModal({
         ? prev.filter(s => s !== slotKey)
         : [...prev, slotKey]
     );
-  };
-
-  const generateWhatsAppMessage = () => {
-    if (!request || selectedSlots.length === 0) return '';
-    
-    const slotsText = selectedSlots.map(slotKey => {
-      const [dateStr, time] = slotKey.split('|');
-      const date = new Date(dateStr);
-      return `• ${format(date, "EEEE, d 'de' MMMM", { locale: pt })} às ${time}`;
-    }).join('\n');
-    
-    return `Olá ${request.name.split(' ')[0]}! 👋
-
-Obrigado pelo seu pedido de marcação.
-
-Infelizmente, o horário que solicitou (${format(new Date(request.preferred_date), "d 'de' MMMM", { locale: pt })} às ${request.preferred_time}) não está disponível.
-
-Temos disponibilidade nos seguintes horários:
-${slotsText}
-
-Para confirmar, responda com o número da opção pretendida ou contacte-nos.
-
-Clínica Medifranco`;
-  };
-
-  const handleSend = () => {
-    if (!request) return;
-    const message = generateWhatsAppMessage();
-    onSendWhatsApp(message, request.phone);
-    onOpenChange(false);
-    setSelectedSlots([]);
   };
 
   const currentSlots = activeTab === 'same-time' ? sameTimeSlots : sameDaySlots;
@@ -199,27 +166,26 @@ Clínica Medifranco`;
               {currentSlots.map((slot) => {
                 const slotKey = `${format(slot.date, 'yyyy-MM-dd')}|${slot.time}`;
                 const isSelected = selectedSlots.includes(slotKey);
-                
+
                 return (
                   <Card
                     key={slotKey}
-                    className={`p-3 cursor-pointer transition-all ${
-                      isSelected
-                        ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                        : 'hover:border-primary/50'
-                    }`}
+                    className={`p-3 cursor-pointer transition-all ${isSelected
+                      ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                      : 'hover:border-primary/50'
+                      }`}
                     onClick={() => toggleSlot(slotKey)}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-sm">
-                          {activeTab === 'same-time' 
+                          {activeTab === 'same-time'
                             ? format(slot.date, "EEE, d MMM", { locale: pt })
                             : slot.time
                           }
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {activeTab === 'same-time' 
+                          {activeTab === 'same-time'
                             ? slot.time
                             : format(slot.date, "d MMM", { locale: pt })
                           }
@@ -234,29 +200,11 @@ Clínica Medifranco`;
               })}
             </div>
           )}
-
-          {/* Message Preview */}
-          {selectedSlots.length > 0 && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-xs font-medium text-green-800 mb-2">Pré-visualização da mensagem:</p>
-              <p className="text-xs text-green-700 whitespace-pre-line line-clamp-4">
-                {generateWhatsAppMessage()}
-              </p>
-            </div>
-          )}
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSend}
-            disabled={selectedSlots.length === 0}
-            className="gap-2 bg-green-600 hover:bg-green-700"
-          >
-            <Send className="h-4 w-4" />
-            Enviar WhatsApp
+            Fechar
           </Button>
         </DialogFooter>
       </DialogContent>

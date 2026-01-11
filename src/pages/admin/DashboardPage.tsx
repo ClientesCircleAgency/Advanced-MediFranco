@@ -1,4 +1,4 @@
-import { CalendarDays, Users, TrendingUp, Clock, Inbox, ArrowUpRight, Star, Bot } from 'lucide-react';
+import { CalendarDays, Users, TrendingUp, Clock, Inbox, ArrowUpRight, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useClinic } from '@/context/ClinicContext';
 import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
@@ -11,7 +11,7 @@ import type { AppointmentStatus } from '@/types/clinic';
 export default function DashboardPage() {
   const { appointments, patients } = useClinic();
   const { data: requests = [] } = useAppointmentRequests();
-  
+
   const todayDate = format(new Date(), 'yyyy-MM-dd');
   const todayAppointments = appointments.filter((a) => a.date === todayDate);
   const pendingRequests = requests.filter(r => r.status === 'pending');
@@ -21,9 +21,6 @@ export default function DashboardPage() {
   // Mock data for Google rating (would come from API)
   const googleRating = 4.8;
   const totalReviews = 127;
-
-  // Mock data for chatbot bookings today (resets at 00:00)
-  const chatbotBookingsToday = 3;
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -38,7 +35,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards Grid - Aligned with content below */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {/* Consultas Hoje */}
         <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-3">
@@ -119,21 +116,6 @@ export default function DashboardPage() {
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             Avaliação Google
-          </p>
-        </div>
-
-        {/* Chatbot Bookings Today */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Bot className="h-4 w-4 text-primary" />
-            </div>
-          </div>
-          <p className="font-mono text-2xl font-bold text-primary leading-none">
-            {chatbotBookingsToday}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Marcações chatbot
           </p>
         </div>
       </div>

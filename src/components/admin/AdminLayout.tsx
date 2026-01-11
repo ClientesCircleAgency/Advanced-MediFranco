@@ -15,7 +15,7 @@ const pageTitles: Record<string, { title: string }> = {
   '/admin/dashboard': { title: 'Dashboard' },
   '/admin/agenda': { title: 'Agenda do Dia' },
   '/admin/pacientes': { title: 'Gestão de Pacientes' },
-  '/admin/mensagens': { title: 'Inbox WhatsApp' },
+  '/admin/mensagens': { title: 'Mensagens' },
   '/admin/sala-espera': { title: 'Fluxo de Atendimento' },
   '/admin/lista-espera': { title: 'Lista de Espera' },
   '/admin/configuracoes': { title: 'Configurações' },
@@ -92,7 +92,7 @@ export function AdminLayout() {
           <SheetContent side="left" className="p-0 w-72 bg-sidebar border-sidebar-border">
             <AdminSidebar
               collapsed={false}
-              onToggle={() => {}}
+              onToggle={() => { }}
               onNewAppointment={handleNewAppointment}
               onLogout={handleLogout}
               isMobile
@@ -133,7 +133,7 @@ export function AdminLayout() {
                   Bot Ativo
                 </span>
               </div>
-              
+
               {/* Notifications */}
               <Button variant="ghost" size="icon" className="relative h-9 w-9">
                 <Bell className="h-5 w-5 text-muted-foreground" />
@@ -141,7 +141,7 @@ export function AdminLayout() {
                   2
                 </span>
               </Button>
-              
+
               {/* User Avatar */}
               <Avatar className="h-8 w-8 lg:h-9 lg:w-9 border-2 border-primary/20">
                 <AvatarFallback className="bg-primary text-primary-foreground font-sans font-semibold text-xs lg:text-sm">
