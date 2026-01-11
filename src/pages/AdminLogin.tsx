@@ -49,8 +49,8 @@ export default function AdminLogin() {
   // Show loading while checking auth state
   if (isLoading) {
     return <div className="min-h-screen bg-secondary/30 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>;
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    </div>;
   }
 
   // Don't render form if authenticated (will redirect)
@@ -76,54 +76,54 @@ export default function AdminLogin() {
     setIsSubmitting(false);
   };
   return <div className="min-h-screen bg-secondary/30 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-background rounded-2xl p-8 shadow-lg">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <img alt="MediFranco" src="/lovable-uploads/5d78ef85-41f7-409b-a788-0bdb021919ba.png" className="h-16 w-auto mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-foreground">Área de Admin</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Faça login para aceder ao painel de gestão
-            </p>
+    <div className="w-full max-w-md">
+      <div className="bg-background rounded-2xl p-8 shadow-lg">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <img alt="MediFranco" src={logo} className="h-16 w-auto mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground">Área de Admin</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Faça login para aceder ao painel de gestão
+          </p>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" placeholder="admin@medifranco.pt" {...register('email')} className={errors.email ? 'border-destructive' : ''} disabled={isSubmitting} />
+            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="admin@medifranco.pt" {...register('email')} className={errors.email ? 'border-destructive' : ''} disabled={isSubmitting} />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" {...register('password')} className={errors.password ? 'border-destructive pr-10' : 'pr-10'} disabled={isSubmitting} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" disabled={isSubmitting}>
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" {...register('password')} className={errors.password ? 'border-destructive pr-10' : 'pr-10'} disabled={isSubmitting} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" disabled={isSubmitting}>
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
-            </div>
-
-            <Button type="submit" disabled={isSubmitting} className="w-full bg-primary hover:bg-primary/90" size="lg">
-              {isSubmitting ? <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  A entrar...
-                </> : <>
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Entrar
-                </>}
-            </Button>
-          </form>
-
-          {/* Back link */}
-          <div className="mt-6 text-center">
-            <a href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              ← Voltar ao site
-            </a>
+            {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
           </div>
+
+          <Button type="submit" disabled={isSubmitting} className="w-full bg-primary hover:bg-primary/90" size="lg">
+            {isSubmitting ? <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              A entrar...
+            </> : <>
+              <LogIn className="w-4 h-4 mr-2" />
+              Entrar
+            </>}
+          </Button>
+        </form>
+
+        {/* Back link */}
+        <div className="mt-6 text-center">
+          <a href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            ← Voltar ao site
+          </a>
         </div>
       </div>
-    </div>;
+    </div>
+  </div>;
 }
