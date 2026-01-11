@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Calendar } from 'lucide-react';
-import logo from '@/assets/logo-medifranco.png';
+import logo from '@/assets/logo-medifranco-v4.png';
 export function HeroSection() {
   const scrollToMarcacao = () => {
     document.querySelector('#marcacao')?.scrollIntoView({

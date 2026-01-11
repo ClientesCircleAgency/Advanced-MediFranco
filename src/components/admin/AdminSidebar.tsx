@@ -23,7 +23,7 @@ import {
 import { useClinic } from '@/context/ClinicContext';
 import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
 import { PlanBadge } from './PlanBadge';
-import logo from '@/assets/logo-medifranco.png';
+import logo from '@/assets/logo-medifranco-v4.png';
 
 const navItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },

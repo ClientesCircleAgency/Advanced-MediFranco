@@ -1,5 +1,5 @@
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Linkedin } from 'lucide-react';
-import logo from '@/assets/logo-medifranco.png';
+import logo from '@/assets/logo-medifranco-v4.png';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
