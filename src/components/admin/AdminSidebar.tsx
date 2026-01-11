@@ -23,6 +23,7 @@ import {
 import { useClinic } from '@/context/ClinicContext';
 import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
 import { PlanBadge } from './PlanBadge';
+import logo from '@/assets/logo-medifranco.png';
 
 const navItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -68,9 +69,9 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
         "flex items-center justify-center border-b border-sidebar-border overflow-visible",
         isCollapsed ? "h-16 p-1" : "h-20 p-2"
       )}>
-        <img 
-          src="/logo-medifranco.png" 
-          alt="MediFranco" 
+        <img
+          src={logo}
+          alt="MediFranco"
           className={cn(
             "object-contain",
             isCollapsed ? "h-20 w-20" : "h-28 max-w-full"
@@ -99,8 +100,8 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
             <TooltipContent side="right">Nova Consulta</TooltipContent>
           </Tooltip>
         ) : (
-          <Button 
-            onClick={onNewAppointment} 
+          <Button
+            onClick={onNewAppointment}
             className="w-full gap-2 bg-primary-gradient hover:opacity-90 shadow-md transition-all hover:shadow-lg font-sans font-medium"
           >
             <Plus className="h-4 w-4" />
