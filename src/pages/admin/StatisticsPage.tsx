@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { format, startOfWeek, startOfMonth, startOfYear, subDays, eachDayOfInterval } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { BarChart3, Calendar, CheckCircle, XCircle, Clock, TrendingUp } from 'lucide-react';
+import { BarChart3, Calendar, CheckCircle, Clock, TrendingUp, AlertCircle } from 'lucide-react';
 import { PageHeader } from '@/components/admin/PageHeader';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +12,11 @@ type Period = 'today' | 'week' | 'month' | 'year';
 export default function StatisticsPage() {
     const { appointments } = useClinic();
     const [period, setPeriod] = useState<Period>('month');
+
+    // Filter out cancelled appointments globally for statistics
+    const activeAppointments = useMemo(() => {
+        return appointments.filter(a => ['scheduled', 'confirmed', 'completed'].includes(a.status));
+    }, [appointments]);
 
     const stats = useMemo(() => {
         const now = new Date();
@@ -34,21 +39,16 @@ export default function StatisticsPage() {
 
         const startDateStr = format(startDate, 'yyyy-MM-dd');
 
-        // Filter appointments by period
-        const periodAppointments = appointments.filter(apt => apt.date >= startDateStr);
+        // Filter active appointments by period
+        const periodAppointments = activeAppointments.filter(apt => apt.date >= startDateStr);
 
-        // Total appointments
+        // Total (Active) appointments
         const total = periodAppointments.length;
 
         // By status
         const confirmed = periodAppointments.filter(a => a.status === 'confirmed').length;
         const completed = periodAppointments.filter(a => a.status === 'completed').length;
-        const cancelled = periodAppointments.filter(a => a.status === 'cancelled').length;
         const pending = periodAppointments.filter(a => a.status === 'scheduled').length;
-
-        // Attendance rate (completed vs total non-cancelled)
-        const totalNonCancelled = total - cancelled;
-        const attendanceRate = totalNonCancelled > 0 ? (completed / totalNonCancelled) * 100 : 0;
 
         // By time of day
         const byHour = periodAppointments.reduce((acc, apt) => {
@@ -65,7 +65,7 @@ export default function StatisticsPage() {
             return acc;
         }, {} as Record<string, number>);
 
-        // Trend over last 7 days (for chart)
+        // Trend over last 7 days (Active only)
         const last7Days = eachDayOfInterval({
             start: subDays(now, 6),
             end: now
@@ -73,7 +73,7 @@ export default function StatisticsPage() {
 
         const trendData = last7Days.map(date => {
             const dateStr = format(date, 'yyyy-MM-dd');
-            const count = appointments.filter(a => a.date === dateStr).length;
+            const count = activeAppointments.filter(a => a.date === dateStr).length;
             return {
                 date: format(date, 'dd/MM'),
                 count
@@ -84,14 +84,12 @@ export default function StatisticsPage() {
             total,
             confirmed,
             completed,
-            cancelled,
             pending,
-            attendanceRate,
             byHour,
             byDayOfWeek,
             trendData
         };
-    }, [appointments, period]);
+    }, [activeAppointments, period]);
 
     const getPeriodLabel = () => {
         switch (period) {
@@ -106,7 +104,7 @@ export default function StatisticsPage() {
         <div className="space-y-4 lg:space-y-6">
             <PageHeader
                 title="Estatísticas de Marcações"
-                subtitle="Análise de volume e performance das consultas"
+                subtitle="Análise de volume e performance das consultas (exclui canceladas)"
             />
 
             {/* Period Selector */}
@@ -129,20 +127,20 @@ export default function StatisticsPage() {
                         </div>
                     </div>
                     <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Total de Marcações</p>
+                    <p className="text-sm text-muted-foreground mt-1">Total</p>
                     <p className="text-xs text-muted-foreground mt-1">{getPeriodLabel()}</p>
                 </Card>
 
-                {/* Attendance Rate */}
+                {/* Pending */}
                 <Card className="p-4">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
+                        <div className="h-10 w-10 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                            <AlertCircle className="h-5 w-5 text-yellow-600" />
                         </div>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">{stats.attendanceRate.toFixed(1)}%</p>
-                    <p className="text-sm text-muted-foreground mt-1">Taxa de Comparecimento</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stats.completed} completadas</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.pending}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Pendentes</p>
+                    <p className="text-xs text-muted-foreground mt-1">Aguardam aprovação</p>
                 </Card>
 
                 {/* Confirmed */}
@@ -154,19 +152,19 @@ export default function StatisticsPage() {
                     </div>
                     <p className="text-2xl font-bold text-foreground">{stats.confirmed}</p>
                     <p className="text-sm text-muted-foreground mt-1">Confirmadas</p>
-                    <p className="text-xs text-muted-foreground mt-1">Aguardam consulta</p>
+                    <p className="text-xs text-muted-foreground mt-1">Agendadas</p>
                 </Card>
 
-                {/* Cancelled */}
+                {/* Completed */}
                 <Card className="p-4">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                            <XCircle className="h-5 w-5 text-red-600" />
+                        <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
                         </div>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">{stats.cancelled}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Canceladas</p>
-                    <p className="text-xs text-muted-foreground mt-1">{((stats.cancelled / stats.total) * 100 || 0).toFixed(1)}% do total</p>
+                    <p className="text-2xl font-bold text-foreground">{stats.completed}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Concluídas</p>
+                    <p className="text-xs text-muted-foreground mt-1">Realizadas</p>
                 </Card>
             </div>
 
@@ -204,7 +202,7 @@ export default function StatisticsPage() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-green-500" />
-                                <span className="text-sm text-foreground">Completadas</span>
+                                <span className="text-sm text-foreground">Concluídas</span>
                             </div>
                             <span className="text-sm font-medium">{stats.completed}</span>
                         </div>
@@ -221,13 +219,6 @@ export default function StatisticsPage() {
                                 <span className="text-sm text-foreground">Pendentes</span>
                             </div>
                             <span className="text-sm font-medium">{stats.pending}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-red-500" />
-                                <span className="text-sm text-foreground">Canceladas</span>
-                            </div>
-                            <span className="text-sm font-medium">{stats.cancelled}</span>
                         </div>
                     </div>
                 </Card>
