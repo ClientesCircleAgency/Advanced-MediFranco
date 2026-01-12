@@ -1,7 +1,8 @@
-import { CalendarDays, Users, TrendingUp, Clock, Inbox, ArrowUpRight, Star } from 'lucide-react';
+import { CalendarDays, Users, TrendingUp, Clock, Inbox, ArrowUpRight, Star, Mail } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useClinic } from '@/context/ClinicContext';
 import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
+import { useContactMessages } from '@/hooks/useContactMessages';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -11,10 +12,12 @@ import type { AppointmentStatus } from '@/types/clinic';
 export default function DashboardPage() {
   const { appointments, patients } = useClinic();
   const { data: requests = [] } = useAppointmentRequests();
+  const { data: messages = [] } = useContactMessages();
 
   const todayDate = format(new Date(), 'yyyy-MM-dd');
   const todayAppointments = appointments.filter((a) => a.date === todayDate);
   const pendingRequests = requests.filter(r => r.status === 'pending');
+  const unreadMessages = messages.filter(m => m.status === 'new');
 
   const currentDate = format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: pt });
 
@@ -71,20 +74,25 @@ export default function DashboardPage() {
           </div>
         </Link>
 
-        {/* Pacientes Registados */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-              <Users className="h-4 w-4 text-muted-foreground" />
+        {/* Mensagens Pendentes */}
+        <Link to="/admin/mensagens" className="block group">
+          <div className="bg-card border border-border rounded-xl p-4 shadow-sm h-full hover:border-blue-500/50 hover:shadow-md transition-all">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <Mail className="h-4 w-4 text-blue-500" />
+              </div>
+              {unreadMessages.length > 0 && (
+                <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+              )}
             </div>
+            <p className="font-mono text-2xl font-bold text-foreground leading-none">
+              {unreadMessages.length}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Mensagens novas
+            </p>
           </div>
-          <p className="font-mono text-2xl font-bold text-foreground leading-none">
-            {patients.length}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Pacientes registados
-          </p>
-        </div>
+        </Link>
 
         {/* Total Consultas */}
         <div className="bg-card border border-border rounded-xl p-4 shadow-sm">

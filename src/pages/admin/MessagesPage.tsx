@@ -1,20 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Mail, Phone, ArrowLeft, MailOpen } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { useContactMessages } from '@/hooks/useContactMessages';
+import { useContactMessages, useUpdateContactMessageStatus } from '@/hooks/useContactMessages';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 
 export default function MessagesPage() {
   const { data: messages, isLoading } = useContactMessages();
+  const { mutate: updateStatus } = useUpdateContactMessageStatus();
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const selectedMessage = messages?.find(m => m.id === selectedMessageId) || null;
+
+  useEffect(() => {
+    if (selectedMessage && selectedMessage.status === 'new') {
+      updateStatus({ id: selectedMessage.id, status: 'read' });
+    }
+  }, [selectedMessageId, selectedMessage, updateStatus]);
 
   const filteredMessages = messages?.filter((m) =>
     m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
