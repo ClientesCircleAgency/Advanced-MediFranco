@@ -1,33 +1,51 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { BlogPostCard } from '@/components/blog/BlogPostCard';
 import type { BlogPost } from '@/types/blog';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Mock data - replace with real data when database is connected
+const mockPosts: BlogPost[] = [
+    {
+        id: '1',
+        title: 'Novos Avanços na Oftalmologia em 2024',
+        subtitle: 'Descubra as tecnologias que estão a revolucionar o tratamento da visão',
+        author: 'Dr. Franco',
+        slug: 'novos-avancos-oftalmologia-2024',
+        content: '<p>Conteúdo do artigo...</p>',
+        images: ['https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop'],
+        published_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    },
+    {
+        id: '2',
+        title: 'A Importância do Check-up Dentário',
+        subtitle: 'Por que deve visitar o dentista a cada 6 meses',
+        author: 'Dra. Silva',
+        slug: 'importancia-checkup-dentario',
+        content: '<p>Conteúdo do artigo...</p>',
+        images: ['https://images.unsplash.com/photo-1606811971618-4486d14f3f99?q=80&w=2000&auto=format&fit=crop'],
+        published_at: new Date(Date.now() - 86400000).toISOString(),
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        updated_at: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+        id: '3',
+        title: 'Nutrição e Saúde Ocular',
+        subtitle: 'Alimentos que protegem os seus olhos',
+        author: 'Dr. Franco',
+        slug: 'nutricao-saude-ocular',
+        content: '<p>Conteúdo do artigo...</p>',
+        images: ['https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=2000&auto=format&fit=crop'],
+        published_at: new Date(Date.now() - 172800000).toISOString(),
+        created_at: new Date(Date.now() - 172800000).toISOString(),
+        updated_at: new Date(Date.now() - 172800000).toISOString(),
+    },
+];
+
 export function BlogSection() {
-    const { data: posts, isLoading } = useQuery({
-        queryKey: ['blog-posts-home'],
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from('blog_posts')
-                .select('*')
-                .order('published_at', { ascending: false })
-                .limit(3);
-
-            if (error) throw error;
-            // Provide fallback for images if null
-            return (data || []).map(post => ({
-                ...post,
-                images: post.images || []
-            })) as BlogPost[];
-        },
-    });
-
-    // Mock data for initial display if no data (optional, but good for demo)
-    // Remove this in production if not needed or handle empty state
-    const hasPosts = posts && posts.length > 0;
+    const posts = mockPosts;
+    const hasPosts = posts.length > 0;
 
     return (
         <section className="py-24 bg-gradient-to-b from-background via-muted/30 to-background relative overflow-hidden">
@@ -55,17 +73,7 @@ export function BlogSection() {
                     )}
                 </div>
 
-                {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="space-y-4">
-                                <Skeleton className="aspect-[16/9] w-full rounded-xl" />
-                                <Skeleton className="h-4 w-3/4" />
-                                <Skeleton className="h-4 w-1/2" />
-                            </div>
-                        ))}
-                    </div>
-                ) : !hasPosts ? (
+                {!hasPosts ? (
                     <div className="text-center py-20 bg-muted/20 rounded-2xl border border-dashed border-muted-foreground/20">
                         <h3 className="text-xl font-medium text-muted-foreground">Em breve...</h3>
                         <p className="text-sm text-muted-foreground/60 mt-2">Nenhum artigo publicado ainda.</p>

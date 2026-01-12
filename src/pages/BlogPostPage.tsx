@@ -1,9 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { BlogPost } from "@/types/blog";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
@@ -19,52 +16,58 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
+// Mock data - replace with real data when database is connected
+const mockPosts: BlogPost[] = [
+    {
+        id: '1',
+        title: 'Novos Avanços na Oftalmologia em 2024',
+        subtitle: 'Descubra as tecnologias que estão a revolucionar o tratamento da visão',
+        author: 'Dr. Franco',
+        slug: 'novos-avancos-oftalmologia-2024',
+        content: `<h2>Tecnologia de Ponta</h2><p>A oftalmologia tem vindo a sofrer <strong>grandes transformações</strong> nos últimos anos.</p>`,
+        images: ['https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=2000&auto=format&fit=crop'],
+        published_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+    },
+    {
+        id: '2',
+        title: 'A Importância do Check-up Dentário',
+        subtitle: 'Por que deve visitar o dentista a cada 6 meses',
+        author: 'Dra. Silva',
+        slug: 'importancia-checkup-dentario',
+        content: `<p>Muitas pessoas só visitam o dentista quando sentem dor.</p>`,
+        images: ['https://images.unsplash.com/photo-1606811971618-4486d14f3f99?q=80&w=2000&auto=format&fit=crop'],
+        published_at: new Date(Date.now() - 86400000).toISOString(),
+        created_at: new Date(Date.now() - 86400000).toISOString(),
+        updated_at: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+        id: '3',
+        title: 'Nutrição e Saúde Ocular',
+        subtitle: 'Alimentos que protegem os seus olhos',
+        author: 'Dr. Franco',
+        slug: 'nutricao-saude-ocular',
+        content: `<p>Sabia que o que come afeta a sua visão?</p>`,
+        images: ['https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=2000&auto=format&fit=crop'],
+        published_at: new Date(Date.now() - 172800000).toISOString(),
+        created_at: new Date(Date.now() - 172800000).toISOString(),
+        updated_at: new Date(Date.now() - 172800000).toISOString(),
+    },
+];
+
 export default function BlogPostPage() {
     const { slug } = useParams();
 
-    const { data: post, isLoading } = useQuery({
-        queryKey: ["blog-post", slug],
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from("blog_posts")
-                .select("*")
-                .eq("slug", slug)
-                .single();
-
-            if (error) throw error;
-            return {
-                ...data,
-                images: data.images || []
-            } as BlogPost;
-        },
-    });
+    const post = useMemo(() => {
+        return mockPosts.find(p => p.slug === slug) || null;
+    }, [slug]);
 
     // Scroll to top on mount
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex flex-col bg-background">
-                <Header />
-                <main className="flex-grow container py-24 px-4 md:px-6">
-                    <div className="max-w-4xl mx-auto space-y-8 animate-pulse">
-                        <Skeleton className="h-8 w-32" />
-                        <Skeleton className="h-16 w-3/4" />
-                        <Skeleton className="h-6 w-1/2" />
-                        <Skeleton className="aspect-video w-full rounded-2xl" />
-                        <div className="space-y-4">
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-3/4" />
-                        </div>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
 
     if (!post) {
         return (
