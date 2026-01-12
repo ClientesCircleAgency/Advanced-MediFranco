@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   CalendarDays,
   Users,
-  MessageSquare,
   Armchair,
   Settings,
   ChevronLeft,
@@ -32,7 +31,6 @@ const navItems = [
   { path: '/admin/pacientes', label: 'Pacientes', icon: Users },
   { path: '/admin/estatisticas', label: 'Estatísticas', icon: BarChart3 },
   { path: '/admin/blog', label: 'Blog', icon: Newspaper },
-  { path: '/admin/mensagens', label: 'Mensagens', icon: MessageSquare },
   { path: '/admin/sala-espera', label: 'Sala de Espera', icon: Armchair },
 ];
 

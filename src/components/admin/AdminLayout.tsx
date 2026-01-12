@@ -24,7 +24,6 @@ const pageTitles: Record<string, { title: string }> = {
   '/admin/dashboard': { title: 'Dashboard' },
   '/admin/agenda': { title: 'Agenda do Dia' },
   '/admin/pacientes': { title: 'Gestão de Pacientes' },
-  '/admin/mensagens': { title: 'Mensagens' },
   '/admin/sala-espera': { title: 'Fluxo de Atendimento' },
   '/admin/lista-espera': { title: 'Lista de Espera' },
   '/admin/configuracoes': { title: 'Configurações' },
@@ -82,7 +81,6 @@ export function AdminLayout() {
   }
 
   const currentPath = location.pathname;
-  const isMessagesPage = currentPath === '/admin/mensagens';
 
   return (
     <ClinicProvider>
@@ -185,7 +183,7 @@ export function AdminLayout() {
           {/* Main Content */}
           <main className={cn(
             'flex-1 overflow-auto',
-            isMessagesPage ? '' : 'p-6 lg:p-8'
+            'p-6 lg:p-8'
           )}>
             <div className="fade-in-5 slide-in-from-bottom-2 duration-500 animate-in">
               <Outlet />
