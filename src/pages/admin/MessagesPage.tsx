@@ -5,28 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-
-interface ContactMessage {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  subject: string;
-  message: string;
-  time: string;
-  unread?: boolean;
-}
+import { useContactMessages } from '@/hooks/useContactMessages';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
 
 export default function MessagesPage() {
-  const [messages] = useState<ContactMessage[]>([]);
-  const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const { data: messages, isLoading } = useContactMessages();
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredMessages = messages.filter((m) =>
+  const selectedMessage = messages?.find(m => m.id === selectedMessageId) || null;
+
+  const filteredMessages = messages?.filter((m) =>
     m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     m.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.subject.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    m.message.toLowerCase().includes(searchQuery.toLowerCase())
+  ) || [];
 
   const getInitials = (name: string) => {
     return name
@@ -38,7 +32,7 @@ export default function MessagesPage() {
   };
 
   const handleBack = () => {
-    setSelectedMessage(null);
+    setSelectedMessageId(null);
   };
 
   const handleCall = (phone?: string) => {
@@ -47,8 +41,8 @@ export default function MessagesPage() {
     }
   };
 
-  const handleEmail = (email: string, subject: string) => {
-    window.location.href = `mailto:${email}?subject=Re: ${encodeURIComponent(subject)}`;
+  const handleEmail = (email: string) => {
+    window.location.href = `mailto:${email}`;
   };
 
   return (
@@ -74,7 +68,11 @@ export default function MessagesPage() {
         {/* Messages list */}
         <ScrollArea className="flex-1">
           <div>
-            {filteredMessages.length === 0 ? (
+            {isLoading ? (
+              <div className="p-6 text-center text-muted-foreground text-sm">
+                A carregar mensagens...
+              </div>
+            ) : filteredMessages.length === 0 ? (
               <div className="p-6 text-center text-muted-foreground text-sm">
                 Sem mensagens
               </div>
@@ -82,10 +80,10 @@ export default function MessagesPage() {
               filteredMessages.map((message) => (
                 <button
                   key={message.id}
-                  onClick={() => setSelectedMessage(message)}
+                  onClick={() => setSelectedMessageId(message.id)}
                   className={cn(
                     'w-full px-3 py-3 flex items-center gap-3 text-left transition-colors hover:bg-accent/50 border-b border-border/50',
-                    selectedMessage?.id === message.id && 'bg-accent border-l-4 border-l-primary'
+                    selectedMessageId === message.id && 'bg-accent border-l-4 border-l-primary'
                   )}
                 >
                   <Avatar className="h-10 w-10 shrink-0">
@@ -100,18 +98,18 @@ export default function MessagesPage() {
                       </span>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span className="text-xs text-muted-foreground">
-                          {message.time}
+                          {format(new Date(message.created_at), 'd MMM', { locale: pt })}
                         </span>
-                        {message.unread && (
+                        {message.status === 'new' && (
                           <div className="w-2 h-2 rounded-full bg-destructive" />
                         )}
                       </div>
                     </div>
                     <p className={cn(
                       'text-sm truncate mt-0.5',
-                      message.unread ? 'text-foreground' : 'text-muted-foreground'
+                      message.status === 'new' ? 'text-foreground' : 'text-muted-foreground'
                     )}>
-                      {message.subject}
+                      Novo Contacto
                     </p>
                   </div>
                 </button>
@@ -163,7 +161,7 @@ export default function MessagesPage() {
               <Button
                 size="sm"
                 className="h-8 gap-2"
-                onClick={() => handleEmail(selectedMessage.email, selectedMessage.subject)}
+                onClick={() => handleEmail(selectedMessage.email)}
               >
                 <Mail className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Responder</span>
@@ -176,12 +174,12 @@ export default function MessagesPage() {
             <div className="p-6 max-w-3xl">
               <div className="mb-6">
                 <h2 className="text-xl font-serif italic text-foreground mb-2">
-                  {selectedMessage.subject}
+                  Mensagem de Contacto
                 </h2>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>De: {selectedMessage.name}</span>
                   <span>•</span>
-                  <span>{selectedMessage.time}</span>
+                  <span>{format(new Date(selectedMessage.created_at), "d 'de' MMMM 'às' HH:mm", { locale: pt })}</span>
                 </div>
               </div>
 
