@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ export function BlogPostCard({ post, className }: BlogPostCardProps) {
             className
         )}>
             {/* Image Container */}
-            <div className="relative aspect-[16/9] overflow-hidden">
+            <Link to={`/blog/${post.slug || post.id}`} className="relative aspect-[16/9] overflow-hidden block">
                 {post.images.length > 0 ? (
                     post.images.map((img, index) => (
                         <div
@@ -64,12 +65,14 @@ export function BlogPostCard({ post, className }: BlogPostCardProps) {
                         {format(new Date(post.published_at), "d MMM yyyy", { locale: pt })}
                     </Badge>
                 )}
-            </div>
+            </Link>
 
             <CardHeader className="space-y-2 pb-2">
-                <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                    {post.title}
-                </h3>
+                <Link to={`/blog/${post.slug || post.id}`} className="block">
+                    <h3 className="text-xl font-bold tracking-tight text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                        {post.title}
+                    </h3>
+                </Link>
                 {post.subtitle && (
                     <p className="text-sm text-muted-foreground line-clamp-1 font-medium">
                         {post.subtitle}
@@ -88,9 +91,11 @@ export function BlogPostCard({ post, className }: BlogPostCardProps) {
                     <User className="w-3 h-3 mr-1" />
                     <span className="truncate max-w-[100px]">{post.author}</span>
                 </div>
-                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 p-0 h-auto hover:bg-transparent group/btn">
-                    Ler mais
-                    <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover/btn:translate-x-1" />
+                <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 p-0 h-auto hover:bg-transparent group/btn" asChild>
+                    <Link to={`/blog/${post.slug || post.id}`}>
+                        Ler mais
+                        <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover/btn:translate-x-1" />
+                    </Link>
                 </Button>
             </CardFooter>
         </Card>
