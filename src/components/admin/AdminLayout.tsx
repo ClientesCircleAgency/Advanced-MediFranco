@@ -10,6 +10,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const pageTitles: Record<string, { title: string }> = {
   '/admin/dashboard': { title: 'Dashboard' },
@@ -127,23 +135,33 @@ export function AdminLayout() {
               </div>
             </div>
             <div className="flex items-center gap-2 lg:gap-4">
-              {/* Bot Status - hidden on small screens */}
-              {/* Removed Bot Ativo indicator */}
-
               {/* Notifications */}
-              <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground font-mono text-[10px] flex items-center justify-center">
-                  2
-                </span>
-              </Button>
-
-              {/* User Avatar */}
-              <Avatar className="h-8 w-8 lg:h-9 lg:w-9 border-2 border-primary/20">
-                <AvatarFallback className="bg-primary text-primary-foreground font-sans font-semibold text-xs lg:text-sm">
-                  DF
-                </AvatarFallback>
-              </Avatar>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                    <Bell className="h-5 w-5 text-muted-foreground" />
+                    <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground font-mono text-[10px] flex items-center justify-center">
+                      2
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80">
+                  <DropdownMenuLabel>Notificações</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium">Nova marcação: João Silva</span>
+                      <span className="text-xs text-muted-foreground">Consulta de Oftalmologia - Amanhã 14:00</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium">Lembrete: Reunião Clínica</span>
+                      <span className="text-xs text-muted-foreground">Hoje às 18:00</span>
+                    </div>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </header>
 
