@@ -176,7 +176,8 @@ export default function BlogPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
+                    {/* Desktop View (Table) */}
+                    <div className="hidden md:block rounded-md border">
                         <Table>
                             <TableHeader>
                                 <TableRow>
@@ -238,6 +239,54 @@ export default function BlogPage() {
                                 )}
                             </TableBody>
                         </Table>
+                    </div>
+
+                    {/* Mobile View (Cards) */}
+                    <div className="md:hidden space-y-4">
+                        {isLoading ? (
+                            <div className="text-center py-8 text-muted-foreground">A carregar...</div>
+                        ) : filteredPosts?.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">Nenhum artigo encontrado.</div>
+                        ) : (
+                            filteredPosts?.map((post) => (
+                                <div key={post.id} className="flex flex-col gap-3 p-4 border rounded-lg bg-card shadow-sm">
+                                    <div className="space-y-1">
+                                        <h3 className="font-semibold line-clamp-2">{post.title}</h3>
+                                        {post.subtitle && <p className="text-sm text-muted-foreground line-clamp-1">{post.subtitle}</p>}
+                                    </div>
+
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                        <span className="flex items-center gap-1">
+                                            {post.author}
+                                        </span>
+                                        <span>
+                                            {post.published_at
+                                                ? format(new Date(post.published_at), "d MMM yyyy", { locale: pt })
+                                                : "N/A"}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex gap-2 pt-2 border-t mt-1">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex-1 h-9"
+                                            onClick={() => handleEdit(post)}
+                                        >
+                                            <Pencil className="mr-2 h-3.5 w-3.5" /> Editar
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="flex-1 h-9 text-destructive hover:text-destructive bg-destructive/5 hover:bg-destructive/10 border-destructive/20"
+                                            onClick={() => handleDelete(post.id)}
+                                        >
+                                            <Trash2 className="mr-2 h-3.5 w-3.5" /> Apagar
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </CardContent>
             </Card>
