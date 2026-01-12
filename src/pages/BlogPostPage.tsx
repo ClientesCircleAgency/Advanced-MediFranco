@@ -77,10 +77,10 @@ export default function BlogPostPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
+        <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 overflow-x-hidden w-full">
             <Header />
 
-            <main className="flex-grow pt-24 pb-16">
+            <main className="flex-grow pt-24 pb-16 w-full max-w-[100vw] overflow-x-hidden">
                 {/* Hero Section */}
                 <section className="relative px-4 md:px-6 mb-12 md:mb-20">
                     {/* Decorative background elements */}
@@ -118,8 +118,8 @@ export default function BlogPostPage() {
                         </div>
 
                         {/* Title & Subtitle */}
-                        <div className="space-y-4 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.1]">
+                        <div className="space-y-4 animate-fade-in-up break-words" style={{ animationDelay: "200ms" }}>
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black font-display tracking-tight text-foreground leading-[1.1] break-words">
                                 {post.title}
                             </h1>
                             {post.subtitle && (
@@ -146,15 +146,15 @@ export default function BlogPostPage() {
                 )}
 
                 {/* Content */}
-                <article className="container px-4 md:px-6 max-w-3xl mx-auto selection:bg-primary/30">
+                <article className="container px-4 md:px-6 max-w-3xl mx-auto selection:bg-primary/30 w-full overflow-hidden">
                     <div
-                        className="prose prose-lg md:prose-xl dark:prose-invert max-w-none 
+                        className="prose prose-lg md:prose-xl dark:prose-invert max-w-none w-full
                 prose-headings:font-display prose-headings:font-bold prose-headings:tracking-tight 
                 prose-p:leading-relaxed prose-p:text-muted-foreground 
                 prose-a:text-primary prose-a:no-underline hover:prose-a:underline
                 prose-blockquote:border-l-primary prose-blockquote:bg-muted/30 prose-blockquote:p-6 prose-blockquote:rounded-r-lg prose-blockquote:not-italic
                 prose-img:rounded-xl prose-img:shadow-lg
-                animate-fade-in-up"
+                animate-fade-in-up break-words overflow-anywhere"
                         style={{ animationDelay: "400ms" }}
                         dangerouslySetInnerHTML={{ __html: post.content }}
                     />
