@@ -18,6 +18,7 @@ import SettingsPage from "./pages/admin/SettingsPage";
 import RequestsPage from "./pages/admin/RequestsPage";
 import PlanPage from './pages/admin/PlanPage';
 import StatisticsPage from './pages/admin/StatisticsPage';
+import BlogPage from './pages/admin/BlogPage';
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="mensagens" element={<MessagesPage />} />
             <Route path="configuracoes" element={<SettingsPage />} />
             <Route path="plano" element={<PlanPage />} />
+            <Route path="blog" element={<BlogPage />} />
             <Route path="estatisticas" element={<StatisticsPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
