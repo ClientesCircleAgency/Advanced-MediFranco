@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import logo from '@/assets/logo-medifranco-v4.png';
 
 const pageTitles: Record<string, { title: string }> = {
   '/admin/dashboard': { title: 'Dashboard' },
@@ -80,12 +81,72 @@ export function AdminLayout() {
   }
 
   const currentPath = location.pathname;
-  const pageInfo = pageTitles[currentPath] || { title: 'Admin' };
   const isMessagesPage = currentPath === '/admin/mensagens';
 
   return (
     <ClinicProvider>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pt-14 lg:pt-16">
+        {/* Top Header - Fixed Full Width */}
+        <header className="fixed top-0 left-0 right-0 h-14 lg:h-16 border-b border-border bg-card px-4 lg:px-6 flex items-center justify-between shrink-0 z-50 shadow-sm">
+          <div className="flex items-center gap-3">
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Centered Logo */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <img
+              src={logo}
+              alt="MediFranco"
+              className="h-8 lg:h-10 w-auto object-contain"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 lg:gap-4">
+            {/* Notifications */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                  <Bell className="h-5 w-5 text-muted-foreground" />
+                  <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground font-mono text-[10px] flex items-center justify-center">
+                    2
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80">
+                <DropdownMenuLabel>Notificações</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium">Nova marcação: João Silva</span>
+                    <span className="text-xs text-muted-foreground">Consulta de Oftalmologia - Amanhã 14:00</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium">Lembrete: Reunião Clínica</span>
+                    <span className="text-xs text-muted-foreground">Hoje às 18:00</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* User Avatar */}
+            <Avatar className="h-8 w-8 lg:h-9 lg:w-9 border-2 border-primary/20">
+              <AvatarFallback className="bg-primary text-primary-foreground font-sans font-semibold text-xs lg:text-sm">
+                DF
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        </header>
+
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">
           <AdminSidebar
@@ -98,7 +159,7 @@ export function AdminLayout() {
 
         {/* Mobile Sidebar Sheet */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="left" className="p-0 w-72 bg-sidebar border-sidebar-border">
+          <SheetContent side="left" className="p-0 w-72 bg-sidebar border-sidebar-border" style={{ marginTop: '0' }}> {/* Ensure full height on mobile if needed, or adjust top */}
             <AdminSidebar
               collapsed={false}
               onToggle={() => { }}
@@ -111,60 +172,11 @@ export function AdminLayout() {
 
         <div
           className={cn(
-            'min-h-screen transition-all duration-300 flex flex-col',
+            'min-h-[calc(100vh-3.5rem)] lg:min-h-[calc(100vh-4rem)] transition-all duration-300 flex flex-col',
             'lg:ml-64',
             collapsed && 'lg:ml-16'
           )}
         >
-          {/* Top Header */}
-          <header className="h-14 lg:h-16 border-b border-border bg-card px-4 lg:px-6 flex items-center justify-between shrink-0 sticky top-0 z-30 shadow-xs">
-            <div className="flex items-center gap-3">
-              {/* Mobile menu button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={() => setMobileMenuOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="font-sans text-base lg:text-lg font-semibold text-foreground">
-                  {pageInfo.title}
-                </h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 lg:gap-4">
-              {/* Notifications */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                    <Bell className="h-5 w-5 text-muted-foreground" />
-                    <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground font-mono text-[10px] flex items-center justify-center">
-                      2
-                    </span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80">
-                  <DropdownMenuLabel>Notificações</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium">Nova marcação: João Silva</span>
-                      <span className="text-xs text-muted-foreground">Consulta de Oftalmologia - Amanhã 14:00</span>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium">Lembrete: Reunião Clínica</span>
-                      <span className="text-xs text-muted-foreground">Hoje às 18:00</span>
-                    </div>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </header>
-
           {/* Main Content */}
           <main className={cn(
             'flex-1 overflow-auto',

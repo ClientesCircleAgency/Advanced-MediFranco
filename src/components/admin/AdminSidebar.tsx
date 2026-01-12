@@ -24,7 +24,6 @@ import {
 import { useClinic } from '@/context/ClinicContext';
 import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
 import { PlanBadge } from './PlanBadge';
-import logo from '@/assets/logo-medifranco-v4.png';
 
 const navItems = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -61,25 +60,14 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
   return (
     <aside
       className={cn(
-        'h-screen bg-sidebar border-r border-sidebar-border flex flex-col',
-        isMobile ? 'w-full' : 'fixed left-0 top-0 z-40 transition-all duration-300',
+        'bg-sidebar border-r border-sidebar-border flex flex-col',
+        isMobile
+          ? 'w-full h-full'
+          : 'fixed left-0 top-14 lg:top-16 z-40 transition-all duration-300 h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-4rem)]',
         !isMobile && (isCollapsed ? 'w-16' : 'w-64')
       )}
     >
-      {/* Logo - MediFranco */}
-      <div className={cn(
-        "flex items-center justify-center border-b border-sidebar-border overflow-visible",
-        isCollapsed ? "h-16 p-1" : "h-20 p-2"
-      )}>
-        <img
-          src={logo}
-          alt="MediFranco"
-          className={cn(
-            "object-contain",
-            isCollapsed ? "h-20 w-20" : "h-28 max-w-full"
-          )}
-        />
-      </div>
+      {/* Logo Removed - Moved to Header */}
 
       {/* Plan Badge */}
       <div className="px-3 py-2">
