@@ -74,8 +74,8 @@ export default function BlogPage() {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Blog</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="font-serif italic text-foreground text-lg lg:text-2xl">Blog</h1>
+                    <p className="font-mono text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
                         Gerencie as notícias e artigos do blog.
                     </p>
                 </div>
