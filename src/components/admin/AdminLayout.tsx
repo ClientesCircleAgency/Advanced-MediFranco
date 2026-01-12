@@ -86,9 +86,9 @@ export function AdminLayout() {
 
   return (
     <ClinicProvider>
-      <div className="min-h-screen bg-background pt-16">
+      <div className="min-h-screen bg-background pt-20">
         {/* Top Header - Modern Glassmorphism */}
-        <header className="fixed top-0 left-0 right-0 h-16 px-4 lg:px-8 flex items-center justify-between z-50 transition-all duration-300 bg-background/70 backdrop-blur-xl border-b border-white/20 shadow-sm supports-[backdrop-filter]:bg-background/60">
+        <header className="fixed top-0 left-0 right-0 h-20 px-4 lg:px-8 flex items-center justify-between z-50 transition-all duration-300 bg-background/70 backdrop-blur-xl border-b border-white/20 shadow-sm supports-[backdrop-filter]:bg-background/60">
 
           <div className="flex items-center gap-4">
             {/* Mobile menu button */}
@@ -177,7 +177,7 @@ export function AdminLayout() {
 
         <div
           className={cn(
-            'min-h-[calc(100vh-4rem)] transition-all duration-300 flex flex-col',
+            'min-h-[calc(100vh-5rem)] transition-all duration-300 flex flex-col',
             'lg:ml-64',
             collapsed && 'lg:ml-16'
           )}

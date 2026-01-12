@@ -63,7 +63,7 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
         'bg-sidebar border-r border-sidebar-border flex flex-col',
         isMobile
           ? 'w-full h-full'
-          : 'fixed left-0 top-16 z-40 transition-all duration-300 h-[calc(100vh-4rem)]',
+          : 'fixed left-0 top-20 z-40 transition-all duration-300 h-[calc(100vh-5rem)]',
         !isMobile && (isCollapsed ? 'w-16' : 'w-64')
       )}
     >
