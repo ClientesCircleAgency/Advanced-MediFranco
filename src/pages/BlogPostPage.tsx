@@ -10,6 +10,14 @@ import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 export default function BlogPostPage() {
     const { slug } = useParams();
@@ -131,16 +139,50 @@ export default function BlogPostPage() {
                     </div>
                 </section>
 
-                {/* Featured Image */}
+                {/* Featured Image or Carousel */}
                 {post.images && post.images.length > 0 && (
                     <div className="container px-4 md:px-6 mb-12 md:mb-20 animate-scale-in origin-center" style={{ animationDelay: "300ms" }}>
                         <div className="relative aspect-video rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl ring-1 ring-border/50 max-w-5xl mx-auto group">
-                            <img
-                                src={post.images[0]}
-                                alt={post.title}
-                                className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                            {post.images.length > 1 ? (
+                                <Carousel
+                                    className="w-full h-full"
+                                    plugins={[
+                                        Autoplay({
+                                            delay: 4000,
+                                        })
+                                    ]}
+                                    opts={{
+                                        align: "start",
+                                        loop: true,
+                                    }}
+                                >
+                                    <CarouselContent className="h-full">
+                                        {post.images.map((image, index) => (
+                                            <CarouselItem key={index} className="h-full">
+                                                <div className="relative w-full h-full aspect-video">
+                                                    <img
+                                                        src={image}
+                                                        alt={`${post.title} - Imagem ${index + 1}`}
+                                                        className="object-cover w-full h-full"
+                                                    />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                                                </div>
+                                            </CarouselItem>
+                                        ))}
+                                    </CarouselContent>
+                                    <CarouselPrevious className="left-4 bg-background/50 hover:bg-background border-none backdrop-blur-sm" />
+                                    <CarouselNext className="right-4 bg-background/50 hover:bg-background border-none backdrop-blur-sm" />
+                                </Carousel>
+                            ) : (
+                                <>
+                                    <img
+                                        src={post.images[0]}
+                                        alt={post.title}
+                                        className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
