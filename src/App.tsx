@@ -20,6 +20,7 @@ import RequestsPage from "./pages/admin/RequestsPage";
 import PlanPage from './pages/admin/PlanPage';
 import StatisticsPage from './pages/admin/StatisticsPage';
 import BlogPage from './pages/admin/BlogPage';
+import { ScrollToTop } from './components/ScrollToTop';
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
