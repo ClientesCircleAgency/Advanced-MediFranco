@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Plus, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { BlogPost, BlogPostInput } from "@/types/blog";
@@ -210,13 +211,10 @@ export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps
 
                         <div className="grid gap-2">
                             <Label htmlFor="content">Conteúdo</Label>
-                            <Textarea
-                                id="content"
+                            <RichTextEditor
                                 value={formData.content}
-                                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                placeholder="Escreva o conteúdo do artigo aqui..."
-                                className="min-h-[200px]"
-                                required
+                                onChange={(value) => setFormData({ ...formData, content: value })}
+                                className="min-h-[300px]"
                             />
                         </div>
                     </div>
