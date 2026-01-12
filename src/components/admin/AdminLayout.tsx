@@ -8,7 +8,6 @@ import { AppointmentWizard } from './AppointmentWizard';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/hooks/useNotifications';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import {
@@ -87,9 +86,9 @@ export function AdminLayout() {
 
   return (
     <ClinicProvider>
-      <div className="min-h-screen bg-background pt-14 lg:pt-20">
+      <div className="min-h-screen bg-background pt-24 lg:pt-32">
         {/* Top Header - Fixed Full Width */}
-        <header className="fixed top-0 left-0 right-0 h-14 lg:h-20 border-b border-border bg-card px-4 lg:px-6 flex items-center justify-between shrink-0 z-50 shadow-sm">
+        <header className="fixed top-0 left-0 right-0 h-24 lg:h-32 border-b border-border bg-card px-4 lg:px-6 flex items-center justify-between shrink-0 z-50 shadow-sm">
           <div className="flex items-center gap-3">
             {/* Mobile menu button */}
             <Button
@@ -98,7 +97,7 @@ export function AdminLayout() {
               className="lg:hidden"
               onClick={() => setMobileMenuOpen(true)}
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-6 w-6" />
             </Button>
           </div>
 
@@ -107,7 +106,7 @@ export function AdminLayout() {
             <img
               src={logo}
               alt="MediFranco"
-              className="h-8 lg:h-14 w-auto object-contain"
+              className="h-16 lg:h-24 w-auto object-contain"
             />
           </div>
 
@@ -115,10 +114,10 @@ export function AdminLayout() {
             {/* Notifications */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                  <Bell className="h-5 w-5 text-muted-foreground" />
+                <Button variant="ghost" size="icon" className="relative h-10 w-10">
+                  <Bell className="h-6 w-6 text-muted-foreground" />
                   {notifications && notifications.length > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-destructive-foreground font-mono text-[10px] flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground font-mono text-xs flex items-center justify-center">
                       {notifications.length}
                     </span>
                   )}
@@ -147,13 +146,6 @@ export function AdminLayout() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            {/* User Avatar */}
-            <Avatar className="h-8 w-8 lg:h-9 lg:w-9 border-2 border-primary/20">
-              <AvatarFallback className="bg-primary text-primary-foreground font-sans font-semibold text-xs lg:text-sm">
-                DF
-              </AvatarFallback>
-            </Avatar>
           </div>
         </header>
 
@@ -182,7 +174,7 @@ export function AdminLayout() {
 
         <div
           className={cn(
-            'min-h-[calc(100vh-3.5rem)] lg:min-h-[calc(100vh-5rem)] transition-all duration-300 flex flex-col',
+            'min-h-[calc(100vh-6rem)] lg:min-h-[calc(100vh-8rem)] transition-all duration-300 flex flex-col',
             'lg:ml-64',
             collapsed && 'lg:ml-16'
           )}
