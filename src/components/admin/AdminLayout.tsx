@@ -128,12 +128,7 @@ export function AdminLayout() {
             </div>
             <div className="flex items-center gap-2 lg:gap-4">
               {/* Bot Status - hidden on small screens */}
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
-                <div className="w-2 h-2 rounded-full bg-chart-1 animate-pulse" />
-                <span className="font-mono text-xs text-muted-foreground whitespace-nowrap">
-                  Bot Ativo
-                </span>
-              </div>
+              {/* Removed Bot Ativo indicator */}
 
               {/* Notifications */}
               <Button variant="ghost" size="icon" className="relative h-9 w-9">
