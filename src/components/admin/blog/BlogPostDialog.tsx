@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
-import { Plus, X, Trash2 } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import type { BlogPost, BlogPostInput } from "@/types/blog";
 
@@ -18,7 +15,6 @@ interface BlogPostDialogProps {
 }
 
 export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps) {
-    const queryClient = useQueryClient();
     const [formData, setFormData] = useState<BlogPostInput>({
         title: "",
         subtitle: "",
@@ -54,55 +50,11 @@ export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps
         }
     }, [post, open]);
 
-    const createMutation = useMutation({
-        mutationFn: async (data: BlogPostInput) => {
-            const { error } = await supabase.from("blog_posts").insert(data);
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
-            queryClient.invalidateQueries({ queryKey: ["blog-posts-home"] });
-            toast.success("Artigo criado com sucesso!");
-            onOpenChange(false);
-        },
-        onError: (error) => {
-            console.error(error);
-            toast.error("Erro ao criar artigo.");
-        },
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: async (data: BlogPostInput) => {
-            if (!post?.id) return;
-            const { error } = await supabase
-                .from("blog_posts")
-                .update(data)
-                .eq("id", post.id);
-            if (error) throw error;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["blog-posts"] });
-            queryClient.invalidateQueries({ queryKey: ["blog-posts-home"] });
-            toast.success("Artigo atualizado com sucesso!");
-            onOpenChange(false);
-        },
-        onError: () => {
-            toast.error("Erro ao atualizar artigo.");
-        },
-    });
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const dataToSubmit = {
-            ...formData,
-            slug: formData.title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
-        };
-
-        if (post) {
-            updateMutation.mutate(dataToSubmit);
-        } else {
-            createMutation.mutate(dataToSubmit);
-        }
+        // Mock save - will show toast but won't persist without database
+        toast.success(post ? "Artigo atualizado!" : "Artigo criado! (modo demo - sem base de dados)");
+        onOpenChange(false);
     };
 
     const addImage = () => {
@@ -202,7 +154,7 @@ export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps
                                         <button
                                             type="button"
                                             onClick={() => removeImage(idx)}
-                                            className="absolute top-0 right-0 bg-red-500 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-0 right-0 bg-destructive text-destructive-foreground p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
                                             <X className="h-3 w-3" />
                                         </button>
@@ -226,7 +178,7 @@ export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                        <Button type="submit">
                             {post ? "Atualizar" : "Publicar"}
                         </Button>
                     </DialogFooter>
