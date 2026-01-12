@@ -107,7 +107,7 @@ export function AdminLayout() {
             <img
               src={logo}
               alt="MediFranco"
-              className="h-20 lg:h-28 w-auto object-contain transition-all duration-300 drop-shadow-md group-hover:drop-shadow-xl"
+              className="h-28 lg:h-42 w-auto object-contain transition-all duration-300 drop-shadow-md group-hover:drop-shadow-xl"
             />
           </div>
 
