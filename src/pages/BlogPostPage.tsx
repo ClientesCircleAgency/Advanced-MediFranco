@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { BlogPost } from "@/types/blog";
-import { Header } from "@/components/Header";
+import { SimplifiedHeader } from "@/components/SimplifiedHeader";
 import { Footer } from "@/components/Footer";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,7 @@ export default function BlogPostPage() {
     if (!post) {
         return (
             <div className="min-h-screen flex flex-col bg-background">
-                <Header />
+                <SimplifiedHeader />
                 <main className="flex-grow flex items-center justify-center p-4">
                     <div className="text-center space-y-4">
                         <h1 className="text-4xl font-bold font-display">Artigo não encontrado</h1>
