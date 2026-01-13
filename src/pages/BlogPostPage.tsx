@@ -89,7 +89,7 @@ export default function BlogPostPage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20 overflow-x-hidden w-full">
-            <Header />
+            <SimplifiedHeader />
 
             <main className="flex-grow pt-24 pb-16 w-full max-w-[100vw] overflow-x-hidden">
                 {/* Hero Section */}
