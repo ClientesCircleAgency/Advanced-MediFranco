@@ -8,16 +8,23 @@ import Login from '@/pages/Login'
 import Register from '@/pages/Register'
 import ForgotPassword from '@/pages/ForgotPassword'
 
-// Public pages (to be created in Phase 1D)
-// import Home from '@/pages/Home'
-// import Catalog from '@/pages/Catalog'
-// import CourseDetail from '@/pages/CourseDetail'
+// Public pages
+import Home from '@/pages/Home'
+import Catalog from '@/pages/Catalog'
+import CourseDetail from '@/pages/CourseDetail'
 
-// Protected pages (to be created in Phase 1D)
-// import Dashboard from '@/pages/Dashboard'
-// import Player from '@/pages/Player'
+// Protected pages
+import Dashboard from '@/pages/Dashboard'
+import Player from '@/pages/Player'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 function App() {
   return (
@@ -26,30 +33,35 @@ function App() {
         <AuthProvider>
           <Routes>
             {/* Public routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/catalog" element={<Catalog />} />
+            <Route path="/courses/:slug" element={<CourseDetail />} />
+
+            {/* Auth routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Temporary: redirect root to login until we build the home page */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-
-            {/* Protected routes (placeholder for Phase 1D) */}
+            {/* Protected routes */}
             <Route
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <div className="min-h-screen flex items-center justify-center">
-                    <div className="text-center">
-                      <h1 className="text-4xl font-bold mb-4">Dashboard</h1>
-                      <p className="text-muted-foreground">Coming in Phase 1D</p>
-                    </div>
-                  </div>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/courses/:slug/player"
+              element={
+                <ProtectedRoute>
+                  <Player />
                 </ProtectedRoute>
               }
             />
 
-            {/* Catch all - redirect to login */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
+            {/* Catch all - redirect to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

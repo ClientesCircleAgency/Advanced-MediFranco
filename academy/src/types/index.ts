@@ -7,6 +7,7 @@ export interface Course {
     image_url: string
     is_published: boolean
     created_at: string
+    updated_at?: string
     modules?: Module[]
 }
 
@@ -15,6 +16,7 @@ export interface Module {
     course_id: string
     title: string
     order: number
+    created_at?: string
     lessons?: Lesson[]
 }
 
@@ -26,6 +28,7 @@ export interface Lesson {
     content_url: string
     order: number
     duration_minutes?: number
+    created_at?: string
 }
 
 export interface Enrollment {
@@ -33,7 +36,11 @@ export interface Enrollment {
     user_id: string
     course_id: string
     stripe_session_id?: string
+    stripe_customer_id?: string
+    stripe_payment_intent_id?: string
     enrolled_at: string
+    expires_at?: string
+    course?: Course
 }
 
 export interface Progress {
