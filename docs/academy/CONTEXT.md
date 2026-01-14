@@ -87,18 +87,14 @@
   - `academy_enrollments`
   - `academy_progress`
 
-### 5.2 Stripe
-- **Modo**: Checkout Session (hosted)
-- **Webhook endpoint**: Edge Function ou endpoint n8n
-- **Eventos a escutar**:
-  - `checkout.session.completed` → criar enrollment
-  - `payment_intent.payment_failed` → log/notificação
+### 5.2 Stripe (FASE 2 — Stub por agora)
+- **Modo atual**: Mock/Stub — botão "Comprar" simula sucesso ou mostra "coming soon"
+- **Preparação**: URLs de success/cancel configuráveis via env var
+- **Fase futura**: Checkout Session (hosted) + webhooks
 
-### 5.3 n8n
-- Recebe webhooks do Stripe
-- Atualiza Supabase (insere enrollment)
-- Envia email de boas-vindas ao aluno
-- Opcional: notifica admin via Slack/Telegram
+### 5.3 n8n (FASE 2 — Stub por agora)
+- **Modo atual**: Função `emitEvent()` que faz `console.log` e/ou guarda em `academy_integration_logs`
+- **Fase futura**: Webhook real que processa eventos Stripe e envia emails
 
 ---
 
@@ -106,12 +102,12 @@
 
 > ⚠️ **Estas regras são invioláveis**
 
-1. **Site principal inalterado** — Não modificar comportamento do site institucional (apenas doc + link opcional)
-2. **Sem autenticação no site principal** — Apenas admin tem login
-3. **Academy 100% separada** — Código, deploy, e auth próprios
-4. **Stripe só via webhooks** — Não armazenar dados de cartão; usar Checkout
-5. **RLS obrigatório** — Todas as tabelas Academy com Row Level Security ativo
-6. **Sem dados sensíveis em client** — Service key nunca no frontend
+1. **Site principal inalterado** — NÃO modificar nada (link adicionado só no fim)
+2. **Frontend-first** — Construir UI completa antes de integrações reais
+3. **Stubs para integrações** — Stripe e n8n com mocks até fase 2
+4. **Dados mock** — Cursos dummy até ter conteúdo real
+5. **RLS obrigatório** — Todas as tabelas com Row Level Security
+6. **URLs configuráveis** — success/cancel via env vars para fácil mudança de domínio
 
 ---
 
@@ -145,15 +141,15 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
 ---
 
-## 9. Informação em Falta
+## 9. Decisões Tomadas (2026-01-14)
 
-> Listar aqui qualquer info necessária que ainda não foi fornecida
-
-- [ ] Conta Stripe (live keys)
-- [ ] Lista inicial de cursos/preços
-- [ ] Definir provider de vídeo (YouTube unlisted, Vimeo, ou Supabase Storage)
-- [ ] Domínio para Academy (academy.medifranco.pt ?)
-- [ ] n8n: instância existente ou criar nova?
+| Questão | Decisão |
+|---------|--------|
+| Stripe | Stub — botão mock, sem credenciais |
+| n8n | Stub — `emitEvent()` com log/tabela |
+| Domínio | Vercel preview por agora |
+| Cursos | Mock data (1-2 dummy) |
+| Site principal | Não mexer até final |
 
 ---
 
