@@ -1,9 +1,10 @@
-import { useParams, Navigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useState } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { AccessDenied } from '@/components/AccessDenied'
 import { useCourse } from '@/hooks/useCourses'
 import { useIsEnrolled } from '@/hooks/useEnrollments'
 import { useProgress, useMarkLessonComplete } from '@/hooks/useProgress'
@@ -12,7 +13,7 @@ import type { Lesson } from '@/types'
 
 export default function Player() {
     const { slug } = useParams<{ slug: string }>()
-    const { data: course, isLoading: courseLoading } = useCourse(slug!)
+    const { data: course, isLoading: courseLoading, error: courseError } = useCourse(slug!)
     const { data: isEnrolled, isLoading: enrollmentLoading } = useIsEnrolled(course?.id || '')
     const { data: progress } = useProgress(course?.id)
     const markCompleteMutation = useMarkLessonComplete()
@@ -41,12 +42,32 @@ export default function Player() {
         )
     }
 
-    if (!isEnrolled) {
-        return <Navigate to={`/courses/${slug}`} replace />
+    // Handle access denied (not enrolled or RLS blocking)
+    if (!isEnrolled || courseError || (course && (!course.modules || course.modules.length === 0))) {
+        return (
+            <div className="flex flex-col min-h-screen">
+                <Header />
+                <AccessDenied
+                    title="Acesso ao Curso Restrito"
+                    description="Precisa de estar inscrito neste curso para aceder às aulas."
+                    courseSlug={slug}
+                />
+                <Footer />
+            </div>
+        )
     }
 
     if (!course) {
-        return <Navigate to="/dashboard" replace />
+        return (
+            <div className="flex flex-col min-h-screen">
+                <Header />
+                <AccessDenied
+                    title="Curso Não Encontrado"
+                    description="O curso que procura não existe ou não está disponível."
+                />
+                <Footer />
+            </div>
+        )
     }
 
     const handleMarkComplete = () => {
