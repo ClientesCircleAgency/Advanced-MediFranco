@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { ProtectedAdminRoute } from '@/components/ProtectedAdminRoute'
 
 // Auth pages
 import Login from '@/pages/Login'
@@ -16,6 +17,10 @@ import CourseDetail from '@/pages/CourseDetail'
 // Protected pages
 import Dashboard from '@/pages/Dashboard'
 import Player from '@/pages/Player'
+
+// Admin pages
+import AdminCourses from '@/pages/admin/AdminCourses'
+import AdminCourseEdit from '@/pages/admin/AdminCourseEdit'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,6 +62,24 @@ function App() {
                 <ProtectedRoute>
                   <Player />
                 </ProtectedRoute>
+              }
+            />
+
+            {/* Admin routes (protected) */}
+            <Route
+              path="/admin/courses"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminCourses />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/courses/:id"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminCourseEdit />
+                </ProtectedAdminRoute>
               }
             />
 
