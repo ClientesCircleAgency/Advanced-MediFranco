@@ -7,17 +7,17 @@ export function Header() {
     const { user, signOut } = useAuth()
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/90 shadow-sm">
             <div className="container flex h-16 items-center">
-                <Link to="/" className="flex items-center gap-2 font-bold text-xl">
+                <Link to="/" className="flex items-center gap-2 font-display font-bold text-xl">
                     <GraduationCap className="h-6 w-6 text-primary" />
-                    <span>MediFranco Academy</span>
+                    <span className="text-primary-gradient">MediFranco Academy</span>
                 </Link>
 
                 <nav className="flex items-center gap-6 ml-auto">
                     <Link
                         to="/catalog"
-                        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
                     >
                         Cursos
                     </Link>

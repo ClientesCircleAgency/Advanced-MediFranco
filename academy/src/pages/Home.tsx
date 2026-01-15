@@ -14,25 +14,25 @@ export default function Home() {
         <div className="flex flex-col min-h-screen">
             <Header />
 
-            {/* Hero */}
-            <section className="relative bg-gradient-to-br from-primary/10 to-blue-500/10 py-20 md:py-32">
+            {/* Hero with brand gradient */}
+            <section className="relative bg-primary-gradient py-20 md:py-32">
                 <div className="container">
                     <div className="max-w-3xl">
-                        <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                        <h1 className="text-4xl md:text-6xl font-display font-bold mb-6 text-white animate-fade-in-up">
                             Formação Online de Excelência para Profissionais de Saúde
                         </h1>
-                        <p className="text-xl text-muted-foreground mb-8">
+                        <p className="text-xl text-white/90 mb-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                             Desenvolva as suas competências com cursos criados por especialistas da MediFranco.
                         </p>
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                             <Link to="/catalog">
-                                <Button size="lg" className="gap-2">
+                                <Button size="lg" className="gap-2 bg-white text-primary hover:bg-white/90 shadow-xl">
                                     <BookOpen className="h-5 w-5" />
                                     Explorar Cursos
                                 </Button>
                             </Link>
                             <Link to="/register">
-                                <Button size="lg" variant="outline">
+                                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
                                     Criar Conta Grátis
                                 </Button>
                             </Link>

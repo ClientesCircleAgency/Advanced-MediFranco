@@ -1,35 +1,180 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
 
 @theme {
-  --color-background: 0 0% 100%;
-  --color-foreground: 222.2 84% 4.9%;
-  --color-card: 0 0% 100%;
-  --color-card-foreground: 222.2 84% 4.9%;
-  --color-popover: 0 0% 100%;
-  --color-popover-foreground: 222.2 84% 4.9%;
-  --color-primary: 172 50% 45%;
+  /* MediFranco Brand Colors - Matching Main Site */
+  --color-background: 207.9997 100.1439% 97.0541%;
+  --color-foreground: 216.9230 19.1072% 26.6630%;
+
+  --color-card: 300 50% 100%;
+  --color-card-foreground: 216.9230 19.1072% 26.6630%;
+
+  --color-popover: 300 50% 100%;
+  --color-popover-foreground: 216.9230 19.1072% 26.6630%;
+
+  /* Primary - Teal matching MediFranco logo */
+  --color-primary: 175 65% 35%;
   --color-primary-foreground: 0 0% 100%;
-  --color-secondary: 210 40% 96.1%;
-  --color-secondary-foreground: 222.2 47.4% 11.2%;
-  --color-muted: 210 40% 96.1%;
-  --color-muted-foreground: 215.4 16.3% 46.9%;
-  --color-accent: 210 40% 96.1%;
-  --color-accent-foreground: 222.2 47.4% 11.2%;
-  --color-destructive: 0 84.2% 60.2%;
-  --color-destructive-foreground: 210 40% 98%;
-  --color-border: 214.3 31.8% 91.4%;
-  --color-input: 214.3 31.8% 91.4%;
-  --color-ring: 172 50% 45%;
-  --radius: 0.75rem;
-  --font-sans: "Inter", system-ui, sans-serif;
+
+  --color-secondary: 204.0003 93.5907% 93.7231%;
+  --color-secondary-foreground: 215.0000 13.7872% 34.1159%;
+
+  --color-muted: 220.0000 14.4421% 95.8902%;
+  --color-muted-foreground: 220.0003 8.9509% 46.0786%;
+
+  --color-accent: 175 50% 92%;
+  --color-accent-foreground: 216.9230 19.1072% 26.6630%;
+
+  --color-destructive: 0.0029 84.2066% 60.1920%;
+  --color-destructive-foreground: 300 50% 100%;
+
+  --color-border: 220.0000 13.0150% 90.9817%;
+  --color-input: 220.0000 13.0150% 90.9817%;
+  --color-ring: 175 65% 35%;
+
+  /* Border Radius */
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  /* Fonts - Modern & Clean */
+  --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-family-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Shadows - Subtle and Professional */
+  --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
+  --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
 }
 
+/* Base Styles */
 * {
-  border-color: theme(colors.border);
+  border-color: hsl(var(--color-border));
 }
 
 body {
-  background-color: theme(colors.background);
-  color: theme(colors.foreground);
-  font-feature-settings: "rlig" 1, "calt" 1;
+  background-color: hsl(var(--color-background));
+  color: hsl(var(--color-foreground));
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Utility Classes */
+.font-sans {
+  font-family: var(--font-family-sans);
+}
+
+.font-display {
+  font-family: var(--font-family-display);
+}
+
+.font-mono {
+  font-family: var(--font-family-mono);
+}
+
+/* MediFranco Primary Gradient - Teal variations */
+.bg-primary-gradient {
+  background: linear-gradient(135deg, hsl(180 70% 25%) 0%, hsl(175 65% 35%) 50%, hsl(170 55% 50%) 100%);
+}
+
+.text-primary-gradient {
+  background: linear-gradient(135deg, hsl(180 70% 25%) 0%, hsl(175 65% 35%) 50%, hsl(170 55% 50%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.border-primary-gradient {
+  border-image: linear-gradient(135deg, hsl(180 70% 25%), hsl(175 65% 35%), hsl(170 55% 50%)) 1;
+}
+
+/* Animations matching main site */
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

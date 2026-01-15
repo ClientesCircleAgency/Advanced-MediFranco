@@ -76,37 +76,38 @@ export default function CourseDetail() {
             <Header />
 
             <main className="flex-1">
-                {/* Hero */}
-                <section className="bg-gradient-to-br from-primary/10 to-blue-500/10 py-12">
+                {/* Hero with brand gradient */}
+                <section className="bg-primary-gradient py-12">
                     <div className="container">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                            <div>
-                                <h1 className="text-4xl font-bold mb-4">{course.title}</h1>
-                                <p className="text-lg text-muted-foreground mb-6">{course.description}</p>
+                            <div className="text-white">
+                                <h1 className="text-4xl font-display font-bold mb-4 animate-fade-in-up">{course.title}</h1>
+                                <p className="text-lg text-white/90 mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>{course.description}</p>
 
-                                <div className="flex items-center gap-6 mb-6">
+                                <div className="flex items-center gap-6 mb-6 text-white/90 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
                                     <div className="flex items-center gap-2">
-                                        <BookOpen className="h-5 w-5 text-primary" />
+                                        <BookOpen className="h-5 w-5" />
                                         <span>{totalLessons} aulas</span>
                                     </div>
                                     {totalDuration > 0 && (
                                         <div className="flex items-center gap-2">
-                                            <Clock className="h-5 w-5 text-primary" />
+                                            <Clock className="h-5 w-5" />
                                             <span>{Math.ceil(totalDuration / 60)}h de conteúdo</span>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <div className="text-3xl font-bold">{formatPrice(course.price_cents)}</div>
+                                <div className="flex items-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                                    <div className="text-3xl font-bold text-white">{formatPrice(course.price_cents)}</div>
                                     {isEnrolled ? (
-                                        <Button size="lg" onClick={() => navigate('/dashboard')}>
+                                        <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-xl" onClick={() => navigate('/dashboard')}>
                                             <CheckCircle2 className="mr-2 h-5 w-5" />
                                             Ir para o Curso
                                         </Button>
                                     ) : (
                                         <Button
                                             size="lg"
+                                            className="bg-white text-primary hover:bg-white/90 shadow-xl"
                                             onClick={handleEnroll}
                                             disabled={enrollMutation.isPending}
                                         >
@@ -117,7 +118,7 @@ export default function CourseDetail() {
                                 </div>
                             </div>
 
-                            <div className="aspect-video rounded-lg overflow-hidden shadow-xl">
+                            <div className="aspect-video rounded-lg overflow-hidden shadow-2xl border-4 border-white/20 animate-scale-in">
                                 <img src={course.image_url} alt={course.title} className="w-full h-full object-cover" />
                             </div>
                         </div>
