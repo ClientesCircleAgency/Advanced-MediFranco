@@ -4,11 +4,15 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AccessDenied } from '@/components/AccessDenied'
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
+import { LessonItem } from '@/components/ui/LessonItem'
+import { CourseProgress } from '@/components/ui/CourseProgress'
 import { useCourse } from '@/hooks/useCourses'
 import { useIsEnrolled } from '@/hooks/useEnrollments'
 import { useProgress, useMarkLessonComplete } from '@/hooks/useProgress'
-import { CheckCircle2, Circle, PlayCircle } from 'lucide-react'
+import { CheckCircle2, FileText } from 'lucide-react'
 import type { Lesson } from '@/types'
 
 export default function Player() {
@@ -21,6 +25,9 @@ export default function Player() {
     const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null)
 
     const completedLessonIds = new Set(progress?.map(p => p.lesson_id) || [])
+    const totalLessons = course?.modules?.reduce((sum, mod) => sum + (mod.lessons?.length || 0), 0) || 0
+    const completedCount = progress?.length || 0
+    const percentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0
 
     // Auto-select first lesson
     if (course && !selectedLesson && course.modules && course.modules.length > 0) {
@@ -34,9 +41,11 @@ export default function Player() {
         return (
             <div className="flex flex-col min-h-screen">
                 <Header />
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                </div>
+                <main className="flex-1 py-6">
+                    <div className="container">
+                        <SkeletonLoader variant="player" count={1} />
+                    </div>
+                </main>
                 <Footer />
             </div>
         )
@@ -82,15 +91,26 @@ export default function Player() {
         <div className="flex flex-col min-h-screen">
             <Header />
 
-            <main className="flex-1">
-                <div className="container py-6">
-                    <h1 className="text-2xl font-bold mb-6">{course.title}</h1>
+            {/* Progress Bar */}
+            <div className="border-b bg-card">
+                <div className="container py-3">
+                    <CourseProgress
+                        completed={completedCount}
+                        total={totalLessons}
+                        percentage={percentage}
+                        showText={false}
+                    />
+                </div>
+            </div>
 
+            <main className="flex-1 py-6">
+                <div className="container">
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Lesson Player */}
-                        <div className="lg:col-span-2 space-y-4">
+                        {/* Left Column - Player + Tabs */}
+                        <div className="lg:col-span-2 space-y-6">
                             {selectedLesson && (
                                 <>
+                                    {/* Video Player */}
                                     <Card className="overflow-hidden">
                                         {selectedLesson.content_type === 'video' ? (
                                             <div className="aspect-video bg-black">
@@ -104,15 +124,15 @@ export default function Player() {
                                         ) : (
                                             <div className="aspect-video bg-muted flex items-center justify-center">
                                                 <div className="text-center">
-                                                    <PlayCircle className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                                                    <p className="text-muted-foreground">
+                                                    <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                                                    <p className="text-muted-foreground mb-2">
                                                         {selectedLesson.content_type === 'pdf' ? 'Documento PDF' : 'Conteúdo de Texto'}
                                                     </p>
                                                     <a
                                                         href={selectedLesson.content_url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-primary hover:underline mt-2 inline-block"
+                                                        className="text-primary hover:underline text-sm"
                                                     >
                                                         Abrir em Nova Janela
                                                     </a>
@@ -121,62 +141,87 @@ export default function Player() {
                                         )}
                                     </Card>
 
-                                    <Card className="p-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h2 className="text-xl font-semibold">{selectedLesson.title}</h2>
-                                            <Button
-                                                onClick={handleMarkComplete}
-                                                disabled={isLessonComplete || markCompleteMutation.isPending}
-                                                variant={isLessonComplete ? "ghost" : "default"}
-                                            >
-                                                {isLessonComplete ? (
-                                                    <>
-                                                        <CheckCircle2 className="mr-2 h-4 w-4" />
-                                                        Concluída
-                                                    </>
-                                                ) : (
-                                                    'Marcar como Concluída'
-                                                )}
-                                            </Button>
+                                    {/* Lesson Info + Mark Complete */}
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div>
+                                            <h1 className="text-2xl font-semibold mb-1">{selectedLesson.title}</h1>
+                                            {selectedLesson.duration_minutes && selectedLesson.duration_minutes > 0 && (
+                                                <p className="text-sm text-muted-foreground">
+                                                    Duração: {selectedLesson.duration_minutes} minutos
+                                                </p>
+                                            )}
                                         </div>
-                                        {selectedLesson.duration_minutes && selectedLesson.duration_minutes > 0 && (
+                                        <Button
+                                            onClick={handleMarkComplete}
+                                            disabled={isLessonComplete || markCompleteMutation.isPending}
+                                            variant={isLessonComplete ? "ghost" : "default"}
+                                            className="flex-shrink-0"
+                                        >
+                                            {isLessonComplete ? (
+                                                <>
+                                                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                    Concluída
+                                                </>
+                                            ) : (
+                                                'Marcar como Concluída'
+                                            )}
+                                        </Button>
+                                    </div>
+
+                                    {/* Tabs - Description / Materials / Notes */}
+                                    <Tabs defaultValue="description" className="w-full">
+                                        <TabsList>
+                                            <TabsTrigger value="description">Descrição</TabsTrigger>
+                                            <TabsTrigger value="materials">Materiais</TabsTrigger>
+                                            <TabsTrigger value="notes">Notas</TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="description" className="py-4">
+                                            <div className="prose prose-sm max-w-none">
+                                                <p className="text-muted-foreground">
+                                                    {selectedLesson.title}
+                                                </p>
+                                            </div>
+                                        </TabsContent>
+                                        <TabsContent value="materials" className="py-4">
                                             <p className="text-sm text-muted-foreground">
-                                                Duração: {selectedLesson.duration_minutes} minutos
+                                                Não há materiais disponíveis para esta aula.
                                             </p>
-                                        )}
-                                    </Card>
+                                        </TabsContent>
+                                        <TabsContent value="notes" className="py-4">
+                                            <p className="text-sm text-muted-foreground">
+                                                As suas notas aparecerão aqui. (Funcionalidade em desenvolvimento)
+                                            </p>
+                                        </TabsContent>
+                                    </Tabs>
                                 </>
                             )}
                         </div>
 
-                        {/* Course Modules & Lessons Sidebar */}
-                        <div className="space-y-4">
-                            <Card className="p-4">
-                                <h3 className="font-semibold mb-4">Conteúdo do Curso</h3>
-                                <div className="space-y-4">
+                        {/* Right Column - Compact Playlist */}
+                        <div className="lg:col-span-1">
+                            <Card className="p-4 sticky top-6">
+                                <h3 className="font-semibold mb-4 text-sm uppercase tracking-wide text-muted-foreground">
+                                    Conteúdo do Curso
+                                </h3>
+                                <div className="space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto">
                                     {course.modules?.map((module, idx) => (
                                         <div key={module.id}>
-                                            <h4 className="font-medium text-sm mb-2">
+                                            <h4 className="font-medium text-sm mb-2 text-foreground/80">
                                                 Módulo {idx + 1}: {module.title}
                                             </h4>
-                                            <ul className="space-y-1">
+                                            <div className="space-y-1">
                                                 {module.lessons?.map((lesson) => (
-                                                    <li key={lesson.id}>
-                                                        <button
-                                                            onClick={() => setSelectedLesson(lesson)}
-                                                            className={`w-full text-left text-sm p-2 rounded hover:bg-accent flex items-center gap-2 ${selectedLesson?.id === lesson.id ? 'bg-accent' : ''
-                                                                }`}
-                                                        >
-                                                            {completedLessonIds.has(lesson.id) ? (
-                                                                <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                                            ) : (
-                                                                <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                                            )}
-                                                            <span className="line-clamp-1">{lesson.title}</span>
-                                                        </button>
-                                                    </li>
+                                                    <LessonItem
+                                                        key={lesson.id}
+                                                        title={lesson.title}
+                                                        duration={lesson.duration_minutes}
+                                                        contentType={lesson.content_type}
+                                                        isCompleted={completedLessonIds.has(lesson.id)}
+                                                        isActive={selectedLesson?.id === lesson.id}
+                                                        onClick={() => setSelectedLesson(lesson)}
+                                                    />
                                                 ))}
-                                            </ul>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>

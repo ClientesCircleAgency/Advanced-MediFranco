@@ -2,49 +2,43 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { AccessDenied } from '@/components/AccessDenied'
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { LessonItem } from '@/components/ui/LessonItem'
 import { useCourse } from '@/hooks/useCourses'
 import { useIsEnrolled, useEnroll } from '@/hooks/useEnrollments'
-import { useAuth } from '@/contexts/AuthContext'
+import { BookOpen, Clock, CheckCircle2, Loader2 } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
-import { Clock, BookOpen, CheckCircle2, Loader2 } from 'lucide-react'
-import { mockCheckout } from '@/lib/stubs'
 
 export default function CourseDetail() {
     const { slug } = useParams<{ slug: string }>()
     const navigate = useNavigate()
-    const { user } = useAuth()
-    const { data: course, isLoading } = useCourse(slug!)
-    const { data: isEnrolled } = useIsEnrolled(course?.id || '')
+    const { data: course, isLoading: courseLoading } = useCourse(slug!)
+    const { data: isEnrolled, isLoading: enrollmentLoading } = useIsEnrolled(course?.id || '')
     const enrollMutation = useEnroll()
 
+    const totalLessons = course?.modules?.reduce((sum, mod) => sum + (mod.lessons?.length || 0), 0) || 0
+    const totalDuration = course?.modules?.reduce(
+        (sum, mod) => sum + (mod.lessons?.reduce((s, lesson) => s + (lesson.duration_minutes || 0), 0) || 0),
+        0
+    ) || 0
+
     const handleEnroll = async () => {
-        if (!user) {
-            navigate('/login', { state: { from: { pathname: `/courses/${slug}` } } })
-            return
-        }
-
         if (!course) return
-
-        try {
-            // Mock checkout
-            const { success } = await mockCheckout(course.id, user.id)
-            if (success) {
-                await enrollMutation.mutateAsync(course.id)
-                navigate('/dashboard?enrolled=true')
-            }
-        } catch (error) {
-            console.error('Enrollment error:', error)
-        }
+        await enrollMutation.mutateAsync(course.id)
+        navigate('/dashboard?enrolled=true')
     }
 
-    if (isLoading) {
+    if (courseLoading || enrollmentLoading) {
         return (
             <div className="flex flex-col min-h-screen">
                 <Header />
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                </div>
+                <main className="flex-1 py-12">
+                    <div className="container max-w-5xl">
+                        <SkeletonLoader variant="player" count={1} />
+                    </div>
+                </main>
                 <Footer />
             </div>
         )
@@ -54,54 +48,50 @@ export default function CourseDetail() {
         return (
             <div className="flex flex-col min-h-screen">
                 <Header />
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                        <h1 className="text-2xl font-bold mb-2">Curso não encontrado</h1>
-                        <p className="text-muted-foreground">O curso que procura não existe.</p>
-                    </div>
-                </div>
+                <AccessDenied
+                    title="Curso Não Encontrado"
+                    description="O curso que procura não existe ou não está disponível."
+                />
                 <Footer />
             </div>
         )
     }
-
-    const totalLessons = course.modules?.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0) || 0
-    const totalDuration = course.modules?.reduce(
-        (acc, mod) => acc + (mod.lessons?.reduce((sum, lesson) => sum + (lesson.duration_minutes || 0), 0) || 0),
-        0
-    ) || 0
 
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
 
             <main className="flex-1">
-                {/* Hero with brand gradient */}
+                {/* Compact Hero */}
                 <section className="bg-primary-gradient py-12">
-                    <div className="container">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                            <div className="text-white">
-                                <h1 className="text-4xl font-display font-bold mb-4 animate-fade-in-up">{course.title}</h1>
-                                <p className="text-lg text-white/90 mb-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>{course.description}</p>
+                    <div className="container max-w-5xl">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                            <div className="lg:col-span-2 text-white">
+                                <h1 className="text-3xl md:text-4xl font-display font-bold mb-4">{course.title}</h1>
+                                <p className="text-lg text-white/90 mb-6">{course.description}</p>
 
-                                <div className="flex items-center gap-6 mb-6 text-white/90 animate-fade-in-up" style={{ animationDelay: '0.15s' }}>
+                                <div className="flex items-center gap-6 text-sm text-white/90 mb-6">
                                     <div className="flex items-center gap-2">
-                                        <BookOpen className="h-5 w-5" />
+                                        <BookOpen className="h-4 w-4" />
                                         <span>{totalLessons} aulas</span>
                                     </div>
                                     {totalDuration > 0 && (
                                         <div className="flex items-center gap-2">
-                                            <Clock className="h-5 w-5" />
+                                            <Clock className="h-4 w-4" />
                                             <span>{Math.ceil(totalDuration / 60)}h de conteúdo</span>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                                    <div className="text-3xl font-bold text-white">{formatPrice(course.price_cents)}</div>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-2xl font-bold text-white">{formatPrice(course.price_cents)}</div>
                                     {isEnrolled ? (
-                                        <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-xl" onClick={() => navigate('/dashboard')}>
-                                            <CheckCircle2 className="mr-2 h-5 w-5" />
+                                        <Button
+                                            size="lg"
+                                            className="bg-white text-primary hover:bg-white/90 shadow-xl gap-2"
+                                            onClick={() => navigate(`/courses/${slug}/player`)}
+                                        >
+                                            <CheckCircle2 className="h-5 w-5" />
                                             Ir para o Curso
                                         </Button>
                                     ) : (
@@ -118,37 +108,48 @@ export default function CourseDetail() {
                                 </div>
                             </div>
 
-                            <div className="aspect-video rounded-lg overflow-hidden shadow-2xl border-4 border-white/20 animate-scale-in">
+                            <div className="aspect-video rounded-lg overflow-hidden shadow-2xl border-4 border-white/20">
                                 <img src={course.image_url} alt={course.title} className="w-full h-full object-cover" />
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* Course Content */}
+                {/* Course Content - Collapsible Modules */}
                 <section className="py-12">
-                    <div className="container max-w-4xl">
-                        <h2 className="text-2xl font-bold mb-6">Conteúdo do Curso</h2>
-                        <div className="space-y-4">
+                    <div className="container max-w-3xl">
+                        <h2 className="text-2xl font-semibold mb-6">Conteúdo Programático</h2>
+
+                        <Accordion type="multiple" defaultValue={course.modules?.map(m => m.id) || []} className="space-y-2">
                             {course.modules?.map((module, idx) => (
-                                <Card key={module.id} className="p-6">
-                                    <h3 className="font-semibold text-lg mb-4">
-                                        Módulo {idx + 1}: {module.title}
-                                    </h3>
-                                    <ul className="space-y-2">
-                                        {module.lessons?.map((lesson) => (
-                                            <li key={lesson.id} className="flex items-center gap-2 text-sm">
-                                                <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                                                <span>{lesson.title}</span>
-                                                {lesson.duration_minutes && lesson.duration_minutes > 0 && (
-                                                    <span className="text-muted-foreground ml-auto">{lesson.duration_minutes} min</span>
-                                                )}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </Card>
+                                <AccordionItem key={module.id} value={module.id} className="border rounded-lg px-4">
+                                    <AccordionTrigger className="hover:no-underline">
+                                        <div className="flex items-center gap-3 text-left">
+                                            <span className="font-semibold">
+                                                Módulo {idx + 1}: {module.title}
+                                            </span>
+                                            <span className="text-sm text-muted-foreground">
+                                                ({module.lessons?.length || 0} aulas)
+                                            </span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <div className="space-y-1 pt-2">
+                                            {module.lessons?.map((lesson) => (
+                                                <LessonItem
+                                                    key={lesson.id}
+                                                    title={lesson.title}
+                                                    duration={lesson.duration_minutes}
+                                                    contentType={lesson.content_type}
+                                                    isCompleted={false}
+                                                    onClick={() => { }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
                             ))}
-                        </div>
+                        </Accordion>
                     </div>
                 </section>
             </main>
