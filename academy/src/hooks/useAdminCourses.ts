@@ -258,6 +258,23 @@ export function useDeleteModule() {
 // LESSONS
 // ============================================================
 
+export function useAdminLessons(moduleId: string) {
+    return useQuery<Lesson[]>({
+        queryKey: ['admin-lessons', moduleId],
+        queryFn: async () => {
+            const { data: lessons, error } = await supabase
+                .from('academy_lessons')
+                .select('*')
+                .eq('module_id', moduleId)
+                .order('order', { ascending: true })
+
+            if (error) throw error
+            return lessons || []
+        },
+        enabled: !!moduleId,
+    })
+}
+
 export function useCreateLesson() {
     const queryClient = useQueryClient()
 
@@ -275,6 +292,7 @@ export function useCreateLesson() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] })
             queryClient.invalidateQueries({ queryKey: ['admin-modules'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-lessons'] })
         },
     })
 }
@@ -319,3 +337,4 @@ export function useDeleteLesson() {
         },
     })
 }
+

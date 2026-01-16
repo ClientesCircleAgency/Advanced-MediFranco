@@ -26,6 +26,7 @@ export interface Lesson {
     title: string
     content_type: 'video' | 'pdf' | 'text'
     content_url: string
+    content_text?: string
     order: number
     duration_minutes?: number
     created_at?: string

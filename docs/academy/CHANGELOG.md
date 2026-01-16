@@ -4,6 +4,116 @@
 
 ---
 
+## [Fase 7.3] - 2026-01-16
+
+### 🎯 Admin: Gestão de Aulas
+
+**Funcionalidades Implementadas**:
+
+#### Hooks
+- **[NEW] useAdminLessons** (`src/hooks/useAdminCourses.ts`)
+  - Hook para buscar aulas de um módulo
+  - Retorna array de `Lesson[]`
+  - Ordenado automaticamente por `order` (ASC)
+  - Enabled apenas se `moduleId` fornecido
+
+- **[MODIFY] Lesson mutations** (useCreateLesson, useUpdateLesson, useDeleteLesson)
+  - Atualizados `invalidateQueries` para incluir:
+    - `admin-lessons` (lista de aulas)
+    - `admin-modules` (contagens afetadas)
+
+#### Types
+- **[MODIFY] Lesson interface** (`src/types/index.ts`)
+  - Adicionado campo `content_text?: string` para aulas tipo texto
+
+#### Components
+- **[NEW] Select** (`src/components/ui/select.tsx`)
+  - Component shadcn Select (Radix UI)
+  - Usado para seleção de tipo de conteúdo
+
+#### Pages
+
+##### Lista de Aulas (`src/pages/admin/AdminLessons.tsx`)
+**Rota**: `/admin/modules/:moduleId/lessons`
+
+**Funcionalidades**:
+- Lista de aulas do módulo
+- Exibição por aula:
+  - Badge circular com número da ordem
+  - Título
+  - Tipo de conteúdo (Video/PDF/Texto com ícone)
+  - Duração em minutos
+- Ações:
+  - Editar aula
+  - Eliminar aula (confirmação obrigatória)
+- Navegação:
+  - Botão "Voltar aos Módulos"
+  - Nome do curso e módulo no header
+- Estados completos:
+  - Loading (skeleton)
+  - Empty (sem aulas)
+  - Error (alert vermelho)
+
+**Layout**:
+```
+[← Voltar aos Módulos]
+Aulas — Nome do Módulo
+Curso: Nome do Curso          [Nova Aula]
+---
+[1] Título da Aula
+    🎬 Vídeo  ⏱ 15 min
+    [Editar] [🗑️]
+```
+
+##### Criar/Editar Aula (`src/pages/admin/AdminLessonEdit.tsx`)
+**Rotas**: 
+- `/admin/modules/:moduleId/lessons/new`
+- `/admin/modules/:moduleId/lessons/:lessonId`
+
+**Campos**:
+- Título (obrigatório, min 3 chars)
+- Ordem (número inteiro >= 1)
+- Tipo de conteúdo (select): video / pdf / text
+- **URL do conteúdo** (condicional):
+  - Obrigatório se tipo = video ou pdf
+  - Oculto se tipo = text
+- **Conteúdo textual** (condicional):
+  - Textarea
+  - Obrigatório se tipo = text
+  - Oculto se tipo = video ou pdf
+- Duração (minutos, opcional, >= 0)
+
+**Validações Condicionais**:
+- ✅ Se tipo = video/pdf → URL obrigatório
+- ✅ Se tipo = text → conteúdo textual obrigatório
+- ✅ Apenas campos relevantes exibidos
+
+**Features**:
+- Auto-sugestão de ordem (max + 1) para novas aulas
+- Validações condicionais baseadas no tipo
+- Feedback visual completo:
+  - Alert verde sucesso
+  - Alert vermelho erro
+  - Loading state
+- Navegação:
+  - Botão "Voltar às Aulas"
+  - Breadcrumb (Curso / Módulo)
+  - Auto-redirect após sucesso (1.5s)
+
+#### Routing
+- **[MODIFY] App.tsx**
+  - Adicionadas rotas:
+    - `/admin/modules/:moduleId/lessons`
+    - `/admin/modules/:moduleId/lessons/:lessonId`
+  - Ambas protegidas por `ProtectedAdminRoute`
+
+**Build Stats**: 790KB JS (236KB gzip), 30.8KB CSS (+229KB JS desde Fase 7.2)
+
+**Nota sobre bundle size**: Aumento significativo devido a Radix UI Select e lógica condicional do formulário. Considerar code-splitting se necessário.
+
+---
+
+
 ## [Fase 7.2] - 2026-01-16
 
 ### 🎯 Admin: Gestão de Módulos

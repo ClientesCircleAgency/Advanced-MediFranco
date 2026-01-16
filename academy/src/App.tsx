@@ -23,6 +23,8 @@ import AdminCourses from '@/pages/admin/AdminCourses'
 import AdminCourseEdit from '@/pages/admin/AdminCourseEdit'
 import AdminModules from '@/pages/admin/AdminModules'
 import AdminModuleEdit from '@/pages/admin/AdminModuleEdit'
+import AdminLessons from '@/pages/admin/AdminLessons'
+import AdminLessonEdit from '@/pages/admin/AdminLessonEdit'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,6 +99,22 @@ function App() {
               element={
                 <ProtectedAdminRoute>
                   <AdminModuleEdit />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/modules/:moduleId/lessons"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminLessons />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/modules/:moduleId/lessons/:lessonId"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminLessonEdit />
                 </ProtectedAdminRoute>
               }
             />
