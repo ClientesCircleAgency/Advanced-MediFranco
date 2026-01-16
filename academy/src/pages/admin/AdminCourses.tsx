@@ -1,19 +1,22 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
-import { useAdminCourses, useDeleteCourse } from '@/hooks/useAdminCourses'
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useAdminCourses, useDeleteCourse, useTogglePublished } from '@/hooks/useAdminCourses'
+import { Plus, Edit, Trash2, Eye, EyeOff, BookOpen, FileText, Users, Loader2, AlertCircle } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
-import { useState } from 'react'
 
 export default function AdminCourses() {
     const navigate = useNavigate()
-    const { data: courses, isLoading } = useAdminCourses()
+    const { data: courses, isLoading, isError, error } = useAdminCourses()
     const deleteMutation = useDeleteCourse()
+    const toggleMutation = useTogglePublished()
     const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [togglingId, setTogglingId] = useState<string | null>(null)
 
     const handleDelete = async (id: string, title: string) => {
         if (!confirm(`Tem a certeza que deseja eliminar "${title}"? Esta ação não pode ser revertida.`)) {
@@ -23,8 +26,21 @@ export default function AdminCourses() {
         setDeletingId(id)
         try {
             await deleteMutation.mutateAsync(id)
+        } catch (err) {
+            alert('Erro ao eliminar curso. Tente novamente.')
         } finally {
             setDeletingId(null)
+        }
+    }
+
+    const handleTogglePublished = async (id: string, isPublished: boolean, title: string) => {
+        setTogglingId(id)
+        try {
+            await toggleMutation.mutateAsync({ id, isPublished })
+        } catch (err) {
+            alert(`Erro ao ${isPublished ? 'despublicar' : 'publicar'} "${title}". Tente novamente.`)
+        } finally {
+            setTogglingId(null)
         }
     }
 
@@ -47,6 +63,16 @@ export default function AdminCourses() {
                             Novo Curso
                         </Button>
                     </div>
+
+                    {/* Error State */}
+                    {isError && (
+                        <Alert variant="destructive" className="mb-6">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription>
+                                Erro ao carregar cursos: {error instanceof Error ? error.message : 'Erro desconhecido'}
+                            </AlertDescription>
+                        </Alert>
+                    )}
 
                     {/* Courses List */}
                     {isLoading ? (
@@ -87,6 +113,22 @@ export default function AdminCourses() {
                                             {formatPrice(course.price_cents)}
                                         </div>
 
+                                        {/* Stats */}
+                                        <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4 pb-4 border-b">
+                                            <div className="flex items-center gap-1">
+                                                <BookOpen className="h-3.5 w-3.5" />
+                                                <span>{course.modules_count || 0} módulos</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <FileText className="h-3.5 w-3.5" />
+                                                <span>{course.lessons_count || 0} aulas</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Users className="h-3.5 w-3.5" />
+                                                <span>{course.enrollments_count || 0}</span>
+                                            </div>
+                                        </div>
+
                                         {/* Actions */}
                                         <div className="flex gap-2">
                                             <Button
@@ -99,12 +141,30 @@ export default function AdminCourses() {
                                                 Editar
                                             </Button>
                                             <Button
+                                                variant={course.is_published ? "outline" : "default"}
+                                                size="sm"
+                                                onClick={() => handleTogglePublished(course.id, course.is_published, course.title)}
+                                                disabled={togglingId === course.id}
+                                            >
+                                                {togglingId === course.id ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : course.is_published ? (
+                                                    <EyeOff className="h-4 w-4" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                            <Button
                                                 variant="destructive"
                                                 size="sm"
                                                 onClick={() => handleDelete(course.id, course.title)}
                                                 disabled={deletingId === course.id}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                {deletingId === course.id ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-4 w-4" />
+                                                )}
                                             </Button>
                                         </div>
                                     </div>
