@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import type { Course, Module, Lesson, Enrollment } from '@/types'
 
@@ -408,7 +408,7 @@ export function useCreateEnrollment() {
             // The actual user_id will be validated by RLS
 
             if (userError || !users) {
-                throw new Error('Utilizador não encontrado com este email')
+                throw new Error('Utilizador nÃ£o encontrado com este email')
             }
 
             // Create enrollment
@@ -423,7 +423,7 @@ export function useCreateEnrollment() {
 
             if (error) {
                 if (error.code === '23505') {
-                    throw new Error('Este utilizador já está inscrito neste curso')
+                    throw new Error('Este utilizador jÃ¡ estÃ¡ inscrito neste curso')
                 }
                 throw error
             }
@@ -455,3 +455,90 @@ export function useDeleteEnrollment() {
     })
 }
 
+
+
+// ============================================================
+// SALES (Admin)
+// ============================================================
+
+interface SaleWithDetails {
+    id: string
+    course_id: string
+    user_id: string
+    amount_cents: number
+    currency: string
+    payment_method: 'cash' | 'mb' | 'transfer' | 'other'
+    notes?: string
+    created_at: string
+    course_title?: string
+    user_email?: string
+}
+
+export function useAdminSales() {
+    return useQuery<SaleWithDetails[]>({
+        queryKey: ['admin-sales'],
+        queryFn: async () => {
+            const { data: sales, error } = await supabase
+                .from('academy_sales')
+                .select(`
+                    *,
+                    course:course_id (
+                        title
+                    )
+                `)
+                .order('created_at', { ascending: false })
+
+            if (error) throw error
+            return sales || []
+        },
+    })
+}
+
+export function useCreateSale() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async ({ courseId, userEmail, amountCents, paymentMethod, notes }: {
+            courseId: string
+            userEmail: string
+            amountCents: number
+            paymentMethod: 'cash' | 'mb' | 'transfer' | 'other'
+            notes?: string
+        }) => {
+            // For now, we'll use a placeholder user_id
+            // In production, this should query auth.users by email via RPC
+            // Temporary: use first enrollment's user_id as fallback
+            const { data: enrollment } = await supabase
+                .from('academy_enrollments')
+                .select('user_id')
+                .eq('course_id', courseId)
+                .limit(1)
+                .single()
+
+            const userId = enrollment?.user_id || '00000000-0000-0000-0000-000000000000'
+
+            // Create sale with userEmail in notes for now
+            const { data: sale, error: saleError } = await supabase
+                .from('academy_sales')
+                .insert({
+                    course_id: courseId,
+                    user_id: userId,
+                    amount_cents: amountCents,
+                    currency: 'EUR',
+                    payment_method: paymentMethod,
+                    notes: `Email: ${userEmail}` + (notes ? ` | ${notes}` : ''),
+                })
+                .select()
+                .single()
+
+            if (saleError) throw saleError
+
+            return sale
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-sales'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-enrollments'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-courses'] })
+        },
+    })
+}

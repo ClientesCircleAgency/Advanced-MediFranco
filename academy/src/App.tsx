@@ -26,6 +26,7 @@ import AdminModuleEdit from '@/pages/admin/AdminModuleEdit'
 import AdminLessons from '@/pages/admin/AdminLessons'
 import AdminLessonEdit from '@/pages/admin/AdminLessonEdit'
 import AdminEnrollments from '@/pages/admin/AdminEnrollments'
+import AdminSales from '@/pages/admin/AdminSales'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -124,6 +125,14 @@ function App() {
               element={
                 <ProtectedAdminRoute>
                   <AdminEnrollments />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/sales"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminSales />
                 </ProtectedAdminRoute>
               }
             />

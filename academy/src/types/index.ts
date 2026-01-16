@@ -51,6 +51,17 @@ export interface Progress {
     completed_at: string
 }
 
+export interface Sale {
+    id: string
+    course_id: string
+    user_id: string
+    amount_cents: number
+    currency: string
+    payment_method: 'cash' | 'mb' | 'transfer' | 'other'
+    notes?: string
+    created_at: string
+}
+
 export interface User {
     id: string
     email: string

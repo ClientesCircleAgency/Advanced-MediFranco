@@ -4,6 +4,136 @@
 
 ---
 
+## [Fase 7.5] - 2026-01-16
+
+### 🎯 Admin: Vendas Manuais
+
+**Funcionalidades Implementadas**:
+
+#### Database
+- **[NEW] Tabela academy_sales** (`supabase/migrations/007_academy_sales.sql`)
+  - Campos:
+    - `id` (UUID, PK)
+    - `course_id` (FK → academy_courses)
+    - `user_id` (FK → auth.users)
+    - `amount_cents` (integer, >= 0)
+    - `currency` (text, default 'EUR')
+    - `payment_method` (enum: cash | mb | transfer | other)
+    - `notes` (text, opcional)
+    - `created_at` (timestamptz)
+  - Indexes: course_id, user_id, created_at
+  - **RLS Policies**: Apenas admins (SELECT, INSERT, UPDATE, DELETE)
+  
+⚠️ **Importante**: Esta tabela é apenas para registo administrativo. Não processa pagamentos.
+
+#### Types
+- **[NEW] Sale interface** (`src/types/index.ts`)
+  - Define estrutura de vendas manuais
+
+#### Hooks
+- **[NEW] useAdminSales** (`src/hooks/useAdminCourses.ts`)
+  - Hook para buscar todas as vendas registadas
+  - Retorna `SaleWithDetails[]` (extends `Sale`)
+  - Inclui: `course_title`
+  - Ordenado por data de criação (DESC)
+
+- **[NEW] useCreateSale** (`src/hooks/useAdminCourses.ts`)
+  - Hook para registar venda manual
+  - Parâmetros:
+    - `courseId` - ID do curso
+    - `userEmail` - Email do utilizador (guardado em notes temporariamente)
+    - `amountCents` - Valor em cêntimos
+    - `paymentMethod` - Método de pagamento
+    - `notes` - Notas adicionais
+  - Comportamento:
+    - Cria registo em academy_sales
+    - Guarda email do utilizador nas notas (solução temporária)
+  - ⚠️ **Nota produção**: Requer RPC para buscar user_id por email
+
+#### Pages
+
+##### Vendas Manuais (`src/pages/admin/AdminSales.tsx`)
+**Rota**: `/admin/sales`
+
+**Funcionalidades**:
+- Lista de vendas registadas
+- Exibição por venda:
+  - Ícone € verde
+  - Título do curso
+  - Data e hora (formato PT)
+  - Valor formatado
+  - Método de pagamento
+  - ID do utilizador
+  - Notas (se existir)
+- Navegação:
+  - Botão "Voltar aos Cursos"
+- Estados completos:
+  - Loading (skeleton)
+  - Empty (sem vendas)
+  - Error (alert vermelho)
+
+**Layout**:
+```
+[← Voltar aos Cursos]
+Vendas Manuais                    [Registar Venda]
+Registo administrativo (não processa pagamentos)
+---
+[$] Curso de Exemplo
+    16/01/2026 22:30
+    Valor: €49.99  |  Método: Multibanco
+    Utilizador: 12345678...
+    Notas: Email: user@example.com
+```
+
+**Formulário de Registo (Inline)**:
+- Botão "Registar Venda" toggle form
+- **Aviso obrigatório**: 
+  > "Esta ação apenas regista a venda administrativamente. Não processa pagamentos."
+  
+- Campos:
+  - **Curso** (select com preço)
+  - **Email do utilizador** (text)
+  - **Valor** (€, decimal)
+  - **Método de pagamento** (select: dinheiro/MB/transferência/outro)
+  - **Notas** (textarea, opcional)
+
+- Validações:
+  - Curso obrigatório
+  - Email obrigatório
+  - Valor > 0
+  - Método obrigatório
+
+- Feedback:
+  - Alert verde success (auto-hide 4s)
+  - Alert vermelho erro
+  - Loading state
+
+- Comportamento:
+  - Form fecha após sucesso
+  - Email guardado nas notas
+
+#### Routing
+- **[MODIFY] App.tsx**
+  - Adicionada rota: `/admin/sales`
+  - Protegida por `ProtectedAdminRoute`
+
+**Build Stats**: 667KB JS (190KB gzip), 31.2KB CSS (+9KB JS desde Fase 7.4)
+
+---
+
+### ⚠️ Limitações Conhecidas (Fase 7.5)
+
+1. **User lookup**: Email do utilizador é guardado nas notas (solução temporária)
+   - **Solução produção**: Criar RPC `find_user_by_email(email text)` no Supabase
+   
+2. **Enrollment automático**: Não implementado nesta fase
+   - Deve ser criado manualmente ou na próxima fase
+
+3. **Sem processamento de pagamento**: Sistema apenas regista vendas
+   - Stripe será integrado em fase futura
+
+---
+
 ## [Fase 7.4] - 2026-01-16
 
 ### 🎯 Admin: Gestão de Inscritos
