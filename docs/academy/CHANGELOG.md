@@ -4,6 +4,91 @@
 
 ---
 
+## [Fase 7.2] - 2026-01-16
+
+### 🎯 Admin: Gestão de Módulos
+
+**Funcionalidades Implementadas**:
+
+#### Hooks
+- **[NEW] useAdminModules** (`src/hooks/useAdminCourses.ts`)
+  - Hook para buscar módulos de um curso com stats
+  - Retorna `ModuleWithStats[]` (extends `Module`)
+  - Inclui `lessons_count`: Número de aulas do módulo
+  - Ordenado automaticamente por `order` (ASC)
+  - Enabled apenas se `courseId` fornecido
+
+- **[MODIFY] Module mutations** (useCreateModule, useUpdateModule, useDeleteModule)
+  - Atualizados `invalidateQueries` para incluir:
+    - `admin-modules` (lista de módulos)
+    - `admin-courses` (contagens afetadas)
+
+#### Pages
+
+##### Lista de Módulos (`src/pages/admin/AdminModules.tsx`)
+**Rota**: `/admin/courses/:courseId/modules`
+
+**Funcionalidades**:
+- Lista de módulos do curso
+- Exibição por módulo:
+  - Badge circular com número da ordem
+  - Título
+  - Nº de aulas (ícone FileText)
+- Ações:
+  - Editar módulo
+  - Eliminar módulo (confirmação obrigatória com aviso de cascata)
+- Navegação:
+  - Botão "Voltar aos Cursos"
+  - Nome do curso no header
+- Estados completos:
+  - Loading (skeleton)
+  - Empty (sem módulos)
+  - Error (alert vermelho)
+
+**Layout**:
+```
+[← Voltar aos Cursos]
+Módulos — Nome do Curso          [Novo Módulo]
+---
+[1] Título do Módulo
+    📝 5 aulas
+    [Editar] [🗑️]
+```
+
+##### Criar/Editar Módulo (`src/pages/admin/AdminModuleEdit.tsx`)
+**Rotas**: 
+- `/admin/courses/:courseId/modules/new`
+- `/admin/courses/:courseId/modules/:moduleId`
+
+**Campos**:
+- Título (obrigatório, min 3 chars)
+- Ordem (número inteiro >= 1)
+
+**Features**:
+- Auto-sugestão de ordem (max + 1) para novos módulos
+- Validações:
+  - Título min 3 caracteres
+  - Ordem >= 1
+- Feedback visual:
+  - Alert verde sucesso
+  - Alert vermelho erro
+  - Loading state
+- Navegação:
+  - Botão "Voltar aos Módulos"
+  - Nome do curso no header
+  - Auto-redirect após sucesso (1.5s)
+
+#### Routing
+- **[MODIFY] App.tsx**
+  - Adicionadas rotas:
+    - `/admin/courses/:courseId/modules`
+    - `/admin/courses/:courseId/modules/:moduleId`
+  - Ambas protegidas por `ProtectedAdminRoute`
+
+**Build Stats**: 561KB JS (161KB gzip), 26.7KB CSS (+8KB JS desde Fase 7.1)
+
+---
+
 ## [Fase 7.1] - 2026-01-16
 
 ### 🎯 Admin: Gestão de Cursos (Refinamento)
@@ -140,12 +225,12 @@ Preço
 
 | Métrica | Valor | Anterior | Δ |
 |---------|-------|----------|---|
-| **JS Bundle** | 553KB | 549KB | +4KB |
-| **JS Gzipped** | 160KB | 159KB | +1KB |
-| **CSS Bundle** | 26.6KB | 26KB | +0.6KB |
-| **Build Time** | 9.6s | 9s | +0.6s |
+| **JS Bundle** | 561KB | 553KB | +8KB |
+| **JS Gzipped** | 161KB | 160KB | +1KB |
+| **CSS Bundle** | 26.7KB | 26.6KB | +0.1KB |
+| **Build Time** | 9.4s | 9.6s | -0.2s |
 
-**Razão do aumento**: Contagens adicionais (queries para stats)
+**Razão do aumento**: Gestão de módulos (queries adiciona para stats)
 
 ---
 
@@ -156,6 +241,9 @@ Preço
 ---
 
 ## 🐛 Bug Fixes
+
+### Fase 7.2
+- **useCourse signature**: Corrigido para aceitar apenas 1 argumento nas páginas admin
 
 ### Fase 7.1
 - **Alert**: Adicionada variant success (antes só tinha default e destructive)
@@ -169,11 +257,6 @@ Preço
 ---
 
 ## 🚀 Próximas Fases
-
-### Fase 7.2 — Gestão de Módulos
-- Lista de módulos por curso
-- Criar/editar/eliminar módulo
-- Reordenação de módulos
 
 ### Fase 7.3 — Gestão de Aulas
 - Lista de aulas por módulo
@@ -193,4 +276,4 @@ Preço
 
 ---
 
-*Última atualização: 2026-01-16 (Fase 7.1 completa)*
+*Última atualização: 2026-01-16 (Fase 7.2 completa)*
