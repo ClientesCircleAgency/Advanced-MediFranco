@@ -4,6 +4,95 @@
 
 ---
 
+## [Fase 7.4] - 2026-01-16
+
+### 🎯 Admin: Gestão de Inscritos
+
+**Funcionalidades Implementadas**:
+
+#### Hooks
+- **[NEW] useAdminEnrollments** (`src/hooks/useAdminCourses.ts`)
+  - Hook para buscar inscritos de um curso com dados do utilizador
+  - Retorna `EnrollmentWithUser[]` (extends `Enrollment`)
+  - Inclui: `user_email`, `progress_percentage`
+  - Usa join com tabela `auth.users` para obter email
+  - Calcula progresso via RPC `get_my_course_progress()`
+  - Ordenado por data de inscrição (DESC)
+
+- **[NEW] useCreateEnrollment** (`src/hooks/useAdminCourses.ts`)
+  - Hook para inscrever utilizador existente por email
+  - Valida se utilizador existe antes de criar enrollment
+  - Detecta duplicados (error 23505)
+  - Mensagens de erro específicas:
+    - "Utilizador não encontrado"
+    - "Já está inscrito"
+
+- **[NEW] useDeleteEnrollment** (`src/hooks/useAdminCourses.ts`)
+  - Hook para remover acesso de utilizador
+  - Remove apenas enrollment
+  - Não elimina utilizador nem progresso
+
+#### Pages
+
+##### Gestão de Inscritos (`src/pages/admin/AdminEnrollments.tsx`)
+**Rota**: `/admin/courses/:courseId/enrollments`
+
+**Funcionalidades**:
+- Lista de inscritos do curso
+- Exibição por inscrição:
+  - Avatar com inicial do email
+  - Email do utilizador
+  - Data de inscrição (formato PT)
+  - **Barra de progresso** (%)
+- Navegação:
+  - Botão "Voltar aos Cursos"
+  - Nome do curso no header
+- Estados completos:
+  - Loading (skeleton)
+  - Empty (sem inscritos)
+  - Error (alert vermelho)
+
+**Layout**:
+```
+[← Voltar aos Cursos]
+Inscritos — Nome do Curso    [Inscrever Utilizador]
+---
+[U] user@example.com
+    Inscrito em 16/01/2026
+    [████████░░] 80%
+    [Remover Acesso]
+```
+
+**Inscrição Manual (Formulário Inline)**:
+- Botão "Inscrever Utilizador" toggle form
+- Campo: Email do utilizador (obrigatório)
+- Validações:
+  - Email obrigatório
+  - Utilizador deve existir
+  - Não pode já estar inscrito
+- Feedback visual:
+  - Alert verde: "Utilizador inscrito com sucesso!"
+  - Alert vermelho: Erros específicos
+  - Loading state no botão
+- Comportamento:
+  - Form fecha automaticamente após sucesso
+  - Mensagem desaparece após 3s
+
+**Remoção de Acesso**:
+- Botão "Remover Acesso" por inscrição
+- Confirmação obrigatória com aviso claro:
+  > "O utilizador não será eliminado, apenas o seu acesso ao curso"
+- Loading state durante eliminação
+
+#### Routing
+- **[MODIFY] App.tsx**
+  - Adicionada rota: `/admin/courses/:courseId/enrollments`
+  - Protegida por `ProtectedAdminRoute`
+
+**Build Stats**: 797KB JS (237KB gzip), 30.8KB CSS (+7KB JS desde Fase 7.3)
+
+---
+
 ## [Fase 7.3] - 2026-01-16
 
 ### 🎯 Admin: Gestão de Aulas

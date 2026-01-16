@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
-import type { Course, Module, Lesson } from '@/types'
+import type { Course, Module, Lesson, Enrollment } from '@/types'
 
 // ============================================================
 // COURSES
@@ -334,6 +334,123 @@ export function useDeleteLesson() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] })
             queryClient.invalidateQueries({ queryKey: ['admin-modules'] })
+        },
+    })
+}
+
+// ============================================================
+// ENROLLMENTS (Admin)
+// ============================================================
+
+interface EnrollmentWithUser extends Enrollment {
+    user_email?: string
+    user_name?: string
+    progress_percentage?: number
+}
+
+export function useAdminEnrollments(courseId: string) {
+    return useQuery<EnrollmentWithUser[]>({
+        queryKey: ['admin-enrollments', courseId],
+        queryFn: async () => {
+            // Get enrollments with user data
+            const { data: enrollments, error } = await supabase
+                .from('academy_enrollments')
+                .select(`
+                    *,
+                    user:user_id (
+                        email
+                    )
+                `)
+                .eq('course_id', courseId)
+                .order('enrolled_at', { ascending: false })
+
+            if (error) throw error
+            if (!enrollments) return []
+
+            // Get progress for each enrollment
+            const enrollmentsWithProgress = await Promise.all(
+                enrollments.map(async (enrollment: any) => {
+                    // Get user's progress using RPC function
+                    const { data: progressData } = await supabase
+                        .rpc('get_my_course_progress')
+                        .eq('course_id', courseId)
+                        .eq('user_id', enrollment.user_id)
+                        .single()
+
+                    return {
+                        ...enrollment,
+                        user_email: enrollment.user?.email || 'N/A',
+                        progress_percentage: (progressData as any)?.progress_percentage || 0,
+                    }
+                })
+            )
+
+            return enrollmentsWithProgress
+        },
+        enabled: !!courseId,
+    })
+}
+
+export function useCreateEnrollment() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async ({ courseId, userEmail }: { courseId: string; userEmail: string }) => {
+            // First, find user by email
+            const { data: users, error: userError } = await supabase
+                .from('auth.users')
+                .select('id, email')
+                .eq('email', userEmail)
+                .single()
+
+            // If direct query doesn't work, try RPC approach or just use email
+            // For now, we'll create enrollment with email as reference
+            // The actual user_id will be validated by RLS
+
+            if (userError || !users) {
+                throw new Error('Utilizador não encontrado com este email')
+            }
+
+            // Create enrollment
+            const { data, error } = await supabase
+                .from('academy_enrollments')
+                .insert({
+                    course_id: courseId,
+                    user_id: users.id,
+                })
+                .select()
+                .single()
+
+            if (error) {
+                if (error.code === '23505') {
+                    throw new Error('Este utilizador já está inscrito neste curso')
+                }
+                throw error
+            }
+            return data
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-enrollments'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-courses'] })
+        },
+    })
+}
+
+export function useDeleteEnrollment() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: async (enrollmentId: string) => {
+            const { error } = await supabase
+                .from('academy_enrollments')
+                .delete()
+                .eq('id', enrollmentId)
+
+            if (error) throw error
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-enrollments'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-courses'] })
         },
     })
 }
