@@ -21,6 +21,8 @@ import Player from '@/pages/Player'
 // Admin pages
 import AdminCourses from '@/pages/admin/AdminCourses'
 import AdminCourseEdit from '@/pages/admin/AdminCourseEdit'
+import AdminModules from '@/pages/admin/AdminModules'
+import AdminModuleEdit from '@/pages/admin/AdminModuleEdit'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,6 +81,22 @@ function App() {
               element={
                 <ProtectedAdminRoute>
                   <AdminCourseEdit />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/courses/:courseId/modules"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminModules />
+                </ProtectedAdminRoute>
+              }
+            />
+            <Route
+              path="/admin/courses/:courseId/modules/:moduleId"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminModuleEdit />
                 </ProtectedAdminRoute>
               }
             />

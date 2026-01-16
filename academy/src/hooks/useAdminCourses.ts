@@ -151,6 +151,45 @@ export function useDeleteCourse() {
 // MODULES
 // ============================================================
 
+interface ModuleWithStats extends Module {
+    lessons_count?: number
+}
+
+export function useAdminModules(courseId: string) {
+    return useQuery<ModuleWithStats[]>({
+        queryKey: ['admin-modules', courseId],
+        queryFn: async () => {
+            // Get modules
+            const { data: modules, error: modulesError } = await supabase
+                .from('academy_modules')
+                .select('*')
+                .eq('course_id', courseId)
+                .order('order', { ascending: true })
+
+            if (modulesError) throw modulesError
+            if (!modules) return []
+
+            // Get lesson counts for each module
+            const modulesWithStats = await Promise.all(
+                modules.map(async (module) => {
+                    const { count: lessonsCount } = await supabase
+                        .from('academy_lessons')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('module_id', module.id)
+
+                    return {
+                        ...module,
+                        lessons_count: lessonsCount || 0,
+                    }
+                })
+            )
+
+            return modulesWithStats
+        },
+        enabled: !!courseId,
+    })
+}
+
 export function useCreateModule() {
     const queryClient = useQueryClient()
 
@@ -167,6 +206,8 @@ export function useCreateModule() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-modules'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-courses'] })
         },
     })
 }
@@ -188,6 +229,7 @@ export function useUpdateModule() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-modules'] })
         },
     })
 }
@@ -206,6 +248,8 @@ export function useDeleteModule() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-modules'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-courses'] })
         },
     })
 }
@@ -230,6 +274,7 @@ export function useCreateLesson() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-modules'] })
         },
     })
 }
@@ -251,6 +296,7 @@ export function useUpdateLesson() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-modules'] })
         },
     })
 }
@@ -269,6 +315,7 @@ export function useDeleteLesson() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['courses'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-modules'] })
         },
     })
 }
