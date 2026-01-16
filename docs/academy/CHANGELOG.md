@@ -4,6 +4,44 @@
 
 ---
 
+## [Fase 7.5.1] - 2026-01-16
+
+### 🔧 Correções: Vendas Manuais
+
+**Correções Implementadas**:
+
+#### Database
+- **[NEW] RPC find_user_by_email** (`supabase/migrations/008_find_user_by_email.sql`)
+  - Função para resolver `user_id` a partir de email
+  - SECURITY DEFINER para acesso a auth.users
+  - GRANT para authenticated users
+
+#### Hooks
+- **[FIX] useCreateSale** (`src/hooks/useAdminCourses.ts`)
+  - ✅ **Enrollment automático implementado**
+  - ✅ **Removido workaround de email em notas**
+  - Fluxo corrigido:
+    1. Resolver user_id via RPC `find_user_by_email()`
+    2. Criar registo de venda
+    3. Verificar se enrollment existe
+    4. Criar enrollment automaticamente se não existir
+  - Tratamento de erros melhorado:
+    - "Utilizador não encontrado" se email inválido
+    - Não duplica enrollments existentes
+    - Continua se enrollment falhar (venda já criada)
+
+**Alterações**:
+- Campo `notes` agora usado apenas para notas reais (não guarda email)
+- User lookup 100% funcional via RPC
+- Sistema alinhado com escopo original da Fase 7.5
+
+**Sem alterações em**:
+- UI/UX (zero mudanças)
+- RLS policies
+- Outros hooks ou componentes
+
+---
+
 ## [Fase 7.5] - 2026-01-16
 
 ### 🎯 Admin: Vendas Manuais

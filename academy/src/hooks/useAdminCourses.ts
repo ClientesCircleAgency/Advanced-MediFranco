@@ -505,19 +505,16 @@ export function useCreateSale() {
             paymentMethod: 'cash' | 'mb' | 'transfer' | 'other'
             notes?: string
         }) => {
-            // For now, we'll use a placeholder user_id
-            // In production, this should query auth.users by email via RPC
-            // Temporary: use first enrollment's user_id as fallback
-            const { data: enrollment } = await supabase
-                .from('academy_enrollments')
-                .select('user_id')
-                .eq('course_id', courseId)
-                .limit(1)
+            // 1. Find user by email using RPC
+            const { data: userId, error: userError } = await supabase
+                .rpc('find_user_by_email', { p_email: userEmail })
                 .single()
 
-            const userId = enrollment?.user_id || '00000000-0000-0000-0000-000000000000'
+            if (userError || !userId) {
+                throw new Error('Utilizador não encontrado com este email')
+            }
 
-            // Create sale with userEmail in notes for now
+            // 2. Create sale record
             const { data: sale, error: saleError } = await supabase
                 .from('academy_sales')
                 .insert({
@@ -526,12 +523,35 @@ export function useCreateSale() {
                     amount_cents: amountCents,
                     currency: 'EUR',
                     payment_method: paymentMethod,
-                    notes: `Email: ${userEmail}` + (notes ? ` | ${notes}` : ''),
+                    notes: notes || null,
                 })
                 .select()
                 .single()
 
             if (saleError) throw saleError
+
+            // 3. Check if enrollment exists
+            const { data: existingEnrollment } = await supabase
+                .from('academy_enrollments')
+                .select('id')
+                .eq('user_id', userId)
+                .eq('course_id', courseId)
+                .maybeSingle()
+
+            // 4. Create enrollment if it doesn't exist
+            if (!existingEnrollment) {
+                const { error: enrollError } = await supabase
+                    .from('academy_enrollments')
+                    .insert({
+                        user_id: userId,
+                        course_id: courseId,
+                    })
+
+                if (enrollError) {
+                    console.error('Error creating enrollment:', enrollError)
+                    // Don't throw - sale is already created
+                }
+            }
 
             return sale
         },
