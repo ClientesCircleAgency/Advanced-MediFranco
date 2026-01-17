@@ -562,3 +562,59 @@ export function useCreateSale() {
         },
     })
 }
+
+
+// ============================================================
+// DASHBOARD STATS
+// ============================================================
+
+interface DashboardStats {
+    total_courses: number
+    published_courses: number
+    draft_courses: number
+    total_students: number
+    total_sales: number
+    total_revenue_cents: number
+}
+
+export function useAdminDashboardStats() {
+    return useQuery<DashboardStats>({
+        queryKey: ['admin-dashboard-stats'],
+        queryFn: async () => {
+            // Get courses count
+            const { count: totalCourses } = await supabase
+                .from('academy_courses')
+                .select('*', { count: 'exact', head: true })
+
+            const { count: publishedCourses } = await supabase
+                .from('academy_courses')
+                .select('*', { count: 'exact', head: true })
+                .eq('is_published', true)
+
+            // Get unique students (distinct user_ids in enrollments)
+            const { data: enrollments } = await supabase
+                .from('academy_enrollments')
+                .select('user_id')
+
+            const uniqueStudents = new Set(enrollments?.map(e => e.user_id) || []).size
+
+            // Get sales count and revenue
+            const { data: sales } = await supabase
+                .from('academy_sales')
+                .select('amount_cents')
+
+            const totalSales = sales?.length || 0
+            const totalRevenue = sales?.reduce((sum, s) => sum + s.amount_cents, 0) || 0
+
+            return {
+                total_courses: totalCourses || 0,
+                published_courses: publishedCourses || 0,
+                draft_courses: (totalCourses || 0) - (publishedCourses || 0),
+                total_students: uniqueStudents,
+                total_sales: totalSales,
+                total_revenue_cents: totalRevenue,
+            }
+        },
+    })
+}
+

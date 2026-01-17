@@ -27,6 +27,7 @@ import AdminLessons from '@/pages/admin/AdminLessons'
 import AdminLessonEdit from '@/pages/admin/AdminLessonEdit'
 import AdminEnrollments from '@/pages/admin/AdminEnrollments'
 import AdminSales from '@/pages/admin/AdminSales'
+import AdminDashboard from '@/pages/admin/AdminDashboard'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +73,14 @@ function App() {
             />
 
             {/* Admin routes (protected) */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedAdminRoute>
+                  <AdminDashboard />
+                </ProtectedAdminRoute>
+              }
+            />
             <Route
               path="/admin/courses"
               element={
