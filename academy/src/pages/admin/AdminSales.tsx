@@ -10,7 +10,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAdminSales, useCreateSale, useSalesAnalytics } from '@/hooks/useAdminCourses'
 import { useAdminCourses } from '@/hooks/useAdminCourses'
 import { Plus, Loader2, AlertCircle, CheckCircle2, DollarSign, TrendingUp, ShoppingCart, Calendar } from 'lucide-react'
-import { Plus, Loader2, AlertCircle, CheckCircle2, DollarSign, TrendingUp, ShoppingCart, Calendar } from 'lucide-react'
 
 export default function AdminSales() {
     const { data: sales, isLoading, isError, error } = useAdminSales()
