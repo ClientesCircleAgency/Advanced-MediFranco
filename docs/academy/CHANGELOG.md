@@ -1,9 +1,42 @@
-# MediFranco Academy — Changelog
+﻿# MediFranco Academy — Changelog
 
 > Histórico de alterações do projeto
 
 ---
 
+
+## [Fase 7.6] - 2026-01-16
+
+###  Admin: Shell & Dashboard
+
+**Estrutura Definitiva do Admin**:
+
+#### Components
+- **[NEW] AdminLayout** (`src/components/layout/AdminLayout.tsx`)
+  - Layout base reutilizável para todo o Admin
+  - Sidebar fixa (desktop) com navegação
+  - Links: Dashboard, Cursos, Inscritos, Vendas
+  - Estado ativo visível
+  - Botão terminar sessão
+  - Visual limpo
+
+#### Hooks
+- **[NEW] useAdminDashboardStats** (`src/hooks/useAdminCourses.ts`)
+  - Stats agregadas para dashboard
+  - Total cursos (publicados + rascunhos)
+  - Total alunos (distinct user_ids)
+  - Total vendas e receita
+
+#### Pages
+- **[NEW] AdminDashboard** (`src/pages/admin/AdminDashboard.tsx`)
+  - Rota: `/admin`
+  - Cards de stats operacionais
+  - Últimas 5 vendas
+  - Ações rápidas
+
+**Build Stats**: 675KB JS (192KB gzip), 32.2KB CSS
+
+---
 ## [Fase 7.5.1] - 2026-01-16
 
 ### 🔧 Correções: Vendas Manuais
@@ -644,3 +677,4 @@ Preço
 ---
 
 *Última atualização: 2026-01-16 (Fase 7.2 completa)*
+
