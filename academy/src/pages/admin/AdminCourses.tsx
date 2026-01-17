@@ -69,7 +69,7 @@ export default function AdminCourses() {
                         <Alert variant="destructive" className="mb-6">
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
-                                Erro ao carregar cursos: {error instanceof Error ? error.message : 'Erro desconhecido'}
+                                Erro ao carregar cursos: {error instanceof Error ? error.message : 'Não foi possível carregar cursos. Tente recarregar a página.'}
                             </AlertDescription>
                         </Alert>
                     )}

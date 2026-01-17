@@ -167,7 +167,7 @@ export default function AdminEnrollments() {
                         <Alert variant="destructive" className="mb-6">
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
-                                {errorMessage || (error instanceof Error ? error.message : 'Erro desconhecido')}
+                                {errorMessage || (error instanceof Error ? error.message : 'Não foi possível carregar os inscritos. Verifique as permissões ou contacte suporte.')}
                             </AlertDescription>
                         </Alert>
                     )}

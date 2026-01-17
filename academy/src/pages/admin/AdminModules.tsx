@@ -81,7 +81,7 @@ export default function AdminModules() {
                         <Alert variant="destructive" className="mb-6">
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
-                                Erro ao carregar módulos: {error instanceof Error ? error.message : 'Erro desconhecido'}
+                                Erro ao carregar módulos: {error instanceof Error ? error.message : 'Não foi possível carregar módulos. Tente recarregar a página.'}
                             </AlertDescription>
                         </Alert>
                     )}

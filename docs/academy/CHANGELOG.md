@@ -4,6 +4,37 @@
 
 ---
 
+## [Fase 7.7-B] - 2026-01-17
+
+### 🔧 Admin Area Stabilization (CLOSURE)
+
+**Objetivo**: Estabilizar e fechar completamente a Fase 7.7 sem erros, com estados claros e dados reais.
+
+**Fixed**:
+- **[FIX] useAdminEnrollments Hook** (`src/hooks/useAdminCourses.ts`)
+  - Removed RPC `get_my_course_progress` call (was causing permission errors)
+  - Progress now calculated by counting completed lessons vs total lessons
+  - Fixed empty courseId handling
+  - Better error messages with context
+
+- **[FIX] Error Messages Across Admin Area**
+  - Replaced all 5 instances of generic "Erro desconhecido"
+  - **AdminEnrollments**: "Não foi possível carregar os inscritos. Verifique as permissões ou contacte suporte."
+  - **AdminSales**: "Não foi possível carregar as vendas. Verifique as permissões ou contacte suporte."
+  - **AdminModules**: "Não foi possível carregar módulos. Tente recarregar a página."
+  - **AdminLessons**: "Não foi possível carregar aulas. Tente recarregar a página."
+  - **AdminCourses**: "Não foi possível carregar cursos. Tente recarregar a página."
+  - All errors now show technical details when available
+
+**Status**: 
+- ✅ Zero "Erro desconhecido" messages
+- ✅ Build passing without errors
+- ✅ Admin layout persistence working
+- ✅ All admin pages stable with clear error states
+- ✅ **Fase 7.7 ENCERRADA**
+
+---
+
 ## [Fase 7.7] - 2026-01-17
 
 ### 🔧 Admin Routes Fix + Student Routes + Improved Admin Pages

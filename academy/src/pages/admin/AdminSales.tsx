@@ -237,7 +237,7 @@ export default function AdminSales() {
                         <Alert variant="destructive" className="mb-6">
                             <AlertCircle className="h-4 w-4" />
                             <AlertDescription>
-                                {errorMessage || (error instanceof Error ? error.message : 'Erro desconhecido')}
+                                {errorMessage || (error instanceof Error ? error.message : 'Não foi possível carregar as vendas. Verifique as permissões ou contacte suporte.')}
                             </AlertDescription>
                         </Alert>
                     )}

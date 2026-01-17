@@ -352,11 +352,16 @@ export function useAdminEnrollments(courseId: string) {
     return useQuery<EnrollmentWithUser[]>({
         queryKey: ['admin-enrollments', courseId],
         queryFn: async () => {
+            if (!courseId) return []
+
             // Get enrollments with user data
             const { data: enrollments, error } = await supabase
                 .from('academy_enrollments')
                 .select(`
-                    *,
+                    id,
+                    user_id,
+                    course_id,
+                    enrolled_at,
                     user:user_id (
                         email
                     )
@@ -364,23 +369,43 @@ export function useAdminEnrollments(courseId: string) {
                 .eq('course_id', courseId)
                 .order('enrolled_at', { ascending: false })
 
-            if (error) throw error
+            if (error) {
+                console.error('[useAdminEnrollments] Error fetching enrollments:', error)
+                throw new Error(`Não foi possível carregar inscritos: ${error.message}`)
+            }
+
             if (!enrollments) return []
 
-            // Get progress for each enrollment
+            // Get lesson IDs for this course
+            const { data: lessons } = await supabase
+                .from('academy_lessons')
+                .select('id')
+                .eq('course_id', courseId)
+
+            const lessonIds = lessons?.map(l => l.id) || []
+            const totalLessons = lessonIds.length
+
+            // Get progress for each enrollment by counting completed lessons
             const enrollmentsWithProgress = await Promise.all(
                 enrollments.map(async (enrollment: any) => {
-                    // Get user's progress using RPC function
-                    const { data: progressData } = await supabase
-                        .rpc('get_my_course_progress')
-                        .eq('course_id', courseId)
-                        .eq('user_id', enrollment.user_id)
-                        .single()
+                    let progress = 0
+
+                    if (totalLessons > 0) {
+                        // Count completed lessons for this user in this course
+                        const { count: completedLessons } = await supabase
+                            .from('academy_lesson_progress')
+                            .select('id', { count: 'exact', head: true })
+                            .eq('user_id', enrollment.user_id)
+                            .eq('is_completed', true)
+                            .in('lesson_id', lessonIds)
+
+                        progress = Math.round(((completedLessons || 0) / totalLessons) * 100)
+                    }
 
                     return {
                         ...enrollment,
                         user_email: enrollment.user?.email || 'N/A',
-                        progress_percentage: (progressData as any)?.progress_percentage || 0,
+                        progress_percentage: progress,
                     }
                 })
             )
