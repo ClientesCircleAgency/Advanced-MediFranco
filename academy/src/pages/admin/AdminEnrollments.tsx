@@ -1,23 +1,25 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { Header } from '@/components/layout/Header'
-import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useAdminEnrollments, useCreateEnrollment, useDeleteEnrollment } from '@/hooks/useAdminCourses'
-import { useCourse } from '@/hooks/useCourses'
-import { Plus, Trash2, ArrowLeft, Loader2, AlertCircle, UserPlus, CheckCircle2 } from 'lucide-react'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import { useAdminEnrollments, useCreateEnrollment, useDeleteEnrollment, useAdminCourses } from '@/hooks/useAdminCourses'
+import { Plus, Trash2, Loader2, AlertCircle, UserPlus, CheckCircle2, BookOpen } from 'lucide-react'
 
 export default function AdminEnrollments() {
-    const { courseId } = useParams<{ courseId: string }>()
-    const navigate = useNavigate()
+    const [selectedCourseId, setSelectedCourseId] = useState<string>('')
 
-    const { data: course } = useCourse(courseId!)
-    const { data: enrollments, isLoading, isError, error } = useAdminEnrollments(courseId!)
+    const { data: courses, isLoading: coursesLoading } = useAdminCourses()
+    const { data: enrollments, isLoading, isError, error } = useAdminEnrollments(selectedCourseId)
     const createMutation = useCreateEnrollment()
     const deleteMutation = useDeleteEnrollment()
 
@@ -27,10 +29,17 @@ export default function AdminEnrollments() {
     const [successMessage, setSuccessMessage] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
 
+    const selectedCourse = courses?.find(c => c.id === selectedCourseId)
+
     const handleAddEnrollment = async (e: React.FormEvent) => {
         e.preventDefault()
         setSuccessMessage('')
         setErrorMessage('')
+
+        if (!selectedCourseId) {
+            setErrorMessage('Selecione um curso primeiro')
+            return
+        }
 
         if (!userEmail.trim()) {
             setErrorMessage('O email é obrigatório')
@@ -38,7 +47,7 @@ export default function AdminEnrollments() {
         }
 
         try {
-            await createMutation.mutateAsync({ courseId: courseId!, userEmail: userEmail.trim() })
+            await createMutation.mutateAsync({ courseId: selectedCourseId, userEmail: userEmail.trim() })
             setSuccessMessage('Utilizador inscrito com sucesso!')
             setUserEmail('')
             setShowAddForm(false)
@@ -72,43 +81,77 @@ export default function AdminEnrollments() {
     }
 
     return (
-        <div className="flex flex-col min-h-screen">
-            <Header />
-
-            <main className="flex-1 py-12 bg-muted/30">
+        <div className="flex flex-col min-h-screen bg-muted/30">
+            <main className="flex-1 py-12">
                 <div className="container max-w-5xl">
-                    {/* Back Button + Header */}
+                    {/* Header */}
                     <div className="mb-8">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="mb-4 gap-2"
-                            onClick={() => navigate('/admin/courses')}
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                            Voltar aos Cursos
-                        </Button>
-
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h1 className="text-3xl font-display font-bold mb-2">
                                     Inscritos
-                                    {course && <span className="text-muted-foreground"> — {course.title}</span>}
                                 </h1>
                                 <p className="text-muted-foreground">
-                                    Gerir utilizadores inscritos neste curso
+                                    Gerir utilizadores inscritos por curso
                                 </p>
                             </div>
-                            <Button
-                                onClick={() => setShowAddForm(!showAddForm)}
-                                size="lg"
-                                className="gap-2"
-                                variant={showAddForm ? "outline" : "default"}
-                            >
-                                {showAddForm ? <ArrowLeft className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
-                                {showAddForm ? 'Cancelar' : 'Inscrever Utilizador'}
-                            </Button>
+                            {selectedCourseId && (
+                                <Button
+                                    onClick={() => setShowAddForm(!showAddForm)}
+                                    size="lg"
+                                    className="gap-2"
+                                    variant={showAddForm ? "outline" : "default"}
+                                >
+                                    {showAddForm ? (
+                                        <>
+                                            <AlertCircle className="h-5 w-5" />
+                                            Cancelar
+                                        </>
+                                    ) : (
+                                        <>
+                                            <UserPlus className="h-5 w-5" />
+                                            Inscrever Utilizador
+                                        </>
+                                    )}
+                                </Button>
+                            )}
                         </div>
+
+                        {/* Course Selector */}
+                        <Card className="p-6 mb-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="course-select" className="text-base font-semibold">
+                                    Selecionar Curso
+                                </Label>
+                                {coursesLoading ? (
+                                    <div className="h-10 bg-muted animate-pulse rounded-md" />
+                                ) : (
+                                    <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+                                        <SelectTrigger id="course-select" className="w-full">
+                                            <SelectValue placeholder="Escolha um curso para ver inscritos..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {courses?.map((course) => (
+                                                <SelectItem key={course.id} value={course.id}>
+                                                    <div className="flex items-center gap-2">
+                                                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="font-medium">{course.title}</span>
+                                                        <span className="text-muted-foreground">
+                                                            ({course.enrollments_count || 0} inscritos)
+                                                        </span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                                {selectedCourse && (
+                                    <p className="text-sm text-muted-foreground">
+                                        {selectedCourse.enrollments_count || 0} {selectedCourse.enrollments_count === 1 ? 'inscrito' : 'inscritos'}
+                                    </p>
+                                )}
+                            </div>
+                        </Card>
                     </div>
 
                     {/* Success Message */}
@@ -130,7 +173,7 @@ export default function AdminEnrollments() {
                     )}
 
                     {/* Add Enrollment Form */}
-                    {showAddForm && (
+                    {showAddForm && selectedCourseId && (
                         <Card className="p-6 mb-6">
                             <form onSubmit={handleAddEnrollment} className="space-y-4">
                                 <div className="space-y-2">
@@ -175,7 +218,21 @@ export default function AdminEnrollments() {
                     )}
 
                     {/* Enrollments List */}
-                    {isLoading ? (
+                    {!selectedCourseId ? (
+                        <Card className="p-12 text-center">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+                                    <BookOpen className="h-8 w-8 text-muted-foreground" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-semibold mb-2">Selecione um curso</h3>
+                                    <p className="text-muted-foreground">
+                                        Escolha um curso acima para ver os utilizadores inscritos
+                                    </p>
+                                </div>
+                            </div>
+                        </Card>
+                    ) : isLoading ? (
                         <SkeletonLoader variant="list" count={5} />
                     ) : enrollments && enrollments.length > 0 ? (
                         <div className="space-y-3">
@@ -254,8 +311,6 @@ export default function AdminEnrollments() {
                     )}
                 </div>
             </main>
-
-            <Footer />
         </div>
     )
 }

@@ -1,14 +1,9 @@
-import type { ReactNode } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
 import { LayoutDashboard, BookOpen, Users, DollarSign, LogOut } from 'lucide-react'
 
-interface AdminLayoutProps {
-    children: ReactNode
-}
-
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout() {
     const location = useLocation()
     const navigate = useNavigate()
     const { signOut } = useAuth()
@@ -21,7 +16,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const navItems = [
         { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/admin/courses', label: 'Cursos', icon: BookOpen },
-        { path: '/admin/courses', label: 'Inscritos', icon: Users, badge: 'Via Cursos' },
+        { path: '/admin/enrollments', label: 'Inscritos', icon: Users },
         { path: '/admin/sales', label: 'Vendas', icon: DollarSign },
     ]
 
@@ -54,7 +49,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
                         return (
                             <Link
-                                key={item.path + item.label}
+                                key={item.path}
                                 to={item.path}
                                 className={`
                                     flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
@@ -66,11 +61,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                             >
                                 <Icon className="h-5 w-5 flex-shrink-0" />
                                 <span className="flex-1">{item.label}</span>
-                                {item.badge && (
-                                    <span className="text-xs bg-muted px-2 py-0.5 rounded">
-                                        {item.badge}
-                                    </span>
-                                )}
                             </Link>
                         )
                     })}
@@ -91,7 +81,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Main Content */}
             <main className="flex-1 overflow-auto">
-                {children}
+                <Outlet />
             </main>
         </div>
     )

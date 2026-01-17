@@ -4,6 +4,58 @@
 
 ---
 
+## [Fase 7.7] - 2026-01-17
+
+### 🔧 Admin Routes Fix + Student Routes + Improved Admin Pages
+
+**Admin Layout Persistence**:
+- **[FIX] Admin Routes Structure** (`src/App.tsx`)
+  - Converted all `/admin/*` routes to nested routes under `AdminLayout`
+  - `AdminLayout` now wraps all admin pages using `<Outlet />` from React Router
+  - Sidebar now persists across all admin pages (Dashboard, Cursos, Inscritos, Vendas)
+  - Removed duplicate `ProtectedAdminRoute` wrappers from individual routes
+  
+- **[MODIFY] AdminLayout** (`src/components/layout/AdminLayout.tsx`)
+  - Changed from `children` prop to `<Outlet />` for nested routing
+  - Updated sidebar navigation links (Inscritos now has dedicated route)
+  - Removed unused `ReactNode` import
+
+**Student Routes**:
+- **[MODIFY] Student Dashboard Route** (`src/App.tsx`)
+  - Changed route from `/dashboard` to `/cursos`
+  - Added redirect: `/dashboard` → `/cursos` (Navigate with replace)
+  - Maintains backward compatibility for existing links
+
+**Admin: Inscritos (Improved)**:
+- **[MODIFY] AdminEnrollments** (`src/pages/admin/AdminEnrollments.tsx`)
+  - Removed dependency on `:courseId` route parameter
+  - Added course selector dropdown (powered by `useAdminCourses`)
+  - Shows enrollment count per course in selector
+  - Improved UX: select course first, then view/manage enrollments
+  - Displays: email, enrollment date, progress percentage
+  - Empty state when no course selected
+  - Route: `/admin/enrollments` (no param)
+
+**Admin: Vendas (Analytics Upgrade)**:
+- **[NEW] useSalesAnalytics Hook** (`src/hooks/useAdminCourses.ts`)
+  - Calculates total revenue, sales count, average ticket
+  - Revenue by period (7/30/90 days)
+  - Top 5 courses by revenue
+  - Top 5 courses by sales count
+  - Single query with all analytics computed
+
+- **[MODIFY] AdminSales** (`src/pages/admin/AdminSales.tsx`)
+  - Added analytics dashboard section above sales list
+  - **Stats Cards**: Total Revenue, Total Sales, Average Ticket
+  - **Period Filter**: Toggle between 7/30/90 days view
+  - **Top Courses**: Two columns showing top by revenue and by sales
+  - Maintains existing sales registration form and list
+  - Clean, card-based layout
+
+**Build Stats**: 690KB JS (195KB gzip), 32.5KB CSS (+15KB JS since Fase 7.6)
+
+---
+
 
 ## [Fase 7.6] - 2026-01-16
 

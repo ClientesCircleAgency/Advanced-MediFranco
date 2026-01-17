@@ -563,6 +563,117 @@ export function useCreateSale() {
     })
 }
 
+// Sales Analytics
+interface SalesAnalytics {
+    total_revenue_cents: number
+    total_sales: number
+    average_ticket_cents: number
+    revenue_by_period: {
+        days_7: number
+        days_30: number
+        days_90: number
+    }
+    top_courses_by_revenue: Array<{ course_id: string; course_title: string; revenue_cents: number; sales_count: number }>
+    top_courses_by_sales: Array<{ course_id: string; course_title: string; sales_count: number; revenue_cents: number }>
+}
+
+export function useSalesAnalytics() {
+    return useQuery<SalesAnalytics>({
+        queryKey: ['sales-analytics'],
+        queryFn: async () => {
+            // Get all sales with course details
+            const { data: sales, error } = await supabase
+                .from('academy_sales')
+                .select(`
+                    *,
+                    course:course_id (
+                        id,
+                        title
+                    )
+                `)
+                .order('created_at', { ascending: false })
+
+            if (error) throw error
+            if (!sales) return {
+                total_revenue_cents: 0,
+                total_sales: 0,
+                average_ticket_cents: 0,
+                revenue_by_period: { days_7: 0, days_30: 0, days_90: 0 },
+                top_courses_by_revenue: [],
+                top_courses_by_sales: []
+            }
+
+            // Calculate total revenue and sales
+            const totalRevenue = sales.reduce((sum, sale) => sum + sale.amount_cents, 0)
+            const totalSales = sales.length
+            const averageTicket = totalSales > 0 ? Math.round(totalRevenue / totalSales) : 0
+
+            // Calculate revenue by period
+            const now = new Date()
+            const days7Ago = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+            const days30Ago = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+            const days90Ago = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+
+            const revenue7Days = sales
+                .filter(s => new Date(s.created_at) >= days7Ago)
+                .reduce((sum, s) => sum + s.amount_cents, 0)
+
+            const revenue30Days = sales
+                .filter(s => new Date(s.created_at) >= days30Ago)
+                .reduce((sum, s) => sum + s.amount_cents, 0)
+
+            const revenue90Days = sales
+                .filter(s => new Date(s.created_at) >= days90Ago)
+                .reduce((sum, s) => sum + s.amount_cents, 0)
+
+            // Group by course
+            const courseStats = sales.reduce((acc: any, sale: any) => {
+                const courseId = sale.course_id
+                const courseTitle = sale.course?.title || 'N/A'
+
+                if (!acc[courseId]) {
+                    acc[courseId] = {
+                        course_id: courseId,
+                        course_title: courseTitle,
+                        revenue_cents: 0,
+                        sales_count: 0
+                    }
+                }
+
+                acc[courseId].revenue_cents += sale.amount_cents
+                acc[courseId].sales_count += 1
+
+                return acc
+            }, {})
+
+            const courseStatsArray = Object.values(courseStats)
+
+            // Top 5 by revenue
+            const topByRevenue = [...(courseStatsArray as any[])]
+                .sort((a, b) => b.revenue_cents - a.revenue_cents)
+                .slice(0, 5)
+
+            // Top 5 by sales count
+            const topBySales = [...(courseStatsArray as any[])]
+                .sort((a, b) => b.sales_count - a.sales_count)
+                .slice(0, 5)
+
+            return {
+                total_revenue_cents: totalRevenue,
+                total_sales: totalSales,
+                average_ticket_cents: averageTicket,
+                revenue_by_period: {
+                    days_7: revenue7Days,
+                    days_30: revenue30Days,
+                    days_90: revenue90Days
+                },
+                top_courses_by_revenue: topByRevenue,
+                top_courses_by_sales: topBySales
+            }
+        },
+    })
+}
+
 
 // ============================================================
 // DASHBOARD STATS

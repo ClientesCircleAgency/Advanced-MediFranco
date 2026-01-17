@@ -19,6 +19,7 @@ import Dashboard from '@/pages/Dashboard'
 import Player from '@/pages/Player'
 
 // Admin pages
+import AdminDashboard from '@/pages/admin/AdminDashboard'
 import AdminCourses from '@/pages/admin/AdminCourses'
 import AdminCourseEdit from '@/pages/admin/AdminCourseEdit'
 import AdminModules from '@/pages/admin/AdminModules'
@@ -27,7 +28,9 @@ import AdminLessons from '@/pages/admin/AdminLessons'
 import AdminLessonEdit from '@/pages/admin/AdminLessonEdit'
 import AdminEnrollments from '@/pages/admin/AdminEnrollments'
 import AdminSales from '@/pages/admin/AdminSales'
-import AdminDashboard from '@/pages/admin/AdminDashboard'
+
+// Admin Layout
+import { AdminLayout } from '@/components/layout/AdminLayout'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,15 +57,18 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Protected routes */}
+            {/* Protected routes (Student Area) */}
             <Route
-              path="/dashboard"
+              path="/cursos"
               element={
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
               }
             />
+            {/* Redirect /dashboard to /cursos for compatibility */}
+            <Route path="/dashboard" element={<Navigate to="/cursos" replace />} />
+
             <Route
               path="/courses/:slug/player"
               element={
@@ -72,79 +78,25 @@ function App() {
               }
             />
 
-            {/* Admin routes (protected) */}
+            {/* Admin routes (nested under AdminLayout) */}
             <Route
               path="/admin"
               element={
                 <ProtectedAdminRoute>
-                  <AdminDashboard />
+                  <AdminLayout />
                 </ProtectedAdminRoute>
               }
-            />
-            <Route
-              path="/admin/courses"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminCourses />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route
-              path="/admin/courses/:id"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminCourseEdit />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route
-              path="/admin/courses/:courseId/modules"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminModules />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route
-              path="/admin/courses/:courseId/modules/:moduleId"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminModuleEdit />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route
-              path="/admin/modules/:moduleId/lessons"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminLessons />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route
-              path="/admin/modules/:moduleId/lessons/:lessonId"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminLessonEdit />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route
-              path="/admin/courses/:courseId/enrollments"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminEnrollments />
-                </ProtectedAdminRoute>
-              }
-            />
-            <Route
-              path="/admin/sales"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminSales />
-                </ProtectedAdminRoute>
-              }
-            />
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="courses" element={<AdminCourses />} />
+              <Route path="courses/:id" element={<AdminCourseEdit />} />
+              <Route path="courses/:courseId/modules" element={<AdminModules />} />
+              <Route path="courses/:courseId/modules/:moduleId" element={<AdminModuleEdit />} />
+              <Route path="modules/:moduleId/lessons" element={<AdminLessons />} />
+              <Route path="modules/:moduleId/lessons/:lessonId" element={<AdminLessonEdit />} />
+              <Route path="enrollments" element={<AdminEnrollments />} />
+              <Route path="sales" element={<AdminSales />} />
+            </Route>
 
             {/* Catch all - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
