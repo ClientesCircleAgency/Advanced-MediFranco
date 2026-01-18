@@ -384,37 +384,25 @@ export function useCreateEnrollment() {
 
     return useMutation({
         mutationFn: async ({ courseId, userEmail }: { courseId: string; userEmail: string }) => {
-            // First, find user by email
-            const { data: users, error: userError } = await supabase
-                .from('auth.users')
-                .select('id, email')
-                .eq('email', userEmail)
-                .single()
-
-            // If direct query doesn't work, try RPC approach or just use email
-            // For now, we'll create enrollment with email as reference
-            // The actual user_id will be validated by RLS
-
-            if (userError || !users) {
-                throw new Error('Utilizador nÃ£o encontrado com este email')
-            }
-
-            // Create enrollment
+            // Use SECURITY DEFINER RPC to create enrollment by email
             const { data, error } = await supabase
-                .from('academy_enrollments')
-                .insert({
-                    course_id: courseId,
-                    user_id: users.id,
+                .rpc('admin_create_enrollment_by_email', {
+                    p_course_id: courseId,
+                    p_email: userEmail.trim()
                 })
-                .select()
                 .single()
 
             if (error) {
-                if (error.code === '23505') {
-                    throw new Error('Este utilizador jÃ¡ estÃ¡ inscrito neste curso')
+                // Map specific error codes to user-friendly messages
+                if (error.message?.includes('user_not_found')) {
+                    throw new Error('Utilizador não existe  peça para criar conta primeiro')
                 }
-                throw error
+                if (error.message?.includes('not_admin')) {
+                    throw new Error('Apenas administradores podem inscrever utilizadores')
+                }
+                throw new Error(`Não foi possível inscrever: ${error.message}`)
             }
+
             return data
         },
         onSuccess: () => {
