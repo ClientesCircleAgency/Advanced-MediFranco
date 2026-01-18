@@ -6,6 +6,34 @@
 
 ## [Fase 7.7-B] - 2026-01-18
 
+###  FECHO FINAL: Correções Críticas de Produção
+
+**Objetivo**: Estabilizar ambiente de produção (Vercel + Supabase) sem erros  ZERO features novas
+
+#### Bugs Corrigidos
+
+**1. Routing Admin  /cursos (CRÍTICO)**
+- **Problema**: Não-admin ao tentar `/admin/*` acabava redirecionado para `/cursos` (área do aluno)
+- **Causa**: `ProtectedAdminRoute.tsx` redirecionava para `/dashboard`  `/cursos`
+- **Solução**: Access Denied UI para não-admin + redirect /login para não-autenticado
+
+**2. Enrollment por Email (User Lookup)**
+- **Problema**: "Utilizador não encontrado" mesmo quando existe
+- **Causa**: Query direta `auth.users` não funciona (schema isolation)
+- **Solução**: RPC `admin_create_enrollment_by_email` (migration 009)
+
+#### Ficheiros Alterados
+- `ProtectedAdminRoute.tsx` - Access Denied UI
+- `useAdminCourses.ts` - RPC admin_create_enrollment_by_email
+- `009_admin_create_enrollment_by_email.sql` - Nova migration
+
+ **Ver `docs/academy/MANUAL_ACTIONS.md` para aplicar migrations em produção**
+
+**Build**: 681KB JS (193KB gzip) | **Commit**: 202559f
+
+---
+
+
 ### 🔧 Admin Area RPC Fix (FINAL CLOSURE)
 
 **Objetivo**: Corrigir joins proibidos com `auth.users` usando SECURITY DEFINER RPCs. Fechar Fase 7.7 sem erros.
