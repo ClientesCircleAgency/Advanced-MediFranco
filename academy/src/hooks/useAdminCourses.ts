@@ -354,63 +354,26 @@ export function useAdminEnrollments(courseId: string) {
         queryFn: async () => {
             if (!courseId) return []
 
-            // Get enrollments with user data
-            const { data: enrollments, error } = await supabase
-                .from('academy_enrollments')
-                .select(`
-                    id,
-                    user_id,
-                    course_id,
-                    enrolled_at,
-                    user:user_id (
-                        email
-                    )
-                `)
-                .eq('course_id', courseId)
-                .order('enrolled_at', { ascending: false })
+            // Use RPC to fetch enrollments (SECURITY DEFINER allows join with auth.users)
+            const { data, error } = await supabase
+                .rpc('admin_list_enrollments', { p_course_id: courseId })
 
             if (error) {
-                console.error('[useAdminEnrollments] Error fetching enrollments:', error)
+                console.error('[useAdminEnrollments] RPC error:', error)
                 throw new Error(`Não foi possível carregar inscritos: ${error.message}`)
             }
 
-            if (!enrollments) return []
+            // Map RPC result to expected format
+            const enrollments = (data || []).map((row: any) => ({
+                id: row.enrollment_id,
+                user_id: row.user_id,
+                course_id: courseId,
+                enrolled_at: row.created_at,
+                user_email: row.user_email,
+                progress_percentage: Number(row.progress_percentage)
+            }))
 
-            // Get lesson IDs for this course
-            const { data: lessons } = await supabase
-                .from('academy_lessons')
-                .select('id')
-                .eq('course_id', courseId)
-
-            const lessonIds = lessons?.map(l => l.id) || []
-            const totalLessons = lessonIds.length
-
-            // Get progress for each enrollment by counting completed lessons
-            const enrollmentsWithProgress = await Promise.all(
-                enrollments.map(async (enrollment: any) => {
-                    let progress = 0
-
-                    if (totalLessons > 0) {
-                        // Count completed lessons for this user in this course
-                        const { count: completedLessons } = await supabase
-                            .from('academy_lesson_progress')
-                            .select('id', { count: 'exact', head: true })
-                            .eq('user_id', enrollment.user_id)
-                            .eq('is_completed', true)
-                            .in('lesson_id', lessonIds)
-
-                        progress = Math.round(((completedLessons || 0) / totalLessons) * 100)
-                    }
-
-                    return {
-                        ...enrollment,
-                        user_email: enrollment.user?.email || 'N/A',
-                        progress_percentage: progress,
-                    }
-                })
-            )
-
-            return enrollmentsWithProgress
+            return enrollments
         },
         enabled: !!courseId,
     })
@@ -487,34 +450,31 @@ export function useDeleteEnrollment() {
 // ============================================================
 
 interface SaleWithDetails {
-    id: string
-    course_id: string
-    user_id: string
+    sale_id: string
+    created_at: string
     amount_cents: number
     currency: string
-    payment_method: 'cash' | 'mb' | 'transfer' | 'other'
+    payment_method: string
+    course_id: string
+    course_title: string
+    buyer_email: string
     notes?: string
-    created_at: string
-    course_title?: string
-    user_email?: string
 }
 
 export function useAdminSales() {
     return useQuery<SaleWithDetails[]>({
         queryKey: ['admin-sales'],
         queryFn: async () => {
-            const { data: sales, error } = await supabase
-                .from('academy_sales')
-                .select(`
-                    *,
-                    course:course_id (
-                        title
-                    )
-                `)
-                .order('created_at', { ascending: false })
+            // Use RPC to fetch sales (SECURITY DEFINER allows join with auth.users)
+            const { data, error } = await supabase
+                .rpc('admin_list_sales', { p_days: 90 }) // Get last 90 days
 
-            if (error) throw error
-            return sales || []
+            if (error) {
+                console.error('[useAdminSales] RPC error:', error)
+                throw new Error(`Não foi possível carregar vendas: ${error.message}`)
+            }
+
+            return data || []
         },
     })
 }
@@ -606,94 +566,46 @@ export function useSalesAnalytics() {
     return useQuery<SalesAnalytics>({
         queryKey: ['sales-analytics'],
         queryFn: async () => {
-            // Get all sales with course details
-            const { data: sales, error } = await supabase
-                .from('academy_sales')
-                .select(`
-                    *,
-                    course:course_id (
-                        id,
-                        title
-                    )
-                `)
-                .order('created_at', { ascending: false })
+            // Use RPC to fetch analytics (SECURITY DEFINER, calculated server-side)
+            const { data, error } = await supabase
+                .rpc('admin_sales_analytics', { p_days: 30 })
 
-            if (error) throw error
-            if (!sales) return {
-                total_revenue_cents: 0,
-                total_sales: 0,
-                average_ticket_cents: 0,
-                revenue_by_period: { days_7: 0, days_30: 0, days_90: 0 },
-                top_courses_by_revenue: [],
-                top_courses_by_sales: []
+            if (error) {
+                console.error('[useSalesAnalytics] RPC error:', error)
+                // Return zeros on error instead of throwing
+                return {
+                    total_revenue_cents: 0,
+                    total_sales: 0,
+                    average_ticket_cents: 0,
+                    revenue_by_period: { days_7: 0, days_30: 0, days_90: 0 },
+                    top_courses_by_revenue: [],
+                    top_courses_by_sales: []
+                }
             }
 
-            // Calculate total revenue and sales
-            const totalRevenue = sales.reduce((sum, sale) => sum + sale.amount_cents, 0)
-            const totalSales = sales.length
-            const averageTicket = totalSales > 0 ? Math.round(totalRevenue / totalSales) : 0
-
-            // Calculate revenue by period
-            const now = new Date()
-            const days7Ago = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-            const days30Ago = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-            const days90Ago = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-
-            const revenue7Days = sales
-                .filter(s => new Date(s.created_at) >= days7Ago)
-                .reduce((sum, s) => sum + s.amount_cents, 0)
-
-            const revenue30Days = sales
-                .filter(s => new Date(s.created_at) >= days30Ago)
-                .reduce((sum, s) => sum + s.amount_cents, 0)
-
-            const revenue90Days = sales
-                .filter(s => new Date(s.created_at) >= days90Ago)
-                .reduce((sum, s) => sum + s.amount_cents, 0)
-
-            // Group by course
-            const courseStats = sales.reduce((acc: any, sale: any) => {
-                const courseId = sale.course_id
-                const courseTitle = sale.course?.title || 'N/A'
-
-                if (!acc[courseId]) {
-                    acc[courseId] = {
-                        course_id: courseId,
-                        course_title: courseTitle,
-                        revenue_cents: 0,
-                        sales_count: 0
-                    }
+            if (!data) {
+                return {
+                    total_revenue_cents: 0,
+                    total_sales: 0,
+                    average_ticket_cents: 0,
+                    revenue_by_period: { days_7: 0, days_30: 0, days_90: 0 },
+                    top_courses_by_revenue: [],
+                    top_courses_by_sales: []
                 }
+            }
 
-                acc[courseId].revenue_cents += sale.amount_cents
-                acc[courseId].sales_count += 1
-
-                return acc
-            }, {})
-
-            const courseStatsArray = Object.values(courseStats)
-
-            // Top 5 by revenue
-            const topByRevenue = [...(courseStatsArray as any[])]
-                .sort((a, b) => b.revenue_cents - a.revenue_cents)
-                .slice(0, 5)
-
-            // Top 5 by sales count
-            const topBySales = [...(courseStatsArray as any[])]
-                .sort((a, b) => b.sales_count - a.sales_count)
-                .slice(0, 5)
-
+            // Map RPC JSON result to expected format
             return {
-                total_revenue_cents: totalRevenue,
-                total_sales: totalSales,
-                average_ticket_cents: averageTicket,
+                total_revenue_cents: data.total_revenue_cents || 0,
+                total_sales: data.total_sales_count || 0,
+                average_ticket_cents: data.avg_ticket_cents || 0,
                 revenue_by_period: {
-                    days_7: revenue7Days,
-                    days_30: revenue30Days,
-                    days_90: revenue90Days
+                    days_7: 0, // RPC only returns single period
+                    days_30: data.total_revenue_cents || 0,
+                    days_90: 0
                 },
-                top_courses_by_revenue: topByRevenue,
-                top_courses_by_sales: topBySales
+                top_courses_by_revenue: data.top_courses || [],
+                top_courses_by_sales: data.top_courses || []
             }
         },
     })
