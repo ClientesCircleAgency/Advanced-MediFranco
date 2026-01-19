@@ -25,16 +25,19 @@
 4. Ambos aparecem nas respectivas páginas admin
 5. Aluno vê curso em `/cursos`
 
-**Bugfix** (mesmo dia):
+**Bugfixes** (mesmo dia):
 - **[FIX] Course Title Display** - Corrigido `sale.course?.title` → `sale.course_title`
-- Resolvia "Curso N/A" no histórico de vendas
-- Agora mostra nome correto do curso
+- **[FIX] Student Dashboard RPC** - Criado workaround para bypass PostgREST 403
+  - Migration 011 corrigiu RPC com `completed_at IS NOT NULL`
+  - Frontend usa query direta para evitar latência de cache PostgREST
+  - Alunos veem cursos inscritos imediatamente
 
 **Validação** (Produção Testada):
 - ✅ Inscrever utilizador cria venda automática
 - ✅ Aparece em `/admin/enrollments`
 - ✅ Aparece em `/admin/sales` com nome de curso correto
 - ✅ Analytics atualizam (Total Vendas, Receita)
+- ✅ Aluno vê curso em `/cursos` (Dashboard)
 - ✅ Zero "Curso N/A"
 
 ---
