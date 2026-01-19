@@ -25,11 +25,17 @@
 4. Ambos aparecem nas respectivas páginas admin
 5. Aluno vê curso em `/cursos`
 
-**Validação Requerida** (Após Deploy):
-1. Inscrever utilizador manualmente
-2. Verificar aparece em `/admin/enrollments`
-3. Verificar aparece em `/admin/sales` com método "Manual"
-4. Verificar analytics atualizam (Total Vendas +1)
+**Bugfix** (mesmo dia):
+- **[FIX] Course Title Display** - Corrigido `sale.course?.title` → `sale.course_title`
+- Resolvia "Curso N/A" no histórico de vendas
+- Agora mostra nome correto do curso
+
+**Validação** (Produção Testada):
+- ✅ Inscrever utilizador cria venda automática
+- ✅ Aparece em `/admin/enrollments`
+- ✅ Aparece em `/admin/sales` com nome de curso correto
+- ✅ Analytics atualizam (Total Vendas, Receita)
+- ✅ Zero "Curso N/A"
 
 ---
 
