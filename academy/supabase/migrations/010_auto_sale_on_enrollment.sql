@@ -126,6 +126,4 @@ END;
 $$;
 
 -- Comment updated to reflect new behavior
-COMMENT ON FUNCTION admin_create_enrollment_by_email(UUID, TEXT) IS 
-  'Admin-only: Enrolls a user in a course by email address AND creates a manual sale record. ' ||
-  'Returns enrollment details with sale_id. Prevents duplicate enrollments and sales.';
+COMMENT ON FUNCTION admin_create_enrollment_by_email(UUID, TEXT) IS 'Admin-only: Enrolls a user in a course by email address AND creates a manual sale record. Returns enrollment details with sale_id. Prevents duplicate enrollments and sales.';
