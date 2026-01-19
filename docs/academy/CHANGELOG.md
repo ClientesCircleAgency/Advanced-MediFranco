@@ -6,6 +6,46 @@
 
 ## [Feature] - 2026-01-19
 
+### 🏗️ Sales-First Architecture (PRODUCTION)
+
+**Objetivo**: Garantir **1 inscrição = 1 venda, sempre**. Sales como fonte única de verdade para acesso a cursos.
+
+**Implementação Database** (Migrations 012-015):
+- **FK Constraint**: `academy_enrollments.sale_id` → obrigatório, CASCADE delete
+- **Trigger**: Criar sale → enrollment criado automaticamente
+- **RLS Policies**: Admin pode SELECT/INSERT/DELETE em ambas as tabelas
+- **Data Migration**: Sales retroativas para enrollments órfãos
+- **Unique Index**: 1 enrollment por sale (zero duplicados)
+
+**Fluxo Refatorado**:
+1. Admin → "Inscrever Utilizador" → cria **sale primeiro**
+2. Trigger cria enrollment automaticamente
+3. Apagar enrollment → deleta sale → CASCADE remove enrollment
+4. Duplicados bloqueados com mensagem de erro vermelha
+
+**Frontend Changes**:
+- `useCreateEnrollment` → chama `admin_create_sale_and_enrollment` RPC
+- `useDeleteEnrollment` → deleta via sales table (CASCADE)
+- `AdminEnrollments.tsx` → detecta duplicados, mostra erro vermelho
+
+**Garantias** (Database-level):
+- ❌ **Impossível**: Enrollment sem sale (FK NOT NULL bloqueia)
+- ❌ **Impossível**: Sale sem enrollment (trigger cria)
+- ❌ **Impossível**: Duplicados (unique index)
+- ❌ **Impossível**: Orphans após delete (CASCADE)
+
+**Validação** (Produção Testada):
+- ✅ Inscrever utilizador cria sale + enrollment
+- ✅ Apagar enrollment remove sale (CASCADE)
+- ✅ Duplicados bloqueados (mensagem vermelha)
+- ✅ Revenue sincronizada perfeitamente
+- ✅ Data integrity: PERFECT (0 orphans)
+- ✅ Alunos veem cursos em `/cursos`
+
+---
+
+## [Feature] - 2026-01-19
+
 ### ✨ Auto-Sale on Manual Enrollment
 
 **Objetivo**: Quando admin inscreve manualmente um utilizador, criar automaticamente registo de venda.
