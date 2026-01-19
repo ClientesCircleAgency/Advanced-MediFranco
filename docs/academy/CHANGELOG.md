@@ -4,6 +4,35 @@
 
 ---
 
+## [Feature] - 2026-01-19
+
+### ✨ Auto-Sale on Manual Enrollment
+
+**Objetivo**: Quando admin inscreve manualmente um utilizador, criar automaticamente registo de venda.
+
+**Implementação**:
+- **[MODIFY] RPC** `admin_create_enrollment_by_email` (migration 010)
+  - Agora cria **enrollment** E **sale** automaticamente
+  - Busca preço do curso de `academy_courses.price_cents`
+  - Cria venda com `payment_method = 'manual'`
+  - Notas: "Auto-sale from manual enrollment"
+  - **Prevenção de duplicados**: verifica se já existe venda manual para o mesmo user+course
+
+**Fluxo**:
+1. Admin → `/admin/enrollments` → "Inscrever Utilizador"
+2. Sistema cria `academy_enrollments` ✅
+3. Sistema cria `academy_sales` automaticamente ✅
+4. Ambos aparecem nas respectivas páginas admin
+5. Aluno vê curso em `/cursos`
+
+**Validação Requerida** (Após Deploy):
+1. Inscrever utilizador manualmente
+2. Verificar aparece em `/admin/enrollments`
+3. Verificar aparece em `/admin/sales` com método "Manual"
+4. Verificar analytics atualizam (Total Vendas +1)
+
+---
+
 ## [Hotfix] - 2026-01-19
 
 ### 🔥 CRITICAL FIX: AdminSales Production Crash
