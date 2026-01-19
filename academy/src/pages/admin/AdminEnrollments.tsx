@@ -47,11 +47,18 @@ export default function AdminEnrollments() {
         }
 
         try {
-            await createMutation.mutateAsync({ courseId: selectedCourseId, userEmail: userEmail.trim() })
-            setSuccessMessage('Utilizador inscrito com sucesso!')
-            setUserEmail('')
-            setShowAddForm(false)
-            setTimeout(() => setSuccessMessage(''), 3000)
+            const result = await createMutation.mutateAsync({ courseId: selectedCourseId, userEmail: userEmail.trim() })
+
+            // Check if already exists (RPC returns {already_exists: true})
+            if (result && typeof result === 'object' && 'already_exists' in result && result.already_exists) {
+                setErrorMessage(`Utilizador já está inscrito neste curso`)
+                setTimeout(() => setErrorMessage(''), 5000)
+            } else {
+                setSuccessMessage('Utilizador inscrito com sucesso!')
+                setUserEmail('')
+                setShowAddForm(false)
+                setTimeout(() => setSuccessMessage(''), 3000)
+            }
         } catch (err: any) {
             setErrorMessage(err.message || 'Erro ao inscrever utilizador')
         }
