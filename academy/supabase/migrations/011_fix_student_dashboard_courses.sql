@@ -48,4 +48,7 @@ BEGIN
 END;
 $$;
 
+-- Grant execute to authenticated users
+GRANT EXECUTE ON FUNCTION get_my_course_progress() TO authenticated;
+
 COMMENT ON FUNCTION get_my_course_progress() IS 'Returns progress stats for all enrolled courses of the current user. Shows courses even if they have no lessons yet. Uses auth.uid() internally for security.';
