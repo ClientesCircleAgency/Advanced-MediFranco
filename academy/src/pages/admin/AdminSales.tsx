@@ -372,7 +372,7 @@ export default function AdminSales() {
                                                     <DollarSign className="h-5 w-5 text-green-600" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-semibold">{sale.course?.title || 'Curso N/A'}</h3>
+                                                    <h3 className="font-semibold">{sale.course_title || 'Curso N/A'}</h3>
                                                     <p className="text-sm text-muted-foreground">
                                                         {formatDate(sale.created_at)}
                                                     </p>
