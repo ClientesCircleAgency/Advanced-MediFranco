@@ -384,9 +384,9 @@ export function useCreateEnrollment() {
 
     return useMutation({
         mutationFn: async ({ courseId, userEmail }: { courseId: string; userEmail: string }) => {
-            // Use SECURITY DEFINER RPC to create enrollment by email
+            // Use new sales-first RPC (creates sale → enrollment via trigger)
             const { data, error } = await supabase
-                .rpc('admin_create_enrollment_by_email', {
+                .rpc('admin_create_sale_and_enrollment', {
                     p_course_id: courseId,
                     p_email: userEmail.trim()
                 })
@@ -395,7 +395,7 @@ export function useCreateEnrollment() {
             if (error) {
                 // Map specific error codes to user-friendly messages
                 if (error.message?.includes('user_not_found')) {
-                    throw new Error('Utilizador não existe  peça para criar conta primeiro')
+                    throw new Error('Utilizador não existe — peça para criar conta primeiro')
                 }
                 if (error.message?.includes('not_admin')) {
                     throw new Error('Apenas administradores podem inscrever utilizadores')
@@ -408,6 +408,7 @@ export function useCreateEnrollment() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-enrollments'] })
             queryClient.invalidateQueries({ queryKey: ['admin-courses'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-sales'] }) // Invalidate sales too
         },
     })
 }
@@ -417,16 +418,31 @@ export function useDeleteEnrollment() {
 
     return useMutation({
         mutationFn: async (enrollmentId: string) => {
-            const { error } = await supabase
+            // Sales-first architecture: Delete sale → enrollment CASCADE deleted
+            // First, get the sale_id from the enrollment
+            const { data: enrollment, error: fetchError } = await supabase
                 .from('academy_enrollments')
-                .delete()
+                .select('sale_id')
                 .eq('id', enrollmentId)
+                .single()
 
-            if (error) throw error
+            if (fetchError) throw fetchError
+            if (!enrollment?.sale_id) {
+                throw new Error('Enrollment has no associated sale')
+            }
+
+            // Delete the sale (enrollment will be CASCADE deleted)
+            const { error: deleteError } = await supabase
+                .from('academy_sales')
+                .delete()
+                .eq('id', enrollment.sale_id)
+
+            if (deleteError) throw deleteError
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-enrollments'] })
             queryClient.invalidateQueries({ queryKey: ['admin-courses'] })
+            queryClient.invalidateQueries({ queryKey: ['admin-sales'] })
         },
     })
 }
