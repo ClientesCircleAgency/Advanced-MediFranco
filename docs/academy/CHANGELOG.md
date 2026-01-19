@@ -4,6 +4,34 @@
 
 ---
 
+## [Hotfix] - 2026-01-19
+
+### 🔥 CRITICAL FIX: AdminSales Production Crash
+
+**Problema**: Ecrã branco em `/admin/sales` com erro `TypeError: can't access property 'substring', _user_id is undefined`. Após visitar a página, todo o `/admin` ficava inutilizável até limpar cookies.
+
+**Causa Raiz**: 
+- Linha 392 em `AdminSales.tsx` tentava aceder `sale.user_id.substring(0, 8)`
+- O RPC `admin_list_sales` retorna `buyer_email`, NÃO `user_id`
+- Quando `sale.user_id` era `undefined`, causava crash JavaScript fatal
+
+**Fix Aplicado**:
+```diff
+- <p className="truncate" title={sale.user_id}>{sale.user_id.substring(0, 8)}...</p>
++ <p className="truncate" title={sale.buyer_email || 'N/A'}>
++     {sale.buyer_email || '—'}
++ </p>
+```
+
+**Resultado**:
+- ✅ `/admin/sales` carrega sem erros
+- ✅ Exibe email do comprador em vez de UUID truncado
+- ✅ Fallback seguro (`'—'`) quando email não disponível
+- ✅ Console sem erros TypeError
+- ✅ Área admin não fica "presa" após visitar Sales
+
+---
+
 ## [Fase 7.7-B] - 2026-01-18
 
 ###  FECHO FINAL: Correções Críticas de Produção

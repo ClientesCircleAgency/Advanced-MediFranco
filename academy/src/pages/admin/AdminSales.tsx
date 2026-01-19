@@ -389,7 +389,9 @@ export default function AdminSales() {
                                                 </div>
                                                 <div>
                                                     <span className="text-muted-foreground">Utilizador:</span>
-                                                    <p className="truncate" title={sale.user_id}>{sale.user_id.substring(0, 8)}...</p>
+                                                    <p className="truncate" title={sale.buyer_email || 'N/A'}>
+                                                        {sale.buyer_email || '—'}
+                                                    </p>
                                                 </div>
                                             </div>
                                             {sale.notes && (
