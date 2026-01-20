@@ -13,16 +13,16 @@ export interface CourseProgress {
 
 /**
  * Hook to get progress stats for all enrolled courses of the current user
- * Uses secure SQL function that calls auth.uid() internally
+ * Calculates real progress based on completed lessons vs total lessons
  */
 export function useUserProgress() {
     return useQuery({
         queryKey: ['user-progress'],
         queryFn: async () => {
-            // Workaround: Direct query instead of RPC due to PostgREST 403
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return []
 
+            // Get enrollments with course data
             const { data: enrollments, error: enrollError } = await supabase
                 .from('academy_enrollments')
                 .select(`
@@ -45,16 +45,41 @@ export function useUserProgress() {
                 (e: any) => e.academy_courses?.is_published === true
             )
 
-            // Transform to CourseProgress format
-            return publishedEnrollments.map((enrollment: any) => ({
-                course_id: enrollment.academy_courses.id,
-                course_title: enrollment.academy_courses.title,
-                course_slug: enrollment.academy_courses.slug,
-                course_image_url: enrollment.academy_courses.image_url,
-                total_lessons: 0, // TODO: Calculate from modules/lessons
-                completed_lessons: 0, // TODO: Calculate from progress
-                progress_percentage: 0
-            })) as CourseProgress[]
+            // For each course, fetch lesson count and progress
+            const progressPromises = publishedEnrollments.map(async (enrollment: any) => {
+                const courseId = enrollment.academy_courses.id
+
+                // Count total lessons in course
+                const { count: totalLessons } = await supabase
+                    .from('academy_lessons')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('course_id', courseId)
+
+                // Count completed lessons for this user
+                const { count: completedLessons } = await supabase
+                    .from('academy_progress')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .eq('course_id', courseId)
+                    .not('completed_at', 'is', null)
+
+                const total = totalLessons || 0
+                const completed = completedLessons || 0
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0
+
+                return {
+                    course_id: enrollment.academy_courses.id,
+                    course_title: enrollment.academy_courses.title,
+                    course_slug: enrollment.academy_courses.slug,
+                    course_image_url: enrollment.academy_courses.image_url,
+                    total_lessons: total,
+                    completed_lessons: completed,
+                    progress_percentage: percentage
+                }
+            })
+
+            const coursesWithProgress = await Promise.all(progressPromises)
+            return coursesWithProgress as CourseProgress[]
         },
     })
 }

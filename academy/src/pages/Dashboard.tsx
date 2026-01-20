@@ -53,8 +53,12 @@ export default function Dashboard() {
                                             />
 
                                             <Link to={`/courses/${course.course_slug}/player`}>
-                                                <Button className="gap-2 w-full md:w-auto">
-                                                    {course.progress_percentage > 0 ? 'Continuar' : 'Começar'}
+                                                <Button className="gap-2 w-full md:w-auto" variant={course.progress_percentage === 100 ? 'outline' : 'default'}>
+                                                    {course.progress_percentage === 0
+                                                        ? 'Começar'
+                                                        : course.progress_percentage === 100
+                                                            ? 'Rever Curso'
+                                                            : 'Continuar'}
                                                     <ArrowRight className="h-4 w-4" />
                                                 </Button>
                                             </Link>
