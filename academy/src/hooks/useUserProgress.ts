@@ -49,31 +49,45 @@ export function useUserProgress() {
             const progressPromises = publishedEnrollments.map(async (enrollment: any) => {
                 const courseId = enrollment.academy_courses.id
 
-                // Count total lessons in course
-                const { count: totalLessons } = await supabase
+                // Count total lessons in course (via modules)
+                const { data: lessons, error: lessonsError } = await supabase
                     .from('academy_lessons')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('course_id', courseId)
+                    .select('id, academy_modules!inner(course_id)')
+                    .eq('academy_modules.course_id', courseId)
 
-                // Count completed lessons for this user
-                const { count: completedLessons } = await supabase
+                if (lessonsError) {
+                    console.error('Error fetching lessons:', lessonsError)
+                }
+
+                const totalLessons = lessons?.length || 0
+
+                // Count completed lessons for this user in this course
+                const { data: completedProgress, error: progressError } = await supabase
                     .from('academy_progress')
-                    .select('*', { count: 'exact', head: true })
+                    .select('lesson_id')
                     .eq('user_id', user.id)
-                    .eq('course_id', courseId)
                     .not('completed_at', 'is', null)
 
-                const total = totalLessons || 0
-                const completed = completedLessons || 0
-                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0
+                if (progressError) {
+                    console.error('Error fetching progress:', progressError)
+                }
+
+                // Filter completed lessons that belong to this course
+                const lessonIds = lessons?.map(l => l.id) || []
+                const completedInThisCourse = completedProgress?.filter(
+                    p => lessonIds.includes(p.lesson_id)
+                ) || []
+
+                const completedLessons = completedInThisCourse.length
+                const percentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0
 
                 return {
                     course_id: enrollment.academy_courses.id,
                     course_title: enrollment.academy_courses.title,
                     course_slug: enrollment.academy_courses.slug,
                     course_image_url: enrollment.academy_courses.image_url,
-                    total_lessons: total,
-                    completed_lessons: completed,
+                    total_lessons: totalLessons,
+                    completed_lessons: completedLessons,
                     progress_percentage: percentage
                 }
             })
