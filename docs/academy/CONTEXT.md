@@ -175,22 +175,21 @@ SELECT COUNT(*) FROM academy_enrollments WHERE sale_id IS NULL;
 
 ## 🚧 Pendente / Roadmap Futuro
 
+### ✅ Concluído Recentemente
+
+#### Phase 8.0: Real Student Progress Tracking
+- **Status**: ✅ **COMPLETO** (2026-01-20)
+- **Implementado**:
+  - Cálculo real de progresso (completed / total lessons)
+  - Botões inteligentes: Começar / Continuar / Rever Curso
+  - Auto-sync (dashboard atualiza sem reload)
+  - Persistência total (logout/login mantém progresso)
+
+---
+
 ### Alta Prioridade
 
-#### 1. Calcular Progresso Real de Lições
-- **Status**: ❌ Não implementado
-- **Situação Atual**: Dashboard mostra 0% para todos os cursos
-- **Solução Proposta**: 
-  - Corrigir RPC `get_my_course_progress` ou
-  - Adicionar cálculo no hook `useUserProgress`
-  - Query: `COUNT(DISTINCT academy_progress WHERE completed_at IS NOT NULL) / COUNT(DISTINCT academy_lessons)`
-
-#### 2. Corrigir Enrollment Count nos Course Cards
-- **Status**: ❌ Mostra count total, não distinct users
-- **Problema**: Um user com 2 vendas para mesmo curso aparece como 2 enrollments
-- **Solução**: Usar `COUNT(DISTINCT user_id)` em vez de `COUNT(*)`
-
-#### 3. Payment Integration (Stripe)
+#### 1. Payment Integration (Stripe)
 - **Status**: ❌ Não começado
 - **Objetivo**: Permitir alunos comprarem cursos online
 - **Requisitos**:
@@ -199,7 +198,12 @@ SELECT COUNT(*) FROM academy_enrollments WHERE sale_id IS NULL;
   - Enrollment criado automaticamente via trigger
   - Redirect após sucesso
 
-#### 4. Email Automation (n8n)
+#### 2. Corrigir Enrollment Count nos Course Cards
+- **Status**: ❌ Mostra count total, não distinct users
+- **Problema**: Um user com 2 vendas para mesmo curso aparece como 2 enrollments
+- **Solução**: Usar `COUNT(DISTINCT user_id)` em vez de `COUNT(*)`
+
+#### 3. Email Automation (n8n)
 - **Status**: ❌ Não começado
 - **Objetivo**: Enviar emails automáticos
 - **Casos de Uso**:
@@ -343,21 +347,15 @@ git push origin development
 - **Ficheiro**: `useUserProgress.ts`
 - **Situação**: Usa query direta em vez de RPC
 - **Razão**: PostgREST 403 error (cache issue)
-- **TODO**: Reverter para RPC quando cache refrescar
+- **Atualização (2026-01-20)**: Implementado cálculo real de progresso com queries diretas, funciona perfeitamente.
 
-### 2. Lesson Progress Mostrado como 0%
-- **Situação**: Todos os cursos aparecem com `0% concluído`
-- **Causa**: Cálculo de progresso não implementado
-- **Impacto**: UX - alunos não veem progresso real
-- **Prioridade**: Alta
-
-### 3. Enrollment Count Incorreto
+### 2. Enrollment Count Incorreto
 - **Situação**: Course cards mostram count total de enrollments
 - **Problema**: Não usa `DISTINCT user_id`
 - **Impacto**: Analytics - número inflacionado
 - **Prioridade**: Média
 
-### 4. Sem Payment Gateway
+### 3. Sem Payment Gateway
 - **Situação**: Apenas enrollments manuais via admin
 - **Impacto**: Não há fluxo de compra para utilizadores finais
 - **Prioridade**: Alta (blocker para lançamento público)
@@ -386,8 +384,7 @@ git push origin development
 ## 🎯 Próximos Passos Recomendados
 
 ### Curto Prazo (1-2 semanas)
-1. ✅ **Implementar cálculo de progresso real**
-   - Corrigir query ou hook para mostrar % correto
+1. ~~**Implementar cálculo de progresso real**~~ ✅ **COMPLETO** (Phase 8.0)
 2. ✅ **Corrigir enrollment count**
    - Usar DISTINCT user_id
 3. ⚠️ **Setup Stripe Checkout**

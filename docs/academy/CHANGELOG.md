@@ -4,7 +4,46 @@
 
 ---
 
+## [Feature] - 2026-01-20
+
+### 📊 Phase 8.0: Real Student Progress Tracking (PRODUCTION)
+
+**Objetivo**: Mostrar progresso **real e confiável** dos cursos para os alunos.
+
+**Implementação**:
+- **Cálculo Real de Progresso**: Percentagem baseada em `(aulas concluídas / total de aulas) * 100`
+- **Contagem via Módulos**: Query correta através de `academy_modules.course_id` JOIN
+- **Botões Inteligentes**:
+  - **0% concluído** → Botão: "Começar"
+  - **1-99% concluído** → Botão: "Continuar"
+  - **100% concluído** → Botão: "Rever Curso" (outline style)
+
+**Frontend Changes**:
+- `useUserProgress.ts` → calcula lições totais e concluídas por curso
+- `Dashboard.tsx` → botões adaptativos baseados em percentagem
+- `useProgress.ts` → invalida cache `user-progress` quando lição concluída
+
+**UX Improvements**:
+- ✅ Dashboard mostra percentagem real (não 0% hardcoded)
+- ✅ Progresso atualiza **automaticamente** após completar lição (sem reload)
+- ✅ Persistência total: logout/login mantém progresso
+- ✅ Contagem correta: "2/3 aulas" em vez de "0/0 aulas"
+
+**Validação** (Localhost Testada):
+- ✅ Curso novo mostra 0%, botão "Começar"
+- ✅ Após 1ª aula: percentagem sobe, botão muda para "Continuar"
+- ✅ Após última aula: 100%, botão "Rever Curso"
+- ✅ Voltar ao dashboard atualiza sem recarregar página
+- ✅ Segurança: alunos não inscritos não acedem cursos
+
+**Database**: Zero alterações (sem migrations)  
+**Sales-First Architecture**: Intocada ✅  
+**Breaking Changes**: Nenhum
+
+---
+
 ## [Feature] - 2026-01-19
+
 
 ### 🏗️ Sales-First Architecture (PRODUCTION)
 
