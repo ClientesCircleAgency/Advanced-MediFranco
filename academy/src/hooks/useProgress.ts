@@ -82,7 +82,9 @@ export function useMarkLessonComplete() {
             return data
         },
         onSuccess: () => {
+            // Invalidate both queries so player and dashboard update
             queryClient.invalidateQueries({ queryKey: ['progress'] })
+            queryClient.invalidateQueries({ queryKey: ['user-progress'] })
         },
     })
 }
