@@ -4,6 +4,68 @@
 
 ---
 
+## [Feature] - 2026-01-21
+
+### 🔄 Phase 9.0-1: Stripe-like Manual Sales + Event System (PRODUCTION)
+
+**Objetivo**: Tornar vendas manuais indistinguíveis de vendas Stripe e criar sistema de eventos para n8n (sem integração).
+
+**Implementação Database** (Migration 016):
+- **payment_status enum**: `pending`, `paid`, `failed`, `refunded`
+- **provider enum**: `manual`, `stripe`, `other`
+- **metadata JSONB**: Campos Stripe (checkout_session_id, payment_intent_id, customer_id)
+- **academy_events table**: Armazena eventos `sale.created` com payload completo
+- **Trigger automático**: Cada sale → cria evento automaticamente
+
+**Fluxo**:
+1. Admin cria venda manual → `payment_status='paid'`, `provider='manual'`
+2. Trigger cria enrollment (já existia)
+3. **NOVO**: Trigger cria evento `sale.created` com payload n8n-ready
+4. Evento persistido em `academy_events` (não enviado para fora)
+
+**Payload do Evento** (n8n-ready):
+```json
+{
+  "sale_id": "uuid",
+  "sale_created_at": "timestamp",
+  "amount_cents": 9900,
+  "currency": "EUR",
+  "payment_status": "paid",
+  "provider": "manual",
+  "course_id": "uuid",
+  "course_title": "Nome do Curso",
+  "user_id": "uuid",
+  "user_email": "email@example.com",
+  "metadata": {
+    "checkout_session_id": null,
+    "payment_intent_id": null,
+    "customer_id": null,
+    "admin_created": true
+  }
+}
+```
+
+**Garantias**:
+- ✅ Vendas manuais simulam Stripe perfeitamente (dados e estado)
+- ✅ Cada sale gera 1 evento persistido
+- ✅ Payload completo para futuro n8n
+- ✅ Zero integrações externas (ainda)
+- ✅ Atomicidade: sale + enrollment + event ou nada
+
+**Validação** (Produção Testada):
+- ✅ Venda manual cria sale com `payment_status='paid'` e `provider='manual'`
+- ✅ Evento `sale.created` criado automaticamente
+- ✅ Payload tem todos os campos obrigatórios
+- ✅ Sem duplicados (sale/enrollment/event)
+- ✅ Admin UI funciona sem erros
+- ✅ Aluno vê curso após venda manual
+
+**Database**: Migration 016 aplicada  
+**Sales-First Architecture**: Intocada ✅  
+**Breaking Changes**: Nenhum
+
+---
+
 ## [Feature] - 2026-01-20
 
 ### 📊 Phase 8.0: Real Student Progress Tracking (PRODUCTION)
