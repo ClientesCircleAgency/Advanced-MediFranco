@@ -4,6 +4,90 @@
 
 ---
 
+## [Feature] - 2026-01-22
+
+### 🔗 Phase 9.0-2: Webhook Contract Enhancement (Stripe-first fields)
+
+**Objetivo**: Adicionar campos Stripe ao topo do payload do evento para facilitar consumo por n8n/webhooks.
+
+**Mudança Mínima** (Migration 017):
+- Atualizada função `create_sale_event()`
+- **Adicionados 3 campos top-level** ao payload:
+  - `stripe_customer_id` - ID do cliente Stripe (null se manual)
+  - `stripe_payment_intent_id` - ID do payment intent (null se manual)
+  - `stripe_checkout_session_id` - ID da sessão checkout (null se manual)
+- Campos extraídos automaticamente de `metadata.*`
+- `metadata` mantida intacta (zero breaking changes)
+
+**Payload Manual Sale** (provider='manual'):
+```json
+{
+  "sale_id": "uuid",
+  "sale_created_at": "2026-01-22T10:00:00Z",
+  "amount_cents": 14900,
+  "currency": "EUR",
+  "payment_status": "paid",
+  "provider": "manual",
+  "stripe_customer_id": null,
+  "stripe_payment_intent_id": null,
+  "stripe_checkout_session_id": null,
+  "course_id": "uuid",
+  "course_title": "Curso Exemplo",
+  "user_id": "uuid",
+  "user_email": "aluno@example.com",
+  "metadata": {
+    "checkout_session_id": null,
+    "payment_intent_id": null,
+    "customer_id": null,
+    "admin_created": true
+  }
+}
+```
+
+**Payload Stripe Sale** (futuro, provider='stripe'):
+```json
+{
+  "sale_id": "uuid",
+  "sale_created_at": "2026-01-22T10:00:00Z",
+  "amount_cents": 14900,
+  "currency": "EUR",
+  "payment_status": "paid",
+  "provider": "stripe",
+  "stripe_customer_id": "cus_ABC123",
+  "stripe_payment_intent_id": "pi_XYZ789",
+  "stripe_checkout_session_id": "cs_test_123",
+  "course_id": "uuid",
+  "course_title": "Curso Exemplo",
+  "user_id": "uuid",
+  "user_email": "aluno@example.com",
+  "metadata": {
+    "checkout_session_id": "cs_test_123",
+    "payment_intent_id": "pi_XYZ789",
+    "customer_id": "cus_ABC123",
+    "stripe_invoice_id": "in_456"
+  }
+}
+```
+
+**Garantias**:
+- ✅ Campos Stripe no topo (fácil acesso para n8n)
+- ✅ `metadata` intacta (dados brutos Stripe preservados)
+- ✅ Funciona para `manual` e futuro `stripe`
+- ✅ Zero breaking changes (só adicionados campos)
+- ✅ Contrato estável para webhooks
+
+**Validação** (Produção):
+- ✅ Venda manual cria evento com Stripe fields = null
+- ✅ Payload tem todos os campos novos
+- ✅ `metadata` não alterada
+- ✅ 1 evento por sale (sem duplicados)
+
+**Database**: Migration 017 aplicada  
+**Sales-First Architecture**: Intocada ✅  
+**Breaking Changes**: Nenhum
+
+---
+
 ## [Feature] - 2026-01-21
 
 ### 🔄 Phase 9.0-1: Stripe-like Manual Sales + Event System (PRODUCTION)
