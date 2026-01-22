@@ -177,6 +177,23 @@ SELECT COUNT(*) FROM academy_enrollments WHERE sale_id IS NULL;
 
 ### ✅ Concluído Recentemente
 
+#### Phase 9.0-2: Webhook Contract Enhancement
+- **Status**: ✅ **COMPLETO** (2026-01-22)
+- **Implementado**:
+  - Campos Stripe top-level no payload: `stripe_customer_id`, `stripe_payment_intent_id`, `stripe_checkout_session_id`
+  - Extraídos de `metadata.*` automaticamente
+  - Funciona para manual (null) e futuro Stripe (preenchido)
+  - Zero breaking changes
+
+#### Phase 9.0-1: Stripe-like Manual Sales + Events
+- **Status**: ✅ **COMPLETO** (2026-01-21)
+- **Implementado**:
+  - `payment_status` enum (paid, pending, failed, refunded)
+  - `provider` enum (manual, stripe, other)
+  - `metadata` JSONB para campos Stripe
+  - Tabela `academy_events` com trigger automático
+  - Evento `sale.created` para n8n
+
 #### Phase 8.0: Real Student Progress Tracking
 - **Status**: ✅ **COMPLETO** (2026-01-20)
 - **Implementado**:
@@ -189,28 +206,32 @@ SELECT COUNT(*) FROM academy_enrollments WHERE sale_id IS NULL;
 
 ### Alta Prioridade
 
-#### 1. Payment Integration (Stripe)
+#### 1. Stripe Checkout Integration
 - **Status**: ❌ Não começado
-- **Objetivo**: Permitir alunos comprarem cursos online
-- **Requisitos**:
-  - Webhook handler para `checkout.session.completed`
-  - Criar sale quando pagamento confirmado
-  - Enrollment criado automaticamente via trigger
-  - Redirect após sucesso
+- **Pré-requisitos**: ✅ COMPLETOS (Phase 9.0-1 e 9.0-2)
+- **Objetivo**: Permitir compras online via Stripe
+- **Implementação**:
+  - Criar Stripe Checkout Session
+  - Webhook `/api/webhooks/stripe` para `checkout.session.completed`
+  - Criar sale com `provider='stripe'`
+  - Preencher `metadata` com IDs Stripe
+  - Enrollment + Event criados automaticamente (triggers)
+- **Estimativa**: 1-2 dias
 
-#### 2. Corrigir Enrollment Count nos Course Cards
-- **Status**: ❌ Mostra count total, não distinct users
-- **Problema**: Um user com 2 vendas para mesmo curso aparece como 2 enrollments
-- **Solução**: Usar `COUNT(DISTINCT user_id)` em vez de `COUNT(*)`
-
-#### 3. Email Automation (n8n)
+#### 2. n8n Email Automation
 - **Status**: ❌ Não começado
-- **Objetivo**: Enviar emails automáticos
+- **Pré-requisitos**: ✅ COMPLETOS (academy_events pronto)
+- **Objetivo**: Automação de emails via n8n
+- **Implementação**:
+  - n8n workflow com polling em `academy_events`
+  - Processar `sale.created` → enviar email boas-vindas
+  - Processar `course.completed` → enviar certificado
+  - Marcar eventos como `processed_at` após envio
 - **Casos de Uso**:
   - Confirmação de inscrição
   - Conclusão de curso
   - Reminder de progresso
-- **Integração**: Webhooks ou triggers do Supabase
+- **Estimativa**: 1 dia
 
 ### Média Prioridade
 
@@ -343,22 +364,24 @@ git push origin development
 
 ## ⚠️ Pontos de Atenção
 
-### 1. RPC `get_my_course_progress` com Workaround
-- **Ficheiro**: `useUserProgress.ts`
-- **Situação**: Usa query direta em vez de RPC
-- **Razão**: PostgREST 403 error (cache issue)
-- **Atualização (2026-01-20)**: Implementado cálculo real de progresso com queries diretas, funciona perfeitamente.
+### 1. Webhook System Ready (não integrado)
+- **Status**: ✅ Sistema de eventos criado
+- **Situação**: Tabela `academy_events` recebe eventos automaticamente
+- **Próximo passo**: Integrar n8n para processar eventos
+- **Prioridade**: Média
 
-### 2. Enrollment Count Incorreto
+### 2. Stripe Fields Ready (não integrado)
+- **Status**: ✅ Payload tem campos Stripe
+- **Situação**: `stripe_customer_id`, `stripe_payment_intent_id`, `stripe_checkout_session_id` prontos
+- **Valores atuais**: null (vendas manuais)
+- **Próximo passo**: Integrar Stripe Checkout
+- **Prioridade**: Alta
+
+### 3. Enrollment Count Incorreto
 - **Situação**: Course cards mostram count total de enrollments
 - **Problema**: Não usa `DISTINCT user_id`
 - **Impacto**: Analytics - número inflacionado
-- **Prioridade**: Média
-
-### 3. Sem Payment Gateway
-- **Situação**: Apenas enrollments manuais via admin
-- **Impacto**: Não há fluxo de compra para utilizadores finais
-- **Prioridade**: Alta (blocker para lançamento público)
+- **Prioridade**: Baixa (não afeta funcionalidade)
 
 ---
 
@@ -385,30 +408,35 @@ git push origin development
 
 ### Curto Prazo (1-2 semanas)
 1. ~~**Implementar cálculo de progresso real**~~ ✅ **COMPLETO** (Phase 8.0)
-2. ✅ **Corrigir enrollment count**
-   - Usar DISTINCT user_id
-3. ⚠️ **Setup Stripe Checkout**
+2. ~~**Sistema de eventos para n8n**~~ ✅ **COMPLETO** (Phase 9.0-1 + 9.0-2)
+3. ⚠️ **Integrar Stripe Checkout**
+   - Criar sessões Stripe
    - Webhook handler
-   - Fluxo de compra end-to-end
+   - Testar fluxo completo
+4. ⚠️ **Configurar n8n**
+   - Workflow para processar eventos
+   - Email boas-vindas
+   - Email conclusão curso
 
 ### Médio Prazo (1 mês)
-4. ⚠️ **Email automation (n8n)**
-   - Confirmação de inscrição
-   - Conclusão de curso
 5. ⚠️ **Refund handling**
    - UI admin para processar refunds
-   - Soft-delete sales
+   - Atualizar `payment_status='refunded'`
+   - Remover acesso (soft-delete)
+6. ⚠️ **Corrigir enrollment count**
+   - Usar DISTINCT user_id
 
 ### Longo Prazo (3+ meses)
-6. ⚠️ **Subscription model**
+7. ⚠️ **Certificados PDF**
+   - Gerar quando `progress = 100%`
+   - Email automático via n8n
+8. ⚠️ **Subscription model**
    - Recurring payments
    - Access management
-7. ⚠️ **Certificates**
-   - PDF generation
-   - Email delivery
-8. ⚠️ **Advanced analytics**
+9. ⚠️ **Advanced analytics**
    - Completion rates
    - Revenue forecasting
+   - Student retention
 
 ---
 
