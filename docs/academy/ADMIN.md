@@ -1,6 +1,6 @@
 # Academy Admin Panel - Quick Start Guide
 
-> **Purpose**: How to add admins and create courses via the Admin Panel
+> **Purpose**: How to add admins, create courses, and manage enrollments
 
 ---
 
@@ -82,161 +82,177 @@ INNER JOIN auth.users u ON u.id = a.user_id;
 
 ---
 
-## 🎯 Complete Example (SQL)
+## 💰 Creating Enrollments (Sales-First)
 
-If you prefer SQL for bulk creation:
+**IMPORTANTE**: O sistema usa arquitetura **Sales-First** (1 sale = 1 enrollment).
+
+### Via Admin Panel (Recomendado)
+
+1. Login como admin
+2. Navegar para: `/admin/enrollments`
+3. Selecionar curso
+4. Inserir email do aluno
+5. Click "Inscrever Utilizador"
+
+**O que acontece automaticamente**:
+- ✅ Cria `academy_sales` com `payment_status='paid'` e `provider='manual'`
+- ✅ Cria `academy_enrollments` via trigger (FK para sale)
+- ✅ Cria evento `sale.created` em `academy_events`
+- ✅ Aluno recebe acesso imediato ao curso
+
+### Via SQL (Avançado)
+
+**NUNCA** inserir diretamente em `academy_enrollments`. Sempre criar via `academy_sales`:
 
 ```sql
--- 1. Create Course
-WITH new_course AS (
-  INSERT INTO academy_courses (title, slug, description, image_url, price_cents, published)
-  VALUES (
-    'Técnicas Avançadas de Dermatologia',
-    'tecnicas-avancadas-dermatologia',
-    'Aprenda técnicas modernas de dermatologia estética.',
-    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d',
-    14900, -- €149.00
-    true
-  )
-  RETURNING id
-),
+-- ❌ ERRADO (não funciona, FK constraint)
+INSERT INTO academy_enrollments (user_id, course_id) VALUES (...);
 
--- 2. Create Module
-new_module AS (
-  INSERT INTO academy_modules (course_id, title, order_num)
-  SELECT id, 'Módulo 1: Fundamentos', 1
-  FROM new_course
-  RETURNING id
-)
+-- ✅ CORRETO (via sales)
+INSERT INTO academy_sales (
+  user_id,
+  course_id,
+  amount_cents,
+  currency,
+  payment_method,
+  payment_status,
+  provider,
+  metadata,
+  notes
+) VALUES (
+  'USER_ID_HERE',
+  'COURSE_ID_HERE',
+  14900, -- €149.00
+  'EUR',
+  'manual',
+  'paid',
+  'manual',
+  '{"admin_created": true}'::jsonb,
+  'Manual enrollment by admin'
+);
+-- Enrollment criado automaticamente via trigger!
+```
 
--- 3. Create Lessons
-INSERT INTO academy_lessons (module_id, title, content_type, content_url, duration_minutes, order_num)
+### Verificar Enrollment
+
+```sql
 SELECT 
-  nm.id,
-  'Aula 1.1 - Introdução ao Curso',
-  'video',
-  'https://youtube.com/embed/VIDEO_ID',
-  10,
-  1
-FROM new_module nm;
+  s.id as sale_id,
+  s.payment_status,
+  s.provider,
+  e.id as enrollment_id,
+  c.title as course_title,
+  u.email as student_email
+FROM academy_sales s
+JOIN academy_enrollments e ON e.sale_id = s.id
+JOIN academy_courses c ON c.id = s.course_id
+JOIN auth.users u ON u.id = s.user_id
+ORDER BY s.created_at DESC
+LIMIT 10;
 ```
 
----
+### Apagar Enrollment
 
-## 🔒 RLS Security
-
-### What Admins Can Do
-
-✅ **INSERT** courses, modules, lessons  
-✅ **UPDATE** courses, modules, lessons  
-✅ **DELETE** courses, modules, lessons  
-✅ **SELECT** all courses (published + draft)
-
-### What Students Can Do
-
-✅ **SELECT** published courses  
-✅ **SELECT** modules/lessons (if enrolled via RLS)  
-❌ **Cannot** create/edit/delete content
-
-### RLS Policies
+**IMPORTANTE**: Apagar via `academy_sales` (CASCADE delete remove enrollment):
 
 ```sql
--- Admin can write
-is_academy_admin(auth.uid()) = true
+-- ✅ CORRETO (apaga sale + enrollment + event via CASCADE)
+DELETE FROM academy_sales WHERE id = 'SALE_ID_HERE';
 
--- Students can read (if enrolled)
-EXISTS (SELECT 1 FROM academy_enrollments WHERE user_id = auth.uid())
+-- ❌ ERRADO (viola FK constraint)
+DELETE FROM academy_enrollments WHERE id = 'ENROLLMENT_ID_HERE';
 ```
 
 ---
 
-## 📝 Best Practices
+## 📊 Viewing Sales & Analytics
 
-### Content Organization
+### Access Sales Panel
 
-- **Modules**: Group related lessons (ex: "Módulo 1: Fundamentos")
-- **Lessons**: Keep 5-15 min each for better retention
-- **Order**: Use increments of 10 (10, 20, 30) to insert lessons later
+1. Login como admin
+2. Navegar para: `/admin/sales`
 
-### Images
+**Informação disponível**:
+- Total revenue
+- Sales por curso
+- Payment status distribution
+- Provider breakdown (manual vs stripe)
 
-- **Course thumbnail**: 16:9 ratio, min 1280x720px
-- **Use Unsplash** for free medical/education images
-- **Optimize**: Keep under 500KB
+### SQL Queries
 
-### Video Hosting
+**Revenue Report**:
+```sql
+SELECT 
+  DATE_TRUNC('day', created_at) as date,
+  provider,
+  COUNT(*) as sales_count,
+  SUM(amount_cents) / 100.0 as revenue_eur
+FROM academy_sales
+WHERE payment_status = 'paid'
+  AND created_at >= NOW() - INTERVAL '30 days'
+GROUP BY DATE_TRUNC('day', created_at), provider
+ORDER BY date DESC;
+```
 
-- **YouTube**: Unlisted videos, use embed URL
-- **Vimeo**: Private videos with password
-- **Self-hosted**: Use CDN (Cloudflare, Bunny)
-
-### Pricing
-
-- **Format**: Store as cents (€149.00 = 14900)
-- **Psychology**: End with .00 (ex: 149.00, not 149.99)
-
----
-
-## 🚨 Common Issues
-
-### "Access Denied" when creating course
-
-**Cause**: User not in `academy_admins` table.
-
-**Fix**: Add user via SQL (see "Adding an Admin").
-
-### Course not showing in catalog
-
-**Cause**: `published = false`
-
-**Fix**: Edit course → Toggle "Publicado" ON.
-
-### Lessons showing wrong order
-
-**Cause**: `order_num` not set correctly.
-
-**Fix**: Edit lessons → Set order: 1, 2, 3...
-
----
-
-## 📊 Useful Queries
-
-### List All Courses with Lesson Count
-
+**Top Courses**:
 ```sql
 SELECT 
   c.title,
-  c.published,
-  COUNT(l.id) as total_lessons
+  COUNT(DISTINCT s.user_id) as unique_students,
+  SUM(s.amount_cents) / 100.0 as total_revenue_eur
 FROM academy_courses c
-LEFT JOIN academy_modules m ON m.course_id = c.id
-LEFT JOIN academy_lessons l ON l.module_id = m.id
-GROUP BY c.id, c.title, c.published
-ORDER BY c.created_at DESC;
-```
-
-### Find Orphan Modules (no lessons)
-
-```sql
-SELECT m.title, m.course_id
-FROM academy_modules m
-LEFT JOIN academy_lessons l ON l.module_id = m.id
-WHERE l.id IS NULL;
-```
-
-### Duplicate Course (clone)
-
-```sql
--- Manual process: Copy course → Copy modules → Copy lessons
--- (Full SQL clone script available on request)
+LEFT JOIN academy_sales s ON s.course_id = c.id
+WHERE s.payment_status = 'paid'
+GROUP BY c.id, c.title
+ORDER BY total_revenue_eur DESC;
 ```
 
 ---
 
-## Next Steps
+## 🎓 Student Progress
 
-1. ✅ Add yourself as admin
-2. ✅ Create first course
-3. ✅ Add modules and lessons
-4. ✅ Publish course
-5. 🎓 Enroll test user and verify access
+### How It Works
+
+Students see their progress automatically:
+- **0%**: Botão "Começar"
+- **1-99%**: Botão "Continuar" (vai para próxima aula não completa)
+- **100%**: Botão "Rever Curso"
+
+Progress is calculated in real-time:
+```
+progress = (completed_lessons / total_lessons) * 100
+```
+
+### Debugging Progress Issues
+
+If a student reports incorrect progress:
+
+```sql
+-- Check student's progress for a course
+SELECT 
+  c.title as course,
+  COUNT(DISTINCT l.id) as total_lessons,
+  COUNT(DISTINCT ap.lesson_id) FILTER (WHERE ap.completed_at IS NOT NULL) as completed,
+  ROUND(
+    COUNT(DISTINCT ap.lesson_id) FILTER (WHERE ap.completed_at IS NOT NULL)::numeric / 
+    NULLIF(COUNT(DISTINCT l.id), 0) * 100, 
+    2
+  ) as progress_percentage
+FROM academy_courses c
+JOIN academy_modules m ON m.course_id = c.id
+JOIN academy_lessons l ON l.module_id = m.id
+LEFT JOIN academy_progress ap ON ap.lesson_id = l.id 
+  AND ap.user_id = 'USER_ID_HERE'
+WHERE c.id = 'COURSE_ID_HERE'
+GROUP BY c.id, c.title;
+```
+
+---
+
+## 🔒 Security Notes
+
+1. **Admins** são verificados via `academy_admins` table
+2. **Enrollments** só podem ser criados via sales (Sales-First)
+3. **Progress** é privado por user (RLS)
+4. **Events** são read-only para admins (debugging)
+5. **Sales** podem ser apagadas por admins (CASCADE delete)
