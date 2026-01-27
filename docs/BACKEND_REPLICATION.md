@@ -574,64 +574,7 @@ CREATE POLICY "Admins can manage contact messages"
 
 ---
 
-## 4. BLOG (Conteúdo Público)
-
-### 4.1 Tabela: `blog_posts`
-
-**Função**: Artigos de blog visíveis publicamente, editáveis por admins
-
-```sql
-CREATE TABLE IF NOT EXISTS public.blog_posts (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  subtitle TEXT,
-  content TEXT NOT NULL,
-  author TEXT NOT NULL,
-  images TEXT[] DEFAULT array[]::text[], -- Array de URLs
-  slug TEXT UNIQUE, -- URL-friendly (ex: "catarata-o-que-e")
-  published_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-```
-
-**Trigger**: auto-update `updated_at` (usando extensão `moddatetime`)
-```sql
-CREATE EXTENSION IF NOT EXISTS moddatetime SCHEMA extensions;
-
-CREATE TRIGGER handle_updated_at 
-  BEFORE UPDATE ON public.blog_posts
-  FOR EACH ROW EXECUTE PROCEDURE moddatetime(updated_at);
-```
-
-**RLS**:
-```sql
-ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
-
--- ✅ Todos podem ler blog posts
-CREATE POLICY "Public blog posts are viewable by everyone"
-  ON public.blog_posts FOR SELECT
-  USING (true);
-
--- 🔒 Apenas admins podem criar/editar/deletar
-CREATE POLICY "Admins can insert blog posts"
-  ON public.blog_posts FOR INSERT
-  WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Admins can update blog posts"
-  ON public.blog_posts FOR UPDATE
-  USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Admins can delete blog posts"
-  ON public.blog_posts FOR DELETE
-  USING (auth.role() = 'authenticated');
-```
-
-**Nota**: RLS usa `auth.role() = 'authenticated'` em vez de `has_role(admin)`. Pode ajustar para ser mais restritivo.
-
----
-
-## 5. RESUMO DE TABELAS
+## 4. RESUMO DE TABELAS
 
 | Tabela | Função | Auth Necessária | RLS |
 |--------|--------|-----------------|-----|
@@ -647,11 +590,10 @@ CREATE POLICY "Admins can delete blog posts"
 | `whatsapp_workflows` | Automações WhatsApp | ✅ Admin | Admin-only |
 | `appointment_requests` | Pedidos públicos de consulta | ❌ Anyone (INSERT), ✅ Admin (resto) | Dual-policy |
 | `contact_messages` | Mensagens de contacto | ❌ Anyone (INSERT), ✅ Admin (resto) | Dual-policy |
-| `blog_posts` | Blog | ❌ Anyone (SELECT), ✅ Auth (resto) | Public read |
 
 ---
 
-## 6. PADRÕES E BOAS PRÁTICAS
+## 5. PADRÕES E BOAS PRÁTICAS
 
 ### 6.1 RLS Pattern
 
@@ -732,7 +674,7 @@ CREATE INDEX idx_whatsapp_workflows_pending
 
 ---
 
-## 7. ORDEM DE CRIAÇÃO (Migration Steps)
+## 6. ORDEM DE CRIAÇÃO (Migration Steps)
 
 **Importante**: Seguir esta ordem para evitar erros de dependências
 
@@ -784,7 +726,6 @@ CREATE TABLE public.clinic_settings (...);
 CREATE TABLE public.whatsapp_workflows (...);
 CREATE TABLE public.appointment_requests (...);
 CREATE TABLE public.contact_messages (...);
-CREATE TABLE public.blog_posts (...);
 -- + Triggers + RLS + Policies
 ```
 
@@ -805,7 +746,7 @@ ALTER TYPE appointment_status ADD VALUE IF NOT EXISTS 'pre_confirmed';
 
 ---
 
-## 8. CHECKLIST DE REPLICAÇÃO
+## 7. CHECKLIST DE REPLICAÇÃO
 
 Para criar este backend noutro projeto:
 
@@ -821,16 +762,15 @@ Para criar este backend noutro projeto:
 - [ ] **Criar tabela `whatsapp_workflows`** + Índices + Triggers + RLS
 - [ ] **Criar tabela `appointment_requests`** + Triggers + RLS (dual-policy)
 - [ ] **Criar tabela `contact_messages`** + RLS (dual-policy)
-- [ ] **Criar tabela `blog_posts`** + Trigger (moddatetime) + RLS
 - [ ] **Inserir seed data** (especialidades, tipos de consulta, profissionais, salas, settings)
 - [ ] **Testar RLS** (criar admin user via `user_roles`, tentar queries)
 - [ ] **Testar formulários públicos** (INSERT sem auth)
 
 ---
 
-## 9. CONFIGURAÇÃO INICIAL PÓS-MIGRATIONS
+## 8. CONFIGURAÇÃO INICIAL PÓS-MIGRATIONS
 
-### 9.1 Criar Primeiro Admin
+### 8.1 Criar Primeiro Admin
 
 **Após signup do primeiro user**:
 
@@ -845,7 +785,7 @@ INSERT INTO public.user_roles (user_id, role)
 VALUES ('USER_UUID_AQUI', 'admin');
 ```
 
-### 9.2 Validar RLS
+### 8.2 Validar RLS
 
 **Como admin**:
 ```sql
@@ -864,18 +804,11 @@ INSERT INTO public.appointment_requests (...); -- Deve funcionar
 INSERT INTO public.patients (...); -- Deve falhar
 ```
 
----
 
-## 10. EXTENSÕES NECESSÁRIAS
-
-```sql
--- Para trigger de updated_at em blog_posts
-CREATE EXTENSION IF NOT EXISTS moddatetime SCHEMA extensions;
-```
 
 ---
 
-## 11. NOTAS IMPORTANTES
+## 9. NOTAS IMPORTANTES
 
 ### ⚠️ Security Definer
 Todas as funções RLS usam `SECURITY DEFINER` para evitar recursividade infinita (função chama RLS que chama função...).
@@ -885,7 +818,6 @@ Todas as funções RLS usam `SECURITY DEFINER` para evitar recursividade infinit
 
 ### ⚠️ Unique Constraints
 - `patients.nif`: Previne duplicados de pacientes
-- `blog_posts.slug`: URLs únicas
 - `clinic_settings.key`: Apenas 1 entry por configuração
 
 ### ⚠️ Cascade Deletes
@@ -903,7 +835,7 @@ ALTER TYPE appointment_status ADD VALUE IF NOT EXISTS 'new_status';
 
 ---
 
-## 12. SQL COMPLETO CONSOLIDADO
+## 10. SQL COMPLETO CONSOLIDADO
 
 ```sql
 -- =============================================
@@ -1119,28 +1051,7 @@ ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can submit contact messages" ON public.contact_messages FOR INSERT TO anon, authenticated WITH CHECK (true);
 CREATE POLICY "Admins can manage contact messages" ON public.contact_messages FOR ALL TO authenticated USING (has_role(auth.uid(), 'admin')) WITH CHECK (has_role(auth.uid(), 'admin'));
 
--- 11. BLOG
-CREATE EXTENSION IF NOT EXISTS moddatetime SCHEMA extensions;
-CREATE TABLE IF NOT EXISTS public.blog_posts (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  subtitle TEXT,
-  content TEXT NOT NULL,
-  author TEXT NOT NULL,
-  images TEXT[] DEFAULT array[]::text[],
-  slug TEXT UNIQUE,
-  published_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-CREATE TRIGGER handle_updated_at BEFORE UPDATE ON public.blog_posts FOR EACH ROW EXECUTE PROCEDURE moddatetime(updated_at);
-ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public blog posts are viewable by everyone" ON public.blog_posts FOR SELECT USING (true);
-CREATE POLICY "Admins can insert blog posts" ON public.blog_posts FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-CREATE POLICY "Admins can update blog posts" ON public.blog_posts FOR UPDATE USING (auth.role() = 'authenticated');
-CREATE POLICY "Admins can delete blog posts" ON public.blog_posts FOR DELETE USING (auth.role() = 'authenticated');
-
--- 12. SEED DATA
+-- 11. SEED DATA
 INSERT INTO public.specialties (id, name) VALUES
   ('11111111-1111-1111-1111-111111111111', 'Oftalmologia'),
   ('22222222-2222-2222-2222-222222222222', 'Medicina Dentária');
