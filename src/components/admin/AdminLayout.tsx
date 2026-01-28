@@ -18,7 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import logo from '@/assets/logo-medifranco-v4.png';
+import logo from '@/assets/logo-barnun-white.png';
 
 const pageTitles: Record<string, { title: string }> = {
   '/admin/dashboard': { title: 'Dashboard' },
@@ -101,11 +101,20 @@ export function AdminLayout() {
           </div>
 
           {/* Centered Logo - Interactive & Oversized */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-50 transition-transform duration-300 hover:scale-110" onClick={() => navigate('/admin/dashboard')}>
-            <img
-              src={logo}
-              alt="MediFranco"
-              className="h-28 lg:h-42 w-auto object-contain transition-all duration-300 drop-shadow-md group-hover:drop-shadow-xl"
+
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-50 transition-transform duration-300 hover:scale-105" onClick={() => navigate('/admin/dashboard')}>
+            <div
+              className="h-16 w-48 lg:h-20 lg:w-60 bg-[#F59E0B] transition-all duration-300 drop-shadow-md group-hover:drop-shadow-xl"
+              style={{
+                maskImage: `url(${logo})`,
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center',
+                WebkitMaskImage: `url(${logo})`,
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center'
+              }}
             />
           </div>
 

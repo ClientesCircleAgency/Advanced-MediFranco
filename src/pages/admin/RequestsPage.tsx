@@ -123,8 +123,9 @@ export default function RequestsPage() {
       await updateRequestStatus.mutateAsync({ id, status: 'rejected' });
       toast.success('Pedido rejeitado');
       setSelectedRequest(null);
-    } catch {
-      toast.error('Erro ao rejeitar pedido');
+    } catch (error: any) {
+      console.error('Error rejecting request:', error);
+      toast.error(`Erro ao rejeitar pedido: ${error.message || 'Erro desconhecido'}`);
     }
   };
 
