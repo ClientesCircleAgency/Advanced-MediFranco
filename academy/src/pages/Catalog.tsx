@@ -1,3 +1,4 @@
+import { SEO } from '@/components/SEO'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CourseCard } from '@/components/CourseCard'
@@ -12,6 +13,11 @@ export default function Catalog() {
 
     return (
         <div className="flex flex-col min-h-screen">
+            <SEO
+                title="Catálogo de Cursos"
+                description="Explore todos os cursos online disponíveis na MediFranco Academy. Formação certificada para profissionais de saúde."
+                path="/catalog"
+            />
             <Header />
 
             <main className="flex-1 py-12">

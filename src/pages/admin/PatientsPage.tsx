@@ -1,58 +1,61 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Phone, Mail, Users, UserPlus, Calendar, Filter } from 'lucide-react';
+import { Search, Plus, Phone, Users, Filter, CalendarClock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useClinic } from '@/context/ClinicContext';
 import { PageHeader } from '@/components/admin/PageHeader';
-import { StatCard } from '@/components/admin/StatCard';
-import { EmptyState } from '@/components/admin/EmptyState';
 import { NewPatientModal } from '@/components/admin/NewPatientModal';
 import { AppointmentWizard } from '@/components/admin/AppointmentWizard';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import type { Patient } from '@/types/clinic';
+import { cn } from '@/lib/utils';
+
+const shellCardClassName =
+  'rounded-[1.75rem] border border-slate-200/70 bg-white/90 shadow-xl shadow-cyan-950/5 backdrop-blur-sm';
 
 export default function PatientsPage() {
   const navigate = useNavigate();
-  const { patients, appointments, getPatientById } = useClinic();
+  const { patients, appointments } = useClinic();
   const [search, setSearch] = useState('');
   const [newPatientOpen, setNewPatientOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [activeTab, setActiveTab] = useState('all');
 
-  const filteredPatients = patients.filter((p) => {
-    const searchLower = search.toLowerCase();
-    return p.name.toLowerCase().includes(searchLower) || p.nif.includes(search) || p.phone.includes(search);
-  });
+  const filteredPatients = useMemo(() => {
+    return patients.filter((patient) => {
+      const searchLower = search.toLowerCase();
+      return (
+        patient.name.toLowerCase().includes(searchLower) ||
+        patient.nif.includes(search) ||
+        patient.phone.includes(search)
+      );
+    });
+  }, [patients, search]);
 
-  // Estatísticas
-  const newThisMonth = patients.filter((p) => {
-    const created = new Date(p.createdAt);
+  const newThisMonth = patients.filter((patient) => {
+    const created = new Date(patient.createdAt);
     const now = new Date();
     return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
   }).length;
 
   const todayDate = new Date().toISOString().split('T')[0];
-  const withAppointmentToday = new Set(
-    appointments.filter((a) => a.date === todayDate).map((a) => a.patientId)
-  ).size;
+  const withAppointmentToday = new Set(appointments.filter((appointment) => appointment.date === todayDate).map((appointment) => appointment.patientId)).size;
 
   const getPatientAppointments = (patientId: string) => {
-    const patientApts = appointments
-      .filter((a) => a.patientId === patientId)
+    const patientAppointments = appointments
+      .filter((appointment) => appointment.patientId === patientId)
       .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
-    const today = todayDate;
-    const past = patientApts.filter((a) => a.date < today || (a.date === today && a.status === 'completed'));
-    const future = patientApts.filter((a) => a.date >= today && a.status !== 'completed' && a.status !== 'cancelled');
+    const past = patientAppointments.filter((appointment) => appointment.date < todayDate || (appointment.date === todayDate && appointment.status === 'completed'));
+    const future = patientAppointments.filter(
+      (appointment) => appointment.date >= todayDate && appointment.status !== 'completed' && appointment.status !== 'cancelled'
+    );
     return { last: past[past.length - 1], next: future[0] };
   };
 
-  const handleNewAppointment = (patient: Patient, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleNewAppointment = (patient: Patient, event: React.MouseEvent) => {
+    event.stopPropagation();
     setSelectedPatient(patient);
     setWizardOpen(true);
   };
@@ -62,145 +65,123 @@ export default function PatientsPage() {
   };
 
   return (
-    <div className="space-y-4 lg:space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="font-serif italic text-foreground text-lg lg:text-2xl">Pacientes</h1>
-        <p className="font-mono text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
-          {patients.length} pacientes registados
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="MediFranco Patient Registry"
+        title="Pacientes"
+        subtitle={`${patients.length} pacientes registados, com foco em leitura rápida e contexto clínico limpo.`}
+        actions={
+          <Button onClick={() => setNewPatientOpen(true)} className="rounded-2xl bg-white text-slate-950 hover:bg-slate-100">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo paciente
+          </Button>
+        }
+      />
 
-      {/* Barra de pesquisa */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Pesquisar paciente..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 h-10 bg-card border-border rounded-xl text-sm"
-          />
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className={cn(shellCardClassName, 'p-5')}>
+          <p className="text-sm text-slate-500">Base ativa</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{patients.length}</p>
+          <p className="mt-2 text-sm text-slate-500">Todas as fichas disponíveis para operação clínica.</p>
         </div>
-        <Button variant="outline" size="sm" className="gap-2 h-10 shrink-0">
-          <Filter className="h-4 w-4" />
-          <span className="hidden sm:inline">Filtros</span>
-        </Button>
+        <div className={cn(shellCardClassName, 'p-5')}>
+          <p className="text-sm text-slate-500">Novos este mês</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{newThisMonth}</p>
+          <p className="mt-2 text-sm text-slate-500">Crescimento recente da base de pacientes.</p>
+        </div>
+        <div className={cn(shellCardClassName, 'p-5')}>
+          <p className="text-sm text-slate-500">Com consulta hoje</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{withAppointmentToday}</p>
+          <p className="mt-2 text-sm text-slate-500">Pacientes que cruzam a agenda de hoje.</p>
+        </div>
       </div>
 
-      {/* Lista de Pacientes - Cards em mobile, tabela em desktop */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        {filteredPatients.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 lg:py-20">
-            <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full bg-muted flex items-center justify-center mb-3">
-              <Users className="h-6 w-6 lg:h-8 lg:w-8 text-muted-foreground" />
-            </div>
-            <h3 className="font-semibold text-foreground text-sm lg:text-base mb-1">Base de Pacientes</h3>
-            <p className="text-xs lg:text-sm text-muted-foreground text-center px-4">
-              {search ? `Nenhum resultado para "${search}"` : 'Comece a digitar para encontrar fichas.'}
-            </p>
+      <div className={cn(shellCardClassName, 'p-5 lg:p-6')}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="font-display text-xl font-semibold tracking-tight text-slate-950">Explorar pacientes</h2>
+            <p className="mt-1 text-sm text-slate-500">Lista mais calma, legível e alinhada com o sistema da dashboard.</p>
           </div>
-        ) : (
-          <>
-            {/* Mobile View - Cards */}
-            <div className="lg:hidden divide-y divide-border">
-              {filteredPatients.map((patient) => {
-                const { last, next } = getPatientAppointments(patient.id);
-                return (
-                  <div
-                    key={patient.id}
-                    className="p-3 active:bg-accent/50 cursor-pointer"
-                    onClick={() => navigate(`/admin/pacientes/${patient.id}`)}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-foreground text-sm">{patient.name}</p>
+          <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+            <div className="relative flex-1 lg:min-w-[320px]">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Pesquisar por nome, NIF ou telefone..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-10 shadow-none"
+              />
+            </div>
+            <Button variant="outline" className="h-12 rounded-2xl border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100">
+              <Filter className="mr-2 h-4 w-4" />
+              Filtros
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          {filteredPatients.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+                <Users className="h-5 w-5 text-slate-500" />
+              </div>
+              <p className="text-sm font-medium text-slate-700">Sem resultados para esta pesquisa</p>
+              <p className="mt-1 text-sm text-slate-500">{search ? `Nenhum paciente corresponde a "${search}".` : 'Comece a escrever para encontrar uma ficha.'}</p>
+            </div>
+          ) : (
+            filteredPatients.map((patient) => {
+              const { last, next } = getPatientAppointments(patient.id);
+              return (
+                <button
+                  key={patient.id}
+                  type="button"
+                  className="w-full rounded-[1.5rem] border border-slate-200 bg-white p-4 text-left transition hover:border-cyan-200 hover:shadow-lg"
+                  onClick={() => navigate(`/admin/pacientes/${patient.id}`)}
+                >
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <p className="truncate text-base font-semibold text-slate-950">{patient.name}</p>
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-mono text-slate-500">
+                          {patient.nif}
+                        </span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                        <span className="flex items-center gap-1.5">
+                          <Phone className="h-3.5 w-3.5" />
+                          {patient.phone}
+                        </span>
+                        {next && (
+                          <span className="flex items-center gap-1.5 text-cyan-700">
+                            <CalendarClock className="h-3.5 w-3.5" />
+                            Próx: {format(new Date(next.date), 'dd/MM/yy', { locale: pt })}
+                          </span>
+                        )}
+                        {last && (
+                          <span className="text-slate-400">
+                            Última: {format(new Date(last.date), 'dd/MM/yy', { locale: pt })}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2">
                       <Button
                         size="sm"
-                        variant="ghost"
-                        onClick={(e) => handleNewAppointment(patient, e)}
-                        className="h-7 w-7 p-0"
+                        variant="outline"
+                        className="rounded-2xl border-slate-200 bg-slate-50 hover:bg-slate-100"
+                        onClick={(event) => handleNewAppointment(patient, event)}
                       >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="mr-2 h-3.5 w-3.5" />
+                        Consulta
                       </Button>
                     </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="font-mono">{patient.nif}</span>
-                      <span className="flex items-center gap-1">
-                        <Phone className="h-3 w-3" />
-                        {patient.phone}
-                      </span>
-                    </div>
-                    {next && (
-                      <p className="text-xs text-primary mt-1.5">
-                        Próx: {format(new Date(next.date), 'dd/MM', { locale: pt })}
-                      </p>
-                    )}
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Desktop View - Table */}
-            <div className="hidden lg:block overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="font-semibold">Nome</TableHead>
-                    <TableHead className="font-semibold">NIF</TableHead>
-                    <TableHead className="font-semibold">Contacto</TableHead>
-                    <TableHead className="font-semibold">Última</TableHead>
-                    <TableHead className="font-semibold">Próxima</TableHead>
-                    <TableHead className="text-right font-semibold">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPatients.map((patient) => {
-                    const { last, next } = getPatientAppointments(patient.id);
-                    return (
-                      <TableRow
-                        key={patient.id}
-                        className="cursor-pointer hover:bg-accent/30 transition-colors"
-                        onClick={() => navigate(`/admin/pacientes/${patient.id}`)}
-                      >
-                        <TableCell className="font-medium text-foreground">{patient.name}</TableCell>
-                        <TableCell className="font-mono text-muted-foreground text-sm">{patient.nif}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Phone className="h-3 w-3" />
-                            {patient.phone}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          {last ? format(new Date(last.date), 'dd/MM/yy', { locale: pt }) : '—'}
-                        </TableCell>
-                        <TableCell>
-                          {next ? (
-                            <span className="text-primary font-medium text-sm">
-                              {format(new Date(next.date), 'dd/MM/yy', { locale: pt })}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => handleNewAppointment(patient, e)}
-                            className="gap-1 h-8"
-                          >
-                            <Plus className="h-3 w-3" />
-                            Consulta
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </>
-        )}
+                </button>
+              );
+            })
+          )}
+        </div>
       </div>
 
       <NewPatientModal open={newPatientOpen} onOpenChange={setNewPatientOpen} onPatientCreated={handlePatientCreated} />

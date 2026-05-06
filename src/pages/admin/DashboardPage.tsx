@@ -1,223 +1,415 @@
-import { CalendarDays, Users, TrendingUp, Clock, Inbox, ArrowUpRight, Star, Mail } from 'lucide-react';
+import { useMemo } from 'react';
+import {
+  ArrowRight,
+  CalendarDays,
+  Clock3,
+  Inbox,
+  MessageSquareMore,
+  MonitorPlay,
+  Stethoscope,
+  Users,
+  Video,
+  Workflow,
+} from 'lucide-react';
+import { format, isToday, parseISO } from 'date-fns';
+import { pt } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/admin/PageHeader';
 import { useClinic } from '@/context/ClinicContext';
 import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
 import { useContactMessages } from '@/hooks/useContactMessages';
-import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
-import { StatusBadge } from '@/components/admin/StatusBadge';
-import { AppointmentsChart } from '@/components/admin/AppointmentsChart';
-import type { AppointmentStatus } from '@/types/clinic';
+import { useOnlineAppointments } from '@/hooks/useOnlineAppointments';
+import type { AppointmentStatus, OnlineAppointmentStatus } from '@/types/database';
+
+type TimelineItem = {
+  id: string;
+  time: string;
+  channel: 'presencial' | 'online';
+  status: AppointmentStatus | OnlineAppointmentStatus;
+  title: string;
+  detail: string;
+};
+
+const waitingStatuses = new Set(['waiting', 'in_progress']);
+const scheduledStatuses = new Set(['scheduled', 'pre_confirmed', 'confirmed', 'paid']);
+
+const physicalStatusLabels: Record<AppointmentStatus, string> = {
+  scheduled: 'Marcada',
+  pre_confirmed: 'Pre-confirmada',
+  confirmed: 'Confirmada',
+  waiting: 'Em espera',
+  in_progress: 'Em atendimento',
+  completed: 'Concluida',
+  cancelled: 'Cancelada',
+  no_show: 'Nao compareceu',
+};
+
+const onlineStatusLabels: Record<OnlineAppointmentStatus, string> = {
+  scheduled: 'Marcada',
+  pre_confirmed: 'Pre-confirmada',
+  confirmed: 'Confirmada',
+  paid: 'Paga',
+  waiting: 'Sala pronta',
+  in_progress: 'Em videochamada',
+  completed: 'Concluida',
+  cancelled: 'Cancelada',
+  no_show: 'Nao compareceu',
+};
+
+function channelBadge(channel: TimelineItem['channel']) {
+  return channel === 'online'
+    ? 'bg-cyan-400/15 text-cyan-200 border-cyan-400/20'
+    : 'bg-emerald-400/15 text-emerald-200 border-emerald-400/20';
+}
+
+function statusTone(status: TimelineItem['status']) {
+  if (waitingStatuses.has(status)) return 'bg-amber-400/15 text-amber-200 border-amber-400/20';
+  if (status === 'completed') return 'bg-emerald-400/15 text-emerald-200 border-emerald-400/20';
+  if (status === 'cancelled' || status === 'no_show') return 'bg-rose-400/15 text-rose-200 border-rose-400/20';
+  return 'bg-slate-400/15 text-slate-200 border-slate-300/20';
+}
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  accent = 'cyan',
+}: {
+  icon: typeof CalendarDays;
+  label: string;
+  value: number | string;
+  hint: string;
+  accent?: 'cyan' | 'emerald' | 'amber' | 'violet' | 'slate';
+}) {
+  const accentClasses = {
+    cyan: 'bg-cyan-400/15 text-cyan-200 ring-cyan-300/20',
+    emerald: 'bg-emerald-400/15 text-emerald-200 ring-emerald-300/20',
+    amber: 'bg-amber-400/15 text-amber-200 ring-amber-300/20',
+    violet: 'bg-violet-400/15 text-violet-200 ring-violet-300/20',
+    slate: 'bg-slate-400/15 text-slate-200 ring-slate-300/20',
+  };
+
+  return (
+    <div className="rounded-[1.75rem] border border-white/10 bg-slate-950/90 p-5 text-white shadow-xl shadow-slate-950/15">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm text-slate-400">{label}</p>
+          <p className="mt-3 font-display text-3xl font-semibold tracking-tight">{value}</p>
+        </div>
+        <div className={`rounded-2xl p-3 ring-1 ${accentClasses[accent]}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+      </div>
+      <p className="mt-4 text-xs leading-5 text-slate-400">{hint}</p>
+    </div>
+  );
+}
+
+function SectionCard({
+  title,
+  subtitle,
+  children,
+  action,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-[1.75rem] border border-slate-200/70 bg-white/90 p-5 shadow-xl shadow-cyan-950/5 backdrop-blur-sm lg:p-6">
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="font-display text-xl font-semibold tracking-tight text-slate-950">{title}</h2>
+          <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
 export default function DashboardPage() {
   const { appointments, patients } = useClinic();
   const { data: requests = [] } = useAppointmentRequests();
   const { data: messages = [] } = useContactMessages();
-
-  const todayDate = format(new Date(), 'yyyy-MM-dd');
-  const todayAppointments = appointments.filter((a) => a.date === todayDate);
-  const pendingRequests = requests.filter(r => r.status === 'pending');
-  const unreadMessages = messages.filter(m => m.status === 'new');
+  const { data: onlineAppointments = [] } = useOnlineAppointments();
 
   const currentDate = format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: pt });
 
-  // Mock data for Google rating (would come from API)
-  const googleRating = 4.8;
-  const totalReviews = 127;
+  const dashboard = useMemo(() => {
+    const todayPhysical = appointments.filter((appointment) => isToday(parseISO(appointment.date)));
+    const todayOnline = onlineAppointments.filter((appointment) => isToday(parseISO(appointment.date)));
+    const pendingRequests = requests.filter((request) => request.status === 'pending');
+    const unreadMessages = messages.filter((message) => message.status === 'new');
+    const activeFlow = todayPhysical.filter((appointment) => waitingStatuses.has(appointment.status)).length;
+    const onlineAttention = todayOnline.filter(
+      (appointment) =>
+        appointment.payment_status === 'pending' ||
+        appointment.status === 'pre_confirmed' ||
+        appointment.status === 'waiting'
+    );
+
+    const timeline: TimelineItem[] = [
+      ...todayPhysical.slice(0, 8).map((appointment) => ({
+        id: `physical-${appointment.id}`,
+        time: appointment.time.slice(0, 5),
+        channel: 'presencial' as const,
+        status: appointment.status,
+        title: patients.find((patient) => patient.id === appointment.patientId)?.name ?? 'Consulta presencial',
+        detail: `${appointment.duration} min • ${physicalStatusLabels[appointment.status]}`,
+      })),
+      ...todayOnline.slice(0, 8).map((appointment) => ({
+        id: `online-${appointment.id}`,
+        time: appointment.time.slice(0, 5),
+        channel: 'online' as const,
+        status: appointment.status,
+        title: 'Consulta online',
+        detail: `${appointment.duration} min • ${onlineStatusLabels[appointment.status]}`,
+      })),
+    ].sort((a, b) => a.time.localeCompare(b.time));
+
+    return {
+      todayPhysical,
+      todayOnline,
+      pendingRequests,
+      unreadMessages,
+      activeFlow,
+      onlineAttention,
+      timeline,
+    };
+  }, [appointments, messages, onlineAppointments, patients, requests]);
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Minimal Header */}
-      <div className="text-center md:text-left">
-        <p className="font-serif italic text-foreground text-xl md:text-2xl">
-          Bem-vindo de volta, Dr. Franco
-        </p>
-        <p className="font-mono text-[10px] text-muted-foreground mt-1 uppercase tracking-widest">
-          {currentDate}
-        </p>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="MediFranco Command Surface"
+        title="Dashboard operacional para consultas presenciais e online"
+        subtitle="Visibilidade imediata sobre triage, carga do dia, operacao clinica e follow-up digital. Esta primeira vaga do upgrade ja junta o mundo presencial e a nova camada online num unico cockpit."
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="secondary" className="rounded-2xl border-white/10 bg-white/10 text-white hover:bg-white/15">
+              <Link to="/admin/pedidos">Abrir triage</Link>
+            </Button>
+            <Button asChild className="rounded-2xl bg-white text-slate-950 hover:bg-slate-100">
+              <Link to="/admin/agenda">Gerir agenda</Link>
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <MetricCard
+          icon={CalendarDays}
+          label="Carga total de hoje"
+          value={dashboard.todayPhysical.length + dashboard.todayOnline.length}
+          hint="Tudo o que exige tempo clinico hoje, presencial e por video."
+          accent="cyan"
+        />
+        <MetricCard
+          icon={Stethoscope}
+          label="Consultas presenciais"
+          value={dashboard.todayPhysical.length}
+          hint="Agenda fisica, sala de espera e ocupacao da clinica."
+          accent="emerald"
+        />
+        <MetricCard
+          icon={Video}
+          label="Consultas online"
+          value={dashboard.todayOnline.length}
+          hint="Videochamadas, pagamentos e confirmacoes digitais."
+          accent="violet"
+        />
+        <MetricCard
+          icon={Inbox}
+          label="Pedidos pendentes"
+          value={dashboard.pendingRequests.length}
+          hint="Pedidos de entrada ainda por qualificar e converter."
+          accent="amber"
+        />
+        <MetricCard
+          icon={Workflow}
+          label="Fluxo ativo"
+          value={dashboard.activeFlow}
+          hint="Pacientes hoje em espera ou em atendimento neste momento."
+          accent="slate"
+        />
       </div>
 
-      {/* KPI Cards Grid - Aligned with content below */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {/* Consultas Hoje */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <CalendarDays className="h-4 w-4 text-primary" />
+      <div className="grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
+        <SectionCard
+          title="Linha operacional de hoje"
+          subtitle="Sequencia unica das interacoes do dia, misturando agenda presencial e operacao online."
+          action={
+            <Button asChild variant="ghost" className="rounded-2xl text-slate-600 hover:bg-slate-100">
+              <Link to="/admin/agenda">
+                Ver agenda completa
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          }
+        >
+          {dashboard.timeline.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
+              Sem operacao agendada para hoje. A proxima acao pode vir da triage ou de novas marcacoes.
             </div>
-          </div>
-          <p className="font-mono text-2xl font-bold text-primary leading-none">
-            {todayAppointments.length}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Consultas hoje
-          </p>
-        </div>
+          ) : (
+            <div className="space-y-3">
+              {dashboard.timeline.map((item) => (
+                <div key={item.id} className="flex items-start gap-4 rounded-[1.5rem] border border-slate-200 bg-slate-50/90 p-4">
+                  <div className="rounded-2xl bg-slate-950 px-3 py-2 font-mono text-sm text-white">
+                    {item.time}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate font-medium text-slate-950">{item.title}</p>
+                      <Badge className={`rounded-full border ${channelBadge(item.channel)}`}>
+                        {item.channel === 'online' ? 'Online' : 'Presencial'}
+                      </Badge>
+                      <Badge className={`rounded-full border ${statusTone(item.status)}`}>
+                        {item.channel === 'online'
+                          ? onlineStatusLabels[item.status as OnlineAppointmentStatus]
+                          : physicalStatusLabels[item.status as AppointmentStatus]}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-500">{item.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </SectionCard>
 
-        {/* Pedidos Pendentes */}
-        <Link to="/admin/pedidos" className="block group">
-          <div className="bg-card border border-border rounded-xl p-4 shadow-sm h-full hover:border-primary/50 hover:shadow-md transition-all">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Inbox className="h-4 w-4 text-primary" />
+        <SectionCard
+          title="Prioridades imediatas"
+          subtitle="O que tende a bloquear conversao, atendimento ou resposta ao paciente."
+        >
+          <div className="space-y-3">
+            <Link to="/admin/pedidos" className="block rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 transition hover:border-cyan-200 hover:bg-cyan-50/60">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl bg-cyan-400/10 p-3 text-cyan-700">
+                    <Inbox className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-950">Triage em aberto</p>
+                    <p className="text-sm text-slate-500">Pedidos ainda por validar, responder ou converter.</p>
+                  </div>
+                </div>
+                <span className="font-display text-2xl text-slate-950">{dashboard.pendingRequests.length}</span>
               </div>
-              {pendingRequests.length > 0 && (
-                <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-              )}
-            </div>
-            <p className="font-mono text-2xl font-bold text-primary leading-none">
-              {pendingRequests.length}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Pedidos pendentes
-            </p>
-          </div>
-        </Link>
+            </Link>
 
-        {/* Mensagens Pendentes */}
-        <Link to="/admin/mensagens" className="block group">
-          <div className="bg-card border border-border rounded-xl p-4 shadow-sm h-full hover:border-blue-500/50 hover:shadow-md transition-all">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <Mail className="h-4 w-4 text-blue-500" />
+            <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl bg-violet-400/10 p-3 text-violet-700">
+                    <MonitorPlay className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-950">Online a precisar de acao</p>
+                    <p className="text-sm text-slate-500">Pagamentos pendentes, pre-confirmacao ou sala pronta.</p>
+                  </div>
+                </div>
+                <span className="font-display text-2xl text-slate-950">{dashboard.onlineAttention.length}</span>
               </div>
-              {unreadMessages.length > 0 && (
-                <span className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-              )}
             </div>
-            <p className="font-mono text-2xl font-bold text-foreground leading-none">
-              {unreadMessages.length}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Mensagens novas
-            </p>
-          </div>
-        </Link>
 
-        {/* Total Consultas */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </div>
+            <Link to="/admin/mensagens" className="block rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 transition hover:border-emerald-200 hover:bg-emerald-50/60">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl bg-emerald-400/10 p-3 text-emerald-700">
+                    <MessageSquareMore className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-950">Inbox operacional</p>
+                    <p className="text-sm text-slate-500">Mensagens novas com contexto comercial ou clinico.</p>
+                  </div>
+                </div>
+                <span className="font-display text-2xl text-slate-950">{dashboard.unreadMessages.length}</span>
+              </div>
+            </Link>
           </div>
-          <p className="font-mono text-2xl font-bold text-foreground leading-none">
-            {appointments.length}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Total consultas
-          </p>
-        </div>
-
-        {/* Google Rating */}
-        <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-0.5">
-            <p className="font-mono text-2xl font-bold text-foreground leading-none">
-              {googleRating}
-            </p>
-            <span className="text-xs text-muted-foreground">/5</span>
-          </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Avaliação Google
-          </p>
-        </div>
+        </SectionCard>
       </div>
 
-      {/* Appointments Chart */}
-      <AppointmentsChart />
-
-      {/* Bottom Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 lg:gap-6">
-        {/* Consultas de Hoje */}
-        <div className="bg-card border border-border rounded-xl p-4 lg:p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 lg:gap-3">
-              <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-lg bg-accent flex items-center justify-center">
-                <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
-              </div>
-              <h3 className="font-medium text-sm lg:text-base text-foreground">
-                Consultas de Hoje
-              </h3>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <SectionCard
+          title="Mix de canais"
+          subtitle="Como a capacidade do dia esta distribuida entre clinica e video."
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[1.5rem] bg-slate-950 p-5 text-white">
+              <p className="text-sm text-slate-400">Presencial</p>
+              <p className="mt-3 font-display text-4xl">{dashboard.todayPhysical.length}</p>
+              <p className="mt-2 text-sm text-slate-400">Consultas fisicas hoje</p>
             </div>
-            <Link to="/admin/agenda" className="text-xs text-primary hover:underline flex items-center gap-1">
-              Ver
-              <ArrowUpRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="space-y-2">
-            {todayAppointments.slice(0, 4).map((apt) => (
-              <div key={apt.id} className="flex items-center gap-3 p-2.5 lg:p-3 rounded-lg bg-muted/50 border border-border/50">
-                <div className="font-mono text-xs lg:text-sm font-medium text-primary shrink-0 w-10 lg:w-12">
-                  {apt.time.slice(0, 5)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground text-xs lg:text-sm truncate">
-                    Consulta
-                  </p>
-                  <p className="font-mono text-[10px] lg:text-xs text-muted-foreground">
-                    {apt.duration} min
-                  </p>
-                </div>
-                <StatusBadge status={apt.status as AppointmentStatus} size="sm" className="shrink-0" />
-              </div>
-            ))}
-            {todayAppointments.length === 0 && (
-              <div className="py-6 lg:py-8 text-center bg-muted/30 rounded-lg border border-border/50">
-                <Clock className="h-6 w-6 lg:h-8 lg:w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-xs lg:text-sm">
-                  Nenhuma consulta para hoje
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Pedidos Recentes */}
-        <div className="bg-card border border-border rounded-xl p-4 lg:p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 lg:gap-3">
-              <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-lg bg-accent flex items-center justify-center">
-                <Inbox className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
-              </div>
-              <h3 className="font-medium text-sm lg:text-base text-foreground">
-                Pedidos Recentes
-              </h3>
+            <div className="rounded-[1.5rem] bg-gradient-to-br from-cyan-500 to-blue-600 p-5 text-white">
+              <p className="text-sm text-cyan-50/80">Online</p>
+              <p className="mt-3 font-display text-4xl">{dashboard.todayOnline.length}</p>
+              <p className="mt-2 text-sm text-cyan-50/80">Consultas por video hoje</p>
             </div>
-            <Link to="/admin/pedidos" className="text-xs text-primary hover:underline flex items-center gap-1">
-              Ver
-              <ArrowUpRight className="h-3 w-3" />
-            </Link>
           </div>
-          <div className="space-y-2">
-            {pendingRequests.slice(0, 4).map((req) => (
-              <div key={req.id} className="flex items-center gap-3 p-2.5 lg:p-3 rounded-lg bg-muted/50 border border-border/50">
-                <div className="w-2 h-2 rounded-full bg-primary shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs lg:text-sm font-medium text-foreground truncate">
-                    {req.name}
-                  </p>
-                  <p className="font-mono text-[10px] lg:text-xs text-muted-foreground">
-                    {req.service_type === 'oftalmologia' ? 'Oftalmo' : 'Dentária'} • {format(new Date(req.preferred_date), "d MMM", { locale: pt })}
-                  </p>
-                </div>
-                <Badge variant="secondary" className="shrink-0 font-mono text-[10px] lg:text-xs px-1.5">
-                  Pendente
-                </Badge>
-              </div>
-            ))}
-            {pendingRequests.length === 0 && (
-              <div className="py-6 lg:py-8 text-center bg-muted/30 rounded-lg border border-border/50">
-                <Inbox className="h-6 w-6 lg:h-8 lg:w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-muted-foreground text-xs lg:text-sm">
-                  Nenhum pedido pendente
-                </p>
-              </div>
-            )}
+        </SectionCard>
+
+        <SectionCard
+          title="Base ativa"
+          subtitle="Entidades centrais que a dashboard ja consegue orquestrar."
+        >
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-[1.25rem] bg-slate-50 px-4 py-3">
+              <span className="text-sm text-slate-600">Pacientes registados</span>
+              <span className="font-display text-2xl text-slate-950">{patients.length}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-[1.25rem] bg-slate-50 px-4 py-3">
+              <span className="text-sm text-slate-600">Pedidos em fila</span>
+              <span className="font-display text-2xl text-slate-950">{dashboard.pendingRequests.length}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-[1.25rem] bg-slate-50 px-4 py-3">
+              <span className="text-sm text-slate-600">Mensagens por tratar</span>
+              <span className="font-display text-2xl text-slate-950">{dashboard.unreadMessages.length}</span>
+            </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          title="Proximo passo do upgrade"
+          subtitle="O shell e o dashboard ja mudaram. A seguir, a agenda e os pedidos devem herdar a mesma logica operacional."
+        >
+          <div className="space-y-3 text-sm leading-6 text-slate-600">
+            <p>1. Unificar agenda presencial e online numa grelha operacional.</p>
+            <p>2. Dar estados e acao rapida ao modulo de pedidos e triage.</p>
+            <p>3. Ligar melhor o portal do paciente e os fluxos de video, pagamento e documentos.</p>
+          </div>
+        </SectionCard>
+      </div>
+
+      <div className="rounded-[1.75rem] border border-slate-200/70 bg-white/90 p-5 shadow-xl shadow-cyan-950/5 backdrop-blur-sm lg:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-slate-400">{currentDate}</p>
+            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-slate-950">
+              Radar operacional do dia
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
+              Esta dashboard ja assume o novo modelo de gestao: triage separado da agenda, operacao por canal e foco em acao.
+              O proximo upgrade natural e transportar esta linguagem para `Agenda`, `Pedidos` e `Fluxo Clinico`.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" className="rounded-2xl">
+              <Link to="/admin/sala-espera">Abrir fluxo clinico</Link>
+            </Button>
+            <Button asChild className="rounded-2xl bg-slate-950 text-white hover:bg-slate-900">
+              <Link to="/admin/pacientes">
+                Ver pacientes
+                <Users className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

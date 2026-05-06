@@ -9,7 +9,6 @@ import {
   isSameDay,
 } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Card, CardContent } from '@/components/ui/card';
 import { useClinic } from '@/context/ClinicContext';
 import type { ClinicAppointment } from '@/types/clinic';
 
@@ -32,13 +31,11 @@ export function MonthView({
 }: MonthViewProps) {
   const { appointments, getPatientById, getProfessionalById } = useClinic();
 
-  // Calcular grid do mês
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
-  // Gerar todos os dias do calendário
   const days: Date[] = [];
   let day = calendarStart;
   while (day <= calendarEnd) {
@@ -46,16 +43,15 @@ export function MonthView({
     day = addDays(day, 1);
   }
 
-  // Filtrar consultas
-  const getAppointmentsForDay = (day: Date) => {
-    const dateStr = format(day, 'yyyy-MM-dd');
+  const getAppointmentsForDay = (currentDay: Date) => {
+    const dateStr = format(currentDay, 'yyyy-MM-dd');
     return appointments
-      .filter((apt) => {
-        if (apt.date !== dateStr) return false;
-        if (selectedProfessional !== 'all' && apt.professionalId !== selectedProfessional) return false;
-        if (selectedStatus !== 'all' && apt.status !== selectedStatus) return false;
+      .filter((appointment) => {
+        if (appointment.date !== dateStr) return false;
+        if (selectedProfessional !== 'all' && appointment.professionalId !== selectedProfessional) return false;
+        if (selectedStatus !== 'all' && appointment.status !== selectedStatus) return false;
         if (searchQuery) {
-          const patient = getPatientById(apt.patientId);
+          const patient = getPatientById(appointment.patientId);
           const searchLower = searchQuery.toLowerCase();
           if (
             !patient?.name.toLowerCase().includes(searchLower) &&
@@ -70,106 +66,91 @@ export function MonthView({
       .sort((a, b) => a.time.localeCompare(b.time));
   };
 
-  const weekDaysFull = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
+  const weekDays = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
 
   return (
-    <Card className="border-0 shadow-none lg:border lg:shadow-sm">
-      <CardContent className="p-0 lg:p-2">
-        {/* Header dos dias da semana */}
-        <div className="grid grid-cols-7 mb-0.5 lg:mb-1">
-          {weekDaysFull.map((d) => (
-            <div key={d} className="text-center py-2 text-[10px] lg:text-xs font-medium text-muted-foreground">
-              {d}
-            </div>
-          ))}
-        </div>
+    <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white">
+      <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
+        {weekDays.map((dayLabel) => (
+          <div key={dayLabel} className="py-3 text-center text-[10px] font-medium text-slate-400 lg:text-xs">
+            {dayLabel}
+          </div>
+        ))}
+      </div>
 
-        {/* Grid do calendário */}
-        <div className="grid grid-cols-7">
-          {days.map((d) => {
-            const dayAppointments = getAppointmentsForDay(d);
-            const isCurrentMonth = isSameMonth(d, currentDate);
-            const isToday = isSameDay(d, new Date());
-            const maxVisibleMobile = 1;
-            const maxVisibleDesktop = 3;
+      <div className="grid grid-cols-7">
+        {days.map((currentDay) => {
+          const dayAppointments = getAppointmentsForDay(currentDay);
+          const isCurrentMonth = isSameMonth(currentDay, currentDate);
+          const isToday = isSameDay(currentDay, new Date());
+          const maxVisibleDesktop = 3;
 
-            return (
-              <div
-                key={d.toISOString()}
-                className={`min-h-16 lg:min-h-24 border border-border/30 lg:border-border p-0.5 lg:p-1 cursor-pointer transition-colors ${
-                  isCurrentMonth ? 'bg-background' : 'bg-muted/30'
-                } ${isToday ? 'border-primary' : ''} hover:bg-accent/30`}
-                onClick={() => onDateClick?.(d)}
-              >
-                <div className="flex items-center justify-center lg:justify-start mb-0.5 lg:mb-1">
-                  <span
-                    className={`text-xs lg:text-sm font-medium ${
-                      isToday
-                        ? 'bg-primary text-primary-foreground w-5 h-5 lg:w-6 lg:h-6 rounded-full flex items-center justify-center text-[10px] lg:text-sm'
-                        : isCurrentMonth
-                        ? ''
-                        : 'text-muted-foreground'
-                    }`}
-                  >
-                    {format(d, 'd')}
-                  </span>
-                </div>
-
-                {/* Mobile: show dot indicator only */}
-                <div className="lg:hidden flex justify-center gap-0.5 flex-wrap">
-                  {dayAppointments.slice(0, 3).map((apt) => {
-                    const professional = getProfessionalById(apt.professionalId);
-                    return (
-                      <div
-                        key={apt.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAppointmentClick(apt);
-                        }}
-                        className="w-1.5 h-1.5 rounded-full cursor-pointer"
-                        style={{ backgroundColor: professional?.color }}
-                      />
-                    );
-                  })}
-                  {dayAppointments.length > 3 && (
-                    <span className="text-[8px] text-muted-foreground">+{dayAppointments.length - 3}</span>
-                  )}
-                </div>
-
-                {/* Desktop: show appointment details */}
-                <div className="hidden lg:block space-y-0.5">
-                  {dayAppointments.slice(0, maxVisibleDesktop).map((apt) => {
-                    const professional = getProfessionalById(apt.professionalId);
-                    const patient = getPatientById(apt.patientId);
-                    return (
-                      <div
-                        key={apt.id}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAppointmentClick(apt);
-                        }}
-                        className="text-[10px] px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80"
-                        style={{
-                          backgroundColor: `${professional?.color}30`,
-                          color: professional?.color,
-                        }}
-                        title={`${apt.time} - ${patient?.name}`}
-                      >
-                        {apt.time.slice(0, 5)} {patient?.name?.split(' ')[0]}
-                      </div>
-                    );
-                  })}
-                  {dayAppointments.length > maxVisibleDesktop && (
-                    <p className="text-[10px] text-muted-foreground text-center">
-                      +{dayAppointments.length - maxVisibleDesktop} mais
-                    </p>
-                  )}
-                </div>
+          return (
+            <button
+              key={currentDay.toISOString()}
+              type="button"
+              className={`min-h-20 border border-slate-100 p-1 text-left transition hover:bg-slate-50 lg:min-h-28 lg:p-2 ${
+                isCurrentMonth ? 'bg-white' : 'bg-slate-50/70'
+              }`}
+              onClick={() => onDateClick?.(currentDay)}
+            >
+              <div className="mb-1 flex items-center justify-center lg:justify-start">
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium lg:h-7 lg:w-7 lg:text-xs ${
+                    isToday ? 'bg-cyan-700 text-white' : isCurrentMonth ? 'text-slate-900' : 'text-slate-400'
+                  }`}
+                >
+                  {format(currentDay, 'd')}
+                </span>
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+
+              <div className="flex justify-center gap-1 lg:hidden">
+                {dayAppointments.slice(0, 3).map((appointment) => {
+                  const professional = getProfessionalById(appointment.professionalId);
+                  return (
+                    <div
+                      key={appointment.id}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onAppointmentClick(appointment);
+                      }}
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: professional?.color }}
+                    />
+                  );
+                })}
+              </div>
+
+              <div className="hidden space-y-1 lg:block">
+                {dayAppointments.slice(0, maxVisibleDesktop).map((appointment) => {
+                  const professional = getProfessionalById(appointment.professionalId);
+                  const patient = getPatientById(appointment.patientId);
+                  return (
+                    <div
+                      key={appointment.id}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onAppointmentClick(appointment);
+                      }}
+                      className="truncate rounded-md px-1.5 py-1 text-[10px]"
+                      style={{
+                        backgroundColor: `${professional?.color}18`,
+                        color: professional?.color,
+                      }}
+                      title={`${appointment.time} - ${patient?.name}`}
+                    >
+                      {appointment.time.slice(0, 5)} {patient?.name?.split(' ')[0]}
+                    </div>
+                  );
+                })}
+                {dayAppointments.length > maxVisibleDesktop && (
+                  <p className="text-center text-[10px] text-slate-400">+{dayAppointments.length - maxVisibleDesktop}</p>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

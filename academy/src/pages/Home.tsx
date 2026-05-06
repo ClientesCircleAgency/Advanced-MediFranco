@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { SEO } from '@/components/SEO'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { CourseCard } from '@/components/CourseCard'
@@ -12,6 +13,11 @@ export default function Home() {
 
     return (
         <div className="flex flex-col min-h-screen">
+            <SEO
+                title="MediFranco Academy — Cursos Online para Profissionais de Saúde"
+                description="Desenvolva as suas competências com cursos criados por especialistas da MediFranco. Formação online certificada em oftalmologia e medicina dentária."
+                path="/"
+            />
             <Header />
 
             {/* Hero with brand gradient */}

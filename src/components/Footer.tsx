@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Linkedin } from 'lucide-react';
 import logo from '@/assets/logo-medifranco-v4.png';
 
@@ -47,19 +48,21 @@ export function Footer() {
             <h4 className="font-semibold text-lg mb-5">Links Rápidos</h4>
             <ul className="space-y-3">
               {[
-                { label: 'Início', href: '#hero' },
-                { label: 'Sobre Nós', href: '#sobre' },
-                { label: 'Serviços', href: '#servicos' },
-                { label: 'Testemunhos', href: '#testemunhos' },
-                { label: 'Contactos', href: '#contactos' },
+                { label: 'Início', href: '/' },
+                { label: 'Sobre Nós', href: '/sobre-nos' },
+                { label: 'Equipa', href: '/equipa' },
+                { label: 'Blog', href: '/blog' },
+                { label: 'Contactos', href: '/contactos' },
+                { label: 'Consultas Online', href: '/consultas-online' },
+                { label: 'Área de Cliente', href: '/area-cliente' },
               ].map((link) => (
                 <li key={link.href}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.href}
                     className="text-background/70 hover:text-primary transition-colors text-sm"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -69,18 +72,40 @@ export function Footer() {
           <div className="hidden md:block">
             <h4 className="font-semibold text-lg mb-5">Serviços</h4>
             <ul className="space-y-3">
-              {[
-                'Ortodontia',
-                'Implantologia',
-                'Branqueamento',
-                'Cirurgia Refrativa',
-                'Cataratas',
-                'Glaucoma',
-              ].map((service) => (
-                <li key={service}>
-                  <span className="text-background/70 text-sm">{service}</span>
-                </li>
-              ))}
+              <li>
+                <Link
+                  to="/medicina-dentaria"
+                  className="text-background/70 hover:text-primary transition-colors text-sm"
+                >
+                  Medicina Dentária
+                </Link>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Ortodontia</span>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Implantologia</span>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Branqueamento</span>
+              </li>
+              <li className="mt-4">
+                <Link
+                  to="/oftalmologia"
+                  className="text-background/70 hover:text-primary transition-colors text-sm"
+                >
+                  Oftalmologia
+                </Link>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Cirurgia Refrativa</span>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Cataratas</span>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Glaucoma</span>
+              </li>
             </ul>
           </div>
 

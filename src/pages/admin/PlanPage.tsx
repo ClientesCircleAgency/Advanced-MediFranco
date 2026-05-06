@@ -1,9 +1,7 @@
 import { ArrowRight, Check, Zap, Crown, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-
-const currentPlan = 'advanced';
+import { PageHeader } from '@/components/admin/PageHeader';
+import { cn } from '@/lib/utils';
 
 const planFeatures = {
   advanced: [
@@ -25,116 +23,83 @@ const planFeatures = {
   ],
 };
 
+const shellCardClassName =
+  'rounded-[1.75rem] border border-slate-200/70 bg-white/90 shadow-xl shadow-cyan-950/5 backdrop-blur-sm';
+
 export default function PlanPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
-      <div className="max-w-4xl mx-auto px-4 py-12 lg:py-20">
-        {/* Logo */}
-        <div className="flex justify-center mb-12">
-          <img 
-            src="/logo-medifranco.png" 
-            alt="MediFranco" 
-            className="h-16 lg:h-20 object-contain"
-          />
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="MediFranco Growth Layer"
+        title="Plano"
+        subtitle="Comparação simples e elegante entre o plano atual e a próxima camada de capacidades."
+      />
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <div className={cn(shellCardClassName, 'relative overflow-hidden p-6 lg:p-8')}>
+          <div className="absolute left-0 right-0 top-0 h-1 bg-cyan-500" />
+          <div className="mb-6 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-700">
+              <Zap className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-500">Plano atual</p>
+              <h3 className="font-display text-2xl font-semibold text-slate-950">Advanced</h3>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {planFeatures.advanced.map((feature) => (
+              <div key={feature} className="flex items-center gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm">
+                  <Check className="h-3.5 w-3.5 text-slate-600" />
+                </div>
+                <span className="text-sm text-slate-700">{feature}</span>
+              </div>
+            ))}
+          </div>
+
+          <Button variant="outline" className="mt-6 w-full rounded-2xl border-slate-200 bg-slate-50" disabled>
+            Plano atual
+          </Button>
         </div>
 
-        {/* Header */}
-        <div className="text-center mb-12 lg:mb-16">
-          <Badge variant="outline" className="mb-4 px-4 py-1.5 bg-primary/5 border-primary/20 text-primary">
-            <Zap className="h-3.5 w-3.5 mr-1.5" />
-            Plano Atual: Advanced
-          </Badge>
-          <h1 className="text-3xl lg:text-5xl font-bold text-foreground mb-4">
-            Eleve a sua clínica ao próximo nível
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Desbloqueie todo o potencial do DentalHub com funcionalidades premium
-          </p>
-        </div>
+        <div className={cn(shellCardClassName, 'relative overflow-hidden border-cyan-200 p-6 lg:p-8')}>
+          <div className="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-cyan-500 via-teal-500 to-violet-500" />
+          <div className="absolute right-6 top-0 rounded-b-xl bg-slate-950 px-3 py-1 text-xs font-medium text-white">
+            <span className="flex items-center gap-1">
+              <Sparkles className="h-3 w-3" />
+              Recomendado
+            </span>
+          </div>
 
-        {/* Plan Comparison */}
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-12">
-          {/* Current Plan */}
-          <Card className="p-6 lg:p-8 border-border bg-card/50 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500" />
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Plano atual</p>
-                <h3 className="text-xl font-bold text-foreground">Advanced</h3>
-              </div>
+          <div className="mb-6 mt-3 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+              <Crown className="h-6 w-6" />
             </div>
-            
-            <ul className="space-y-3 mb-6">
-              {planFeatures.advanced.map((feature, i) => (
-                <li key={i} className="flex items-center gap-3 text-muted-foreground">
-                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    <Check className="h-3 w-3 text-muted-foreground" />
-                  </div>
-                  <span className="text-sm">{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Button variant="outline" className="w-full" disabled>
-              Plano atual
-            </Button>
-          </Card>
-
-          {/* Premium Plan */}
-          <Card className="p-6 lg:p-8 border-primary/30 bg-gradient-to-b from-primary/5 to-transparent relative overflow-hidden ring-1 ring-primary/20">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-purple-500 to-primary" />
-            
-            {/* Popular badge */}
-            <div className="absolute -top-px right-6">
-              <div className="bg-gradient-to-r from-primary to-purple-500 text-white text-xs font-medium px-3 py-1 rounded-b-lg flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
-                Recomendado
-              </div>
+            <div>
+              <p className="text-sm text-slate-500">Upgrade para</p>
+              <h3 className="font-display text-2xl font-semibold text-slate-950">Premium</h3>
             </div>
+          </div>
 
-            <div className="flex items-center gap-3 mb-6 mt-2">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center">
-                <Crown className="h-6 w-6 text-purple-600" />
+          <div className="space-y-3">
+            {planFeatures.premium.map((feature) => (
+              <div key={feature} className="flex items-center gap-3 rounded-[1.25rem] border border-cyan-100 bg-cyan-50/50 px-4 py-3">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm">
+                  <Check className="h-3.5 w-3.5 text-cyan-700" />
+                </div>
+                <span className="text-sm text-slate-700">{feature}</span>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Upgrade para</p>
-                <h3 className="text-xl font-bold text-foreground">Premium</h3>
-              </div>
-            </div>
-            
-            <ul className="space-y-3 mb-6">
-              {planFeatures.premium.map((feature, i) => (
-                <li key={i} className="flex items-center gap-3 text-foreground">
-                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Check className="h-3 w-3 text-primary" />
-                  </div>
-                  <span className="text-sm">{feature}</span>
-                </li>
-              ))}
-            </ul>
+            ))}
+          </div>
 
-            <Button className="w-full gap-2 bg-gradient-to-r from-primary to-purple-500 hover:from-primary/90 hover:to-purple-500/90 shadow-lg">
-              Fazer Upgrade
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+          <Button className="mt-6 w-full rounded-2xl bg-slate-950 text-white hover:bg-slate-900">
+            Fazer upgrade
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
 
-            <p className="text-xs text-muted-foreground text-center mt-4">
-              Sem compromisso. Cancele quando quiser.
-            </p>
-          </Card>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            Precisa de ajuda? Contacte o nosso suporte em{' '}
-            <a href="mailto:suporte@dentalhub.pt" className="text-primary hover:underline">
-              suporte@dentalhub.pt
-            </a>
-          </p>
+          <p className="mt-4 text-center text-xs text-slate-500">Sem compromisso. Cancele quando quiser.</p>
         </div>
       </div>
     </div>

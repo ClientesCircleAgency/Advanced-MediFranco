@@ -7,6 +7,7 @@ export type ConsultationTypeRow = Database['public']['Tables']['consultation_typ
 export type RoomRow = Database['public']['Tables']['rooms']['Row'];
 export type PatientRow = Database['public']['Tables']['patients']['Row'];
 export type AppointmentRow = Database['public']['Tables']['appointments']['Row'];
+export type OnlineAppointmentRow = Database['public']['Tables']['online_appointments']['Row'];
 export type WaitlistRow = Database['public']['Tables']['waitlist']['Row'];
 export type ClinicSettingsRow = Database['public']['Tables']['clinic_settings']['Row'];
 
@@ -17,6 +18,7 @@ export type ConsultationTypeInsert = Database['public']['Tables']['consultation_
 export type RoomInsert = Database['public']['Tables']['rooms']['Insert'];
 export type PatientInsert = Database['public']['Tables']['patients']['Insert'];
 export type AppointmentInsert = Database['public']['Tables']['appointments']['Insert'];
+export type OnlineAppointmentInsert = Database['public']['Tables']['online_appointments']['Insert'];
 export type WaitlistInsert = Database['public']['Tables']['waitlist']['Insert'];
 export type ClinicSettingsInsert = Database['public']['Tables']['clinic_settings']['Insert'];
 
@@ -27,10 +29,12 @@ export type ConsultationTypeUpdate = Database['public']['Tables']['consultation_
 export type RoomUpdate = Database['public']['Tables']['rooms']['Update'];
 export type PatientUpdate = Database['public']['Tables']['patients']['Update'];
 export type AppointmentUpdate = Database['public']['Tables']['appointments']['Update'];
+export type OnlineAppointmentUpdate = Database['public']['Tables']['online_appointments']['Update'];
 export type WaitlistUpdate = Database['public']['Tables']['waitlist']['Update'];
 export type ClinicSettingsUpdate = Database['public']['Tables']['clinic_settings']['Update'];
 
 // Enum types
 export type AppointmentStatus = Database['public']['Enums']['appointment_status'];
+export type OnlineAppointmentStatus = Database['public']['Enums']['online_appointment_status'];
 export type WaitlistPriority = Database['public']['Enums']['waitlist_priority'];
 export type TimePreference = Database['public']['Enums']['time_preference'];

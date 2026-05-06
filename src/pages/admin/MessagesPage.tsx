@@ -4,10 +4,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { PageHeader } from '@/components/admin/PageHeader';
 import { cn } from '@/lib/utils';
 import { useContactMessages, useUpdateContactMessageStatus } from '@/hooks/useContactMessages';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
+
+const shellCardClassName =
+  'rounded-[1.75rem] border border-slate-200/70 bg-white/90 shadow-xl shadow-cyan-950/5 backdrop-blur-sm';
 
 export default function MessagesPage() {
   const { data: messages, isLoading } = useContactMessages();
@@ -15,226 +19,210 @@ export default function MessagesPage() {
   const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const selectedMessage = messages?.find(m => m.id === selectedMessageId) || null;
+  const selectedMessage = messages?.find((message) => message.id === selectedMessageId) || null;
 
   useEffect(() => {
     if (selectedMessage && selectedMessage.status === 'new') {
       updateStatus({ id: selectedMessage.id, status: 'read' });
     }
-  }, [selectedMessageId, selectedMessage, updateStatus]);
+  }, [selectedMessage, updateStatus]);
 
-  const filteredMessages = messages?.filter((m) =>
-    m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.message.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredMessages =
+    messages?.filter(
+      (message) =>
+        message.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        message.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        message.message.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
 
-  const getInitials = (name: string) => {
-    return name
+  const unreadCount = messages?.filter((message) => message.status === 'new').length || 0;
+
+  const getInitials = (name: string) =>
+    name
       .split(' ')
-      .map((n) => n[0])
+      .map((word) => word[0])
       .join('')
       .slice(0, 2)
       .toUpperCase();
-  };
-
-  const handleBack = () => {
-    setSelectedMessageId(null);
-  };
-
-  const handleCall = (phone?: string) => {
-    if (phone) {
-      window.location.href = `tel:${phone}`;
-    }
-  };
-
-  const handleEmail = (email: string) => {
-    window.location.href = `mailto:${email}`;
-  };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-background">
-      {/* Lista de mensagens - hidden on mobile when message selected */}
-      <div className={cn(
-        'w-full md:w-80 lg:w-72 xl:w-80 border-r border-border bg-card flex flex-col shrink-0',
-        selectedMessage && 'hidden md:flex'
-      )}>
-        {/* Search */}
-        <div className="p-3 border-b border-border">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Procurar mensagem..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-10 bg-muted/50 border-0 text-sm"
-            />
-          </div>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="MediFranco Inbox Layer"
+        title="Mensagens"
+        subtitle={`${unreadCount} mensagens novas, com leitura mais limpa e melhor foco no conteúdo.`}
+      />
 
-        {/* Messages list */}
-        <ScrollArea className="flex-1">
-          <div>
-            {isLoading ? (
-              <div className="p-6 text-center text-muted-foreground text-sm">
-                A carregar mensagens...
-              </div>
-            ) : filteredMessages.length === 0 ? (
-              <div className="p-6 text-center text-muted-foreground text-sm">
-                Sem mensagens
-              </div>
-            ) : (
-              filteredMessages.map((message) => (
-                <button
-                  key={message.id}
-                  onClick={() => setSelectedMessageId(message.id)}
-                  className={cn(
-                    'w-full px-3 py-3 flex items-center gap-3 text-left transition-colors hover:bg-accent/50 border-b border-border/50',
-                    selectedMessageId === message.id && 'bg-accent border-l-4 border-l-primary'
-                  )}
-                >
-                  <Avatar className="h-10 w-10 shrink-0">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                      {getInitials(message.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium text-sm text-foreground truncate">
-                        {message.name}
-                      </span>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(message.created_at), 'd MMM', { locale: pt })}
-                        </span>
-                        {message.status === 'new' && (
-                          <div className="w-2 h-2 rounded-full bg-destructive" />
-                        )}
-                      </div>
-                    </div>
-                    <p className={cn(
-                      'text-sm truncate mt-0.5',
-                      message.status === 'new' ? 'text-foreground' : 'text-muted-foreground'
-                    )}>
-                      Novo Contacto
-                    </p>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </ScrollArea>
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className={cn(shellCardClassName, 'p-5')}>
+          <p className="text-sm text-slate-500">Inbox total</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{messages?.length || 0}</p>
+          <p className="mt-2 text-sm text-slate-500">Todas as mensagens recebidas do site principal.</p>
+        </div>
+        <div className={cn(shellCardClassName, 'p-5')}>
+          <p className="text-sm text-slate-500">Não lidas</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{unreadCount}</p>
+          <p className="mt-2 text-sm text-slate-500">Mensagens que ainda exigem atenção da equipa.</p>
+        </div>
+        <div className={cn(shellCardClassName, 'p-5')}>
+          <p className="text-sm text-slate-500">Pesquisa ativa</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{filteredMessages.length}</p>
+          <p className="mt-2 text-sm text-slate-500">Resultados correspondentes ao filtro atual.</p>
+        </div>
       </div>
 
-      {/* Área de visualização da mensagem */}
-      {selectedMessage ? (
-        <div className={cn(
-          'flex-1 flex flex-col bg-background min-w-0',
-          !selectedMessage && 'hidden md:flex'
-        )}>
-          {/* Message header */}
-          <div className="bg-card border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden shrink-0"
-                onClick={handleBack}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <Avatar className="h-9 w-9 shrink-0">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                  {getInitials(selectedMessage.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0">
-                <h3 className="font-semibold text-foreground text-sm truncate">{selectedMessage.name}</h3>
-                <p className="text-xs text-muted-foreground truncate">{selectedMessage.email}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {selectedMessage.phone && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 gap-2"
-                  onClick={() => handleCall(selectedMessage.phone)}
-                >
-                  <Phone className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">Ligar</span>
-                </Button>
-              )}
-              <Button
-                size="sm"
-                className="h-8 gap-2"
-                onClick={() => handleEmail(selectedMessage.email)}
-              >
-                <Mail className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Responder</span>
-              </Button>
+      <div className="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+        <div className={cn(shellCardClassName, 'overflow-hidden')}>
+          <div className="border-b border-slate-200 px-5 py-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Procurar mensagem..."
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="h-11 rounded-2xl border-slate-200 bg-slate-50 pl-10"
+              />
             </div>
           </div>
 
-          {/* Message content */}
-          <ScrollArea className="flex-1">
-            <div className="p-6 max-w-3xl">
-              <div className="mb-6">
-                <h2 className="text-xl font-serif italic text-foreground mb-2">
-                  Mensagem de Contacto
-                </h2>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>De: {selectedMessage.name}</span>
-                  <span>•</span>
-                  <span>{format(new Date(selectedMessage.created_at), "d 'de' MMMM 'às' HH:mm", { locale: pt })}</span>
-                </div>
-              </div>
-
-              <div className="prose prose-sm max-w-none">
-                <p className="text-foreground leading-relaxed whitespace-pre-wrap">
-                  {selectedMessage.message}
-                </p>
-              </div>
-
-              {/* Contact details card */}
-              <div className="mt-8 p-4 bg-muted/30 rounded-lg border border-border">
-                <h4 className="font-medium text-sm text-foreground mb-3">Detalhes de Contacto</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <a
-                      href={`mailto:${selectedMessage.email}`}
-                      className="text-primary hover:underline"
-                    >
-                      {selectedMessage.email}
-                    </a>
-                  </div>
-                  {selectedMessage.phone && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <a
-                        href={`tel:${selectedMessage.phone}`}
-                        className="text-primary hover:underline"
-                      >
-                        {selectedMessage.phone}
-                      </a>
+          <ScrollArea className="h-[580px]">
+            <div className="p-3">
+              {isLoading ? (
+                <div className="p-6 text-center text-sm text-slate-500">A carregar mensagens...</div>
+              ) : filteredMessages.length === 0 ? (
+                <div className="p-6 text-center text-sm text-slate-500">Sem mensagens.</div>
+              ) : (
+                filteredMessages.map((message) => (
+                  <button
+                    key={message.id}
+                    type="button"
+                    onClick={() => setSelectedMessageId(message.id)}
+                    className={cn(
+                      'mb-2 w-full rounded-[1.25rem] border p-3 text-left transition',
+                      selectedMessageId === message.id
+                        ? 'border-cyan-200 bg-cyan-50/70 shadow-sm'
+                        : 'border-slate-200 bg-white hover:border-cyan-200 hover:shadow-sm'
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-10 w-10 shrink-0">
+                        <AvatarFallback className="bg-slate-950 text-xs font-semibold text-white">
+                          {getInitials(message.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-sm font-medium text-slate-950">{message.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-slate-400">{format(new Date(message.created_at), 'd MMM', { locale: pt })}</span>
+                            {message.status === 'new' && <div className="h-2 w-2 rounded-full bg-cyan-500" />}
+                          </div>
+                        </div>
+                        <p className="mt-1 truncate text-sm text-slate-500">{message.message}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
+                  </button>
+                ))
+              )}
             </div>
           </ScrollArea>
         </div>
-      ) : (
-        <div className="hidden md:flex flex-1 items-center justify-center bg-muted/30">
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <MailOpen className="h-8 w-8 text-muted-foreground" />
+
+        <div className={cn(shellCardClassName, 'overflow-hidden')}>
+          {selectedMessage ? (
+            <>
+              <div className="border-b border-slate-200 px-5 py-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <Button variant="ghost" size="icon" className="rounded-2xl xl:hidden" onClick={() => setSelectedMessageId(null)}>
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarFallback className="bg-slate-950 text-xs font-semibold text-white">
+                        {getInitials(selectedMessage.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <h3 className="truncate text-base font-semibold text-slate-950">{selectedMessage.name}</h3>
+                      <p className="truncate text-sm text-slate-500">{selectedMessage.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedMessage.phone && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-2xl border-slate-200 bg-slate-50"
+                        onClick={() => {
+                          window.location.href = `tel:${selectedMessage.phone}`;
+                        }}
+                      >
+                        <Phone className="mr-2 h-3.5 w-3.5" />
+                        Ligar
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      className="rounded-2xl"
+                      onClick={() => {
+                        window.location.href = `mailto:${selectedMessage.email}`;
+                      }}
+                    >
+                      <Mail className="mr-2 h-3.5 w-3.5" />
+                      Responder
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <ScrollArea className="h-[580px]">
+                <div className="max-w-3xl p-6">
+                  <div className="mb-6">
+                    <h2 className="font-display text-2xl font-semibold text-slate-950">Mensagem de contacto</h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                      Recebida em {format(new Date(selectedMessage.created_at), "d 'de' MMMM 'às' HH:mm", { locale: pt })}
+                    </p>
+                  </div>
+
+                  <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-5">
+                    <p className="whitespace-pre-wrap leading-7 text-slate-700">{selectedMessage.message}</p>
+                  </div>
+
+                  <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white p-5">
+                    <h4 className="text-sm font-semibold text-slate-950">Detalhes de contacto</h4>
+                    <div className="mt-3 space-y-3 text-sm">
+                      <div className="flex items-center gap-2 text-slate-600">
+                        <Mail className="h-4 w-4 text-slate-400" />
+                        <a href={`mailto:${selectedMessage.email}`} className="hover:text-cyan-700 hover:underline">
+                          {selectedMessage.email}
+                        </a>
+                      </div>
+                      {selectedMessage.phone && (
+                        <div className="flex items-center gap-2 text-slate-600">
+                          <Phone className="h-4 w-4 text-slate-400" />
+                          <a href={`tel:${selectedMessage.phone}`} className="hover:text-cyan-700 hover:underline">
+                            {selectedMessage.phone}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </ScrollArea>
+            </>
+          ) : (
+            <div className="flex h-[680px] items-center justify-center bg-slate-50/70">
+              <div className="text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+                  <MailOpen className="h-7 w-7 text-slate-400" />
+                </div>
+                <p className="text-sm font-medium text-slate-700">Seleciona uma mensagem para visualizar</p>
+                <p className="mt-1 text-sm text-slate-500">A leitura detalhada aparece aqui com mais espaço e menos ruído.</p>
+              </div>
             </div>
-            <p className="text-muted-foreground">Selecione uma mensagem para visualizar</p>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

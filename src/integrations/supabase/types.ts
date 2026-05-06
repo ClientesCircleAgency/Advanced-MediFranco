@@ -65,49 +65,114 @@ export type Database = {
         }
         Relationships: []
       }
+      appointment_events: {
+        Row: {
+          actor_id: string | null
+          appointment_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          new_status: Database["public"]["Enums"]["appointment_status"] | null
+          previous_status: Database["public"]["Enums"]["appointment_status"] | null
+          reason: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          appointment_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          new_status?: Database["public"]["Enums"]["appointment_status"] | null
+          previous_status?: Database["public"]["Enums"]["appointment_status"] | null
+          reason?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          appointment_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          new_status?: Database["public"]["Enums"]["appointment_status"] | null
+          previous_status?: Database["public"]["Enums"]["appointment_status"] | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_events_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
+          cancellation_reason: string | null
           consultation_type_id: string
           created_at: string
           date: string
           duration: number
+          final_notes: string | null
+          finalized_at: string | null
           id: string
+          is_rescheduled: boolean
           notes: string | null
           patient_id: string
           professional_id: string
+          review_opt_out: boolean
           room_id: string | null
           specialty_id: string
           status: Database["public"]["Enums"]["appointment_status"]
+          status_changed_at: string | null
+          status_changed_by: string | null
           time: string
           updated_at: string
         }
         Insert: {
+          cancellation_reason?: string | null
           consultation_type_id: string
           created_at?: string
           date: string
           duration?: number
+          final_notes?: string | null
+          finalized_at?: string | null
           id?: string
+          is_rescheduled?: boolean
           notes?: string | null
           patient_id: string
           professional_id: string
+          review_opt_out?: boolean
           room_id?: string | null
           specialty_id: string
           status?: Database["public"]["Enums"]["appointment_status"]
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           time: string
           updated_at?: string
         }
         Update: {
+          cancellation_reason?: string | null
           consultation_type_id?: string
           created_at?: string
           date?: string
           duration?: number
+          final_notes?: string | null
+          finalized_at?: string | null
           id?: string
+          is_rescheduled?: boolean
           notes?: string | null
           patient_id?: string
           professional_id?: string
+          review_opt_out?: boolean
           room_id?: string | null
           specialty_id?: string
           status?: Database["public"]["Enums"]["appointment_status"]
+          status_changed_at?: string | null
+          status_changed_by?: string | null
           time?: string
           updated_at?: string
         }
@@ -223,6 +288,130 @@ export type Database = {
           status?: string
         }
         Relationships: []
+      }
+      online_appointments: {
+        Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          confirmed_at: string | null
+          consultation_type_id: string | null
+          created_at: string
+          date: string
+          duration: number
+          ended_at: string | null
+          final_notes: string | null
+          finalized_at: string | null
+          id: string
+          notes: string | null
+          patient_feedback: string | null
+          patient_rating: number | null
+          patient_user_id: string
+          payment_status: string
+          prescription: string | null
+          price_cents: number
+          professional_id: string
+          reason: string | null
+          review_opt_out: boolean
+          specialty_id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["online_appointment_status"]
+          stripe_checkout_session_id: string | null
+          stripe_payment_intent_id: string | null
+          time: string
+          updated_at: string
+          video_provider: string
+          video_room_id: string | null
+          video_room_url: string | null
+        }
+        Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          confirmed_at?: string | null
+          consultation_type_id?: string | null
+          created_at?: string
+          date: string
+          duration?: number
+          ended_at?: string | null
+          final_notes?: string | null
+          finalized_at?: string | null
+          id?: string
+          notes?: string | null
+          patient_feedback?: string | null
+          patient_rating?: number | null
+          patient_user_id: string
+          payment_status?: string
+          prescription?: string | null
+          price_cents?: number
+          professional_id: string
+          reason?: string | null
+          review_opt_out?: boolean
+          specialty_id: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["online_appointment_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          time: string
+          updated_at?: string
+          video_provider?: string
+          video_room_id?: string | null
+          video_room_url?: string | null
+        }
+        Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          confirmed_at?: string | null
+          consultation_type_id?: string | null
+          created_at?: string
+          date?: string
+          duration?: number
+          ended_at?: string | null
+          final_notes?: string | null
+          finalized_at?: string | null
+          id?: string
+          notes?: string | null
+          patient_feedback?: string | null
+          patient_rating?: number | null
+          patient_user_id?: string
+          payment_status?: string
+          prescription?: string | null
+          price_cents?: number
+          professional_id?: string
+          reason?: string | null
+          review_opt_out?: boolean
+          specialty_id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["online_appointment_status"]
+          stripe_checkout_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          time?: string
+          updated_at?: string
+          video_provider?: string
+          video_room_id?: string | null
+          video_room_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "online_appointments_consultation_type_id_fkey"
+            columns: ["consultation_type_id"]
+            isOneToOne: false
+            referencedRelation: "consultation_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "online_appointments_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "online_appointments_specialty_id_fkey"
+            columns: ["specialty_id"]
+            isOneToOne: false
+            referencedRelation: "specialties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {
@@ -495,6 +684,17 @@ export type Database = {
         }
         Returns: boolean
       }
+      transition_appointment_status: {
+        Args: {
+          p_appointment_id: string
+          p_final_notes?: string | null
+          p_metadata?: Json
+          p_new_status: Database["public"]["Enums"]["appointment_status"]
+          p_reason?: string | null
+          p_review_opt_out?: boolean
+        }
+        Returns: Database["public"]["Tables"]["appointments"]["Row"]
+      }
     }
     Enums: {
       app_role: "admin" | "user"
@@ -507,6 +707,16 @@ export type Database = {
         | "cancelled"
         | "no_show"
         | "pre_confirmed"
+      online_appointment_status:
+        | "scheduled"
+        | "pre_confirmed"
+        | "confirmed"
+        | "paid"
+        | "waiting"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+        | "no_show"
       time_preference: "morning" | "afternoon" | "any"
       waitlist_priority: "low" | "medium" | "high"
     }
@@ -646,6 +856,17 @@ export const Constants = {
         "cancelled",
         "no_show",
         "pre_confirmed",
+      ],
+      online_appointment_status: [
+        "scheduled",
+        "pre_confirmed",
+        "confirmed",
+        "paid",
+        "waiting",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "no_show",
       ],
       time_preference: ["morning", "afternoon", "any"],
       waitlist_priority: ["low", "medium", "high"],

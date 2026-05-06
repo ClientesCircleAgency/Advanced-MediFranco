@@ -1,6 +1,5 @@
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Card, CardContent } from '@/components/ui/card';
 import { useClinic } from '@/context/ClinicContext';
 import type { ClinicAppointment } from '@/types/clinic';
 
@@ -20,21 +19,18 @@ export function WeekView({
   onAppointmentClick,
 }: WeekViewProps) {
   const { appointments, getPatientById, getProfessionalById } = useClinic();
-
-  // Calcular dias da semana (segunda a domingo)
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekDays = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 
-  // Filtrar consultas por semana
   const getAppointmentsForDay = (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
     return appointments
-      .filter((apt) => {
-        if (apt.date !== dateStr) return false;
-        if (selectedProfessional !== 'all' && apt.professionalId !== selectedProfessional) return false;
-        if (selectedStatus !== 'all' && apt.status !== selectedStatus) return false;
+      .filter((appointment) => {
+        if (appointment.date !== dateStr) return false;
+        if (selectedProfessional !== 'all' && appointment.professionalId !== selectedProfessional) return false;
+        if (selectedStatus !== 'all' && appointment.status !== selectedStatus) return false;
         if (searchQuery) {
-          const patient = getPatientById(apt.patientId);
+          const patient = getPatientById(appointment.patientId);
           const searchLower = searchQuery.toLowerCase();
           if (
             !patient?.name.toLowerCase().includes(searchLower) &&
@@ -50,66 +46,54 @@ export function WeekView({
   };
 
   return (
-    <Card className="border-0 shadow-none lg:border lg:shadow-sm">
-      <CardContent className="p-0 lg:p-2">
-        <div className="grid grid-cols-7">
-          {/* Header dos dias */}
-          {weekDays.map((day) => (
-            <div
-              key={day.toISOString()}
-              className={`text-center py-2 px-0.5 lg:p-2 lg:rounded-t-md ${
-                isSameDay(day, new Date()) ? 'bg-primary/10' : 'bg-muted/50'
-              }`}
-            >
-              <p className="text-[10px] lg:text-xs font-medium text-muted-foreground uppercase">
-                {format(day, 'EEE', { locale: pt })}
-              </p>
-              <p
-                className={`text-base lg:text-lg font-bold ${
-                  isSameDay(day, new Date()) ? 'text-primary' : ''
-                }`}
-              >
-                {format(day, 'd')}
-              </p>
-            </div>
-          ))}
+    <div className="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white">
+      <div className="grid grid-cols-7">
+        {weekDays.map((day) => (
+          <div
+            key={day.toISOString()}
+            className={`px-1 py-3 text-center lg:px-2 ${isSameDay(day, new Date()) ? 'bg-cyan-50' : 'bg-slate-50'}`}
+          >
+            <p className="text-[10px] font-medium uppercase text-slate-400 lg:text-xs">{format(day, 'EEE', { locale: pt })}</p>
+            <p className={`mt-1 text-base font-semibold lg:text-lg ${isSameDay(day, new Date()) ? 'text-cyan-700' : 'text-slate-900'}`}>
+              {format(day, 'd')}
+            </p>
+          </div>
+        ))}
 
-          {/* Conteúdo dos dias */}
-          {weekDays.map((day) => {
-            const dayAppointments = getAppointmentsForDay(day);
-            return (
-              <div
-                key={`content-${day.toISOString()}`}
-                className="min-h-32 lg:min-h-48 border border-border/50 lg:border-border lg:rounded-b-md p-0.5 lg:p-1 space-y-0.5 lg:space-y-1"
-              >
-                {dayAppointments.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-4">-</p>
-                ) : (
-                  dayAppointments.map((apt) => {
-                    const patient = getPatientById(apt.patientId);
-                    const professional = getProfessionalById(apt.professionalId);
-                    return (
-                      <div
-                        key={apt.id}
-                        onClick={() => onAppointmentClick(apt)}
-                        className="p-1 lg:p-1.5 rounded text-[10px] lg:text-xs cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
-                        style={{
-                          backgroundColor: `${professional?.color}20`,
-                          borderLeft: `2px solid ${professional?.color}`,
-                        }}
-                      >
-                        <p className="font-medium">{apt.time.slice(0, 5)}</p>
-                        <p className="truncate hidden lg:block">{patient?.name}</p>
-                        <p className="truncate lg:hidden">{patient?.name?.split(' ')[0]?.charAt(0)}.</p>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+        {weekDays.map((day) => {
+          const dayAppointments = getAppointmentsForDay(day);
+          return (
+            <div
+              key={`content-${day.toISOString()}`}
+              className="min-h-36 space-y-2 border border-slate-100 p-2 lg:min-h-56 lg:p-3"
+            >
+              {dayAppointments.length === 0 ? (
+                <div className="flex h-full items-center justify-center rounded-[1rem] bg-slate-50 text-xs text-slate-400">Sem carga</div>
+              ) : (
+                dayAppointments.map((appointment) => {
+                  const patient = getPatientById(appointment.patientId);
+                  const professional = getProfessionalById(appointment.professionalId);
+                  return (
+                    <button
+                      key={appointment.id}
+                      type="button"
+                      onClick={() => onAppointmentClick(appointment)}
+                      className="w-full rounded-[1rem] p-2 text-left text-[11px] transition hover:shadow-sm lg:text-xs"
+                      style={{
+                        backgroundColor: `${professional?.color}18`,
+                        borderLeft: `3px solid ${professional?.color}`,
+                      }}
+                    >
+                      <p className="font-medium text-slate-900">{appointment.time.slice(0, 5)}</p>
+                      <p className="mt-1 truncate text-slate-600">{patient?.name}</p>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

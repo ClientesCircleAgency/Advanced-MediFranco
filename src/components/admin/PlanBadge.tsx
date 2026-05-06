@@ -14,27 +14,30 @@ interface PlanBadgeProps {
   collapsed?: boolean;
 }
 
-const planConfig: Record<PlanType, { label: string; icon: React.ElementType; color: string; bgColor: string; borderColor: string }> = {
+const planConfig: Record<
+  PlanType,
+  { label: string; icon: React.ElementType; color: string; bgColor: string; borderColor: string }
+> = {
   basic: {
     label: 'Basic',
     icon: Star,
-    color: 'text-muted-foreground',
-    bgColor: 'bg-muted',
-    borderColor: 'border-muted-foreground/20',
+    color: 'text-slate-300',
+    bgColor: 'bg-white/5',
+    borderColor: 'border-white/10',
   },
   advanced: {
     label: 'Advanced',
     icon: Zap,
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-amber-200',
+    color: 'text-cyan-200',
+    bgColor: 'bg-cyan-400/10',
+    borderColor: 'border-cyan-400/20',
   },
   premium: {
     label: 'Premium',
     icon: Crown,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-50',
-    borderColor: 'border-purple-200',
+    color: 'text-violet-200',
+    bgColor: 'bg-violet-400/10',
+    borderColor: 'border-violet-400/20',
   },
 };
 
@@ -49,7 +52,7 @@ export function PlanBadge({ plan, collapsed = false }: PlanBadgeProps) {
           <Link
             to="/admin/plano"
             className={cn(
-              'flex items-center justify-center w-10 h-10 rounded-xl border transition-all hover:scale-105',
+              'flex h-10 w-10 items-center justify-center rounded-2xl border transition-all hover:scale-105',
               config.bgColor,
               config.borderColor,
               config.color
@@ -60,7 +63,7 @@ export function PlanBadge({ plan, collapsed = false }: PlanBadgeProps) {
         </TooltipTrigger>
         <TooltipContent side="right">
           <p>Plano {config.label}</p>
-          <p className="text-xs text-muted-foreground">Clique para ver opções</p>
+          <p className="text-xs text-muted-foreground">Clique para ver opcoes</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -70,17 +73,17 @@ export function PlanBadge({ plan, collapsed = false }: PlanBadgeProps) {
     <Link
       to="/admin/plano"
       className={cn(
-        'flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all hover:scale-[1.02]',
+        'flex items-center gap-3 rounded-[1.5rem] border px-3 py-3 transition-all hover:border-cyan-400/25 hover:bg-white/7',
         config.bgColor,
         config.borderColor
       )}
     >
-      <div className={cn('flex items-center justify-center w-8 h-8 rounded-lg', config.color)}>
+      <div className={cn('flex h-9 w-9 items-center justify-center rounded-2xl bg-slate-950/40', config.color)}>
         <Icon className="h-5 w-5" />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-muted-foreground">Plano atual</p>
-        <p className={cn('font-semibold text-sm', config.color)}>{config.label}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-slate-400">Plano atual</p>
+        <p className={cn('text-sm font-semibold', config.color)}>{config.label}</p>
       </div>
     </Link>
   );

@@ -1,32 +1,75 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Check, X, Clock, Eye, Smile, Search, Calendar, Phone, Mail, User, MessageCircle, CalendarPlus } from 'lucide-react';
+import {
+  Calendar,
+  CalendarPlus,
+  Eye,
+  Mail,
+  MessageCircle,
+  Phone,
+  Search,
+  Smile,
+  User,
+  X,
+} from 'lucide-react';
 import { PageHeader } from '@/components/admin/PageHeader';
-import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { useAppointmentRequests, useUpdateAppointmentRequestStatus, type AppointmentRequest } from '@/hooks/useAppointmentRequests';
 import { useContactMessages, useUpdateContactMessageStatus, type ContactMessage } from '@/hooks/useContactMessages';
 import { usePatients, useAddPatient } from '@/hooks/usePatients';
 import { useAddAppointment } from '@/hooks/useAppointments';
-
 import { useSpecialties } from '@/hooks/useSpecialties';
 import { useConsultationTypes } from '@/hooks/useConsultationTypes';
 import { useProfessionals } from '@/hooks/useProfessionals';
 import { SuggestAlternativesModal } from '@/components/admin/SuggestAlternativesModal';
-import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+
+function shellCardClassName(interactive = false) {
+  return cn(
+    'rounded-[1.75rem] border border-slate-200/70 bg-white/90 shadow-xl shadow-cyan-950/5 backdrop-blur-sm',
+    interactive && 'transition hover:border-cyan-200 hover:shadow-lg'
+  );
+}
+
+function requestStatusBadge(status: AppointmentRequest['status']) {
+  const styles: Record<AppointmentRequest['status'], string> = {
+    pending: 'border-amber-300 bg-amber-50 text-amber-700',
+    approved: 'border-emerald-300 bg-emerald-50 text-emerald-700',
+    rejected: 'border-rose-300 bg-rose-50 text-rose-700',
+    converted: 'border-cyan-300 bg-cyan-50 text-cyan-700',
+  };
+
+  const labels: Record<AppointmentRequest['status'], string> = {
+    pending: 'Pendente',
+    approved: 'Aprovado',
+    rejected: 'Rejeitado',
+    converted: 'Convertido',
+  };
+
+  return <Badge className={cn('rounded-full border px-3 py-1 text-xs font-medium', styles[status])}>{labels[status]}</Badge>;
+}
+
+function messageStatusBadge(status: ContactMessage['status']) {
+  if (status === 'new') {
+    return <Badge className="rounded-full border border-cyan-300 bg-cyan-50 px-3 py-1 text-xs font-medium text-cyan-700">Nova</Badge>;
+  }
+
+  return <Badge className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">Lida</Badge>;
+}
 
 export default function RequestsPage() {
   const { data: requests = [], isLoading: loadingRequests } = useAppointmentRequests();
@@ -41,58 +84,63 @@ export default function RequestsPage() {
   const addPatient = useAddPatient();
   const addAppointment = useAddAppointment();
 
-
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<AppointmentRequest | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
   const [showAlternativesModal, setShowAlternativesModal] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
 
-  const pendingRequests = requests.filter(r => r.status === 'pending');
-  const processedRequests = requests.filter(r => r.status !== 'pending');
-  const newMessages = messages.filter(m => m.status === 'new');
+  const dashboard = useMemo(() => {
+    const pendingRequests = requests.filter((request) => request.status === 'pending');
+    const processedRequests = requests.filter((request) => request.status !== 'pending');
+    const newMessages = messages.filter((message) => message.status === 'new');
+    const visibleMessages = messages.filter((message) => message.status !== 'archived');
 
-  const filteredRequests = pendingRequests.filter(r =>
-    r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.nif.includes(searchQuery) ||
-    r.phone.includes(searchQuery)
+    return {
+      pendingRequests,
+      processedRequests,
+      newMessages,
+      visibleMessages,
+    };
+  }, [messages, requests]);
+
+  const filteredRequests = dashboard.pendingRequests.filter(
+    (request) =>
+      request.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.nif.includes(searchQuery) ||
+      request.phone.includes(searchQuery)
   );
 
-  // Convert request to pre-confirmed appointment
   const handleConvertToAppointment = async () => {
     if (!selectedRequest) return;
 
     setIsConverting(true);
     try {
-      // 1. Find or create patient
-      let patient = patients.find(p => p.nif === selectedRequest.nif);
+      let patient = patients.find((candidate) => candidate.nif === selectedRequest.nif);
 
       if (!patient) {
-        const newPatient = await addPatient.mutateAsync({
+        patient = await addPatient.mutateAsync({
           nif: selectedRequest.nif,
           name: selectedRequest.name,
           phone: selectedRequest.phone,
           email: selectedRequest.email,
         });
-        patient = newPatient;
       }
 
-      // 2. Determine specialty and consultation type
-      const specialty = specialties.find(s =>
+      const specialty = specialties.find((specialtyOption) =>
         selectedRequest.service_type === 'oftalmologia'
-          ? s.name.toLowerCase().includes('oftalmo')
-          : s.name.toLowerCase().includes('dent')
+          ? specialtyOption.name.toLowerCase().includes('oftalmo')
+          : specialtyOption.name.toLowerCase().includes('dent')
       );
 
-      const consultationType = consultationTypes[0]; // Use first available
-      const professional = professionals.find(p => p.specialty_id === specialty?.id) || professionals[0];
+      const consultationType = consultationTypes[0];
+      const professional = professionals.find((candidate) => candidate.specialty_id === specialty?.id) || professionals[0];
 
       if (!specialty || !consultationType || !professional) {
-        toast.error('Configuração incompleta. Verifique especialidades e profissionais.');
+        toast.error('Configuracao incompleta. Verifique especialidades e profissionais.');
         return;
       }
 
-      // 3. Create confirmed appointment
       await addAppointment.mutateAsync({
         patient_id: patient.id,
         professional_id: professional.id,
@@ -105,7 +153,6 @@ export default function RequestsPage() {
         notes: `Convertido de pedido online. NIF: ${selectedRequest.nif}`,
       });
 
-      // 4. Update request status
       await updateRequestStatus.mutateAsync({ id: selectedRequest.id, status: 'converted' });
 
       toast.success('Consulta confirmada criada com sucesso.');
@@ -123,9 +170,8 @@ export default function RequestsPage() {
       await updateRequestStatus.mutateAsync({ id, status: 'rejected' });
       toast.success('Pedido rejeitado');
       setSelectedRequest(null);
-    } catch (error: any) {
-      console.error('Error rejecting request:', error);
-      toast.error(`Erro ao rejeitar pedido: ${error.message || 'Erro desconhecido'}`);
+    } catch {
+      toast.error('Erro ao rejeitar pedido');
     }
   };
 
@@ -147,333 +193,340 @@ export default function RequestsPage() {
     }
   };
 
-  const handleSuggestAlternatives = () => {
-    setShowAlternativesModal(true);
-  };
-
-  const getStatusBadge = (status: AppointmentRequest['status']) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30">Pendente</Badge>;
-      case 'approved':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30">Aprovado</Badge>;
-      case 'rejected':
-        return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">Rejeitado</Badge>;
-      case 'converted':
-        return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">Convertido</Badge>;
-      default:
-        return null;
-    }
-  };
-
   if (loadingRequests || loadingMessages) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 lg:space-y-6">
+    <div className="space-y-6">
       <PageHeader
+        eyebrow="MediFranco Operations"
         title="Pedidos"
-        subtitle={`${pendingRequests.length} pedidos pendentes • ${newMessages.length} mensagens novas`}
+        subtitle={`${dashboard.pendingRequests.length} pedidos pendentes • ${dashboard.newMessages.length} mensagens novas`}
       />
 
-      <Tabs defaultValue="appointments" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="appointments" className="gap-2">
-            <Calendar className="w-4 h-4" />
-            Marcações
-            {pendingRequests.length > 0 && (
-              <Badge className="ml-1 bg-primary text-primary-foreground text-xs px-1.5 py-0">
-                {pendingRequests.length}
-              </Badge>
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className={cn(shellCardClassName(), 'p-5')}>
+          <p className="text-sm text-slate-500">Triage pendente</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{dashboard.pendingRequests.length}</p>
+          <p className="mt-2 text-sm text-slate-500">Pedidos que ainda precisam de decisao ou conversao.</p>
+        </div>
+        <div className={cn(shellCardClassName(), 'p-5')}>
+          <p className="text-sm text-slate-500">Mensagens em aberto</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{dashboard.newMessages.length}</p>
+          <p className="mt-2 text-sm text-slate-500">Contactos novos por responder no front-office.</p>
+        </div>
+        <div className={cn(shellCardClassName(), 'p-5')}>
+          <p className="text-sm text-slate-500">Historico processado</p>
+          <p className="mt-3 font-display text-4xl text-slate-950">{dashboard.processedRequests.length}</p>
+          <p className="mt-2 text-sm text-slate-500">Pedidos que ja seguiram para conversao, aprovacao ou rejeicao.</p>
+        </div>
+      </div>
+
+      <Tabs defaultValue="appointments" className="space-y-5">
+        <TabsList className="h-auto rounded-[1.5rem] border border-slate-200 bg-white/85 p-1.5 shadow-sm">
+          <TabsTrigger
+            value="appointments"
+            className="gap-2 rounded-[1.1rem] px-4 py-2.5 data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-none"
+          >
+            <Calendar className="h-4 w-4" />
+            Marcacoes
+            {dashboard.pendingRequests.length > 0 && (
+              <span className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[11px] text-cyan-200 data-[state=inactive]:text-cyan-700">
+                {dashboard.pendingRequests.length}
+              </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="messages" className="gap-2">
-            <Mail className="w-4 h-4" />
+          <TabsTrigger
+            value="messages"
+            className="gap-2 rounded-[1.1rem] px-4 py-2.5 data-[state=active]:bg-slate-950 data-[state=active]:text-white data-[state=active]:shadow-none"
+          >
+            <Mail className="h-4 w-4" />
             Mensagens
-            {newMessages.length > 0 && (
-              <Badge className="ml-1 bg-destructive text-destructive-foreground text-xs px-1.5 py-0">
-                {newMessages.length}
-              </Badge>
+            {dashboard.newMessages.length > 0 && (
+              <span className="rounded-full bg-rose-500/15 px-2 py-0.5 text-[11px] text-rose-200 data-[state=inactive]:text-rose-700">
+                {dashboard.newMessages.length}
+              </span>
             )}
           </TabsTrigger>
         </TabsList>
 
-        {/* Appointment Requests */}
-        <TabsContent value="appointments" className="space-y-4">
-          {/* Search */}
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Pesquisar por nome, NIF ou telefone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+        <TabsContent value="appointments" className="space-y-5">
+          <div className={cn(shellCardClassName(), 'p-5 lg:p-6')}>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="font-display text-xl font-semibold tracking-tight text-slate-950">Fila de triage</h2>
+                <p className="mt-1 text-sm text-slate-500">Entrada de novos pedidos com foco em decisao rapida e contexto limpo.</p>
+              </div>
+              <div className="relative w-full max-w-md">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Input
+                  placeholder="Pesquisar por nome, NIF ou telefone..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="h-12 rounded-2xl border-slate-200 bg-slate-50 pl-10 shadow-none focus-visible:ring-cyan-300"
+                />
+              </div>
+            </div>
 
-          {/* Pending Requests */}
-          {filteredRequests.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Nenhum pedido de marcação pendente</p>
-            </Card>
-          ) : (
-            <div className="grid gap-3">
-              {filteredRequests.map((request) => (
-                <Card
-                  key={request.id}
-                  className="p-4 hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => setSelectedRequest(request)}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                        request.service_type === 'oftalmologia' ? "bg-primary/10" : "bg-purple-100"
-                      )}>
-                        {request.service_type === 'oftalmologia' ? (
-                          <Eye className="h-5 w-5 text-primary" />
-                        ) : (
-                          <Smile className="h-5 w-5 text-purple-600" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-foreground truncate">{request.name}</p>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                          <span>NIF: {request.nif}</span>
-                          <span>•</span>
-                          <span>{format(new Date(request.preferred_date), "d MMM", { locale: pt })} às {request.preferred_time}</span>
+            <div className="mt-5 space-y-3">
+              {filteredRequests.length === 0 ? (
+                <Card className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500 shadow-none">
+                  Nenhum pedido de marcacao pendente.
+                </Card>
+              ) : (
+                filteredRequests.map((request) => (
+                  <button
+                    key={request.id}
+                    type="button"
+                    onClick={() => setSelectedRequest(request)}
+                    className="w-full rounded-[1.5rem] border border-slate-200 bg-white p-4 text-left transition hover:border-cyan-200 hover:shadow-lg"
+                  >
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex min-w-0 items-center gap-4">
+                        <div
+                          className={cn(
+                            'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl',
+                            request.service_type === 'oftalmologia' ? 'bg-cyan-50 text-cyan-700' : 'bg-violet-50 text-violet-700'
+                          )}
+                        >
+                          {request.service_type === 'oftalmologia' ? <Eye className="h-5 w-5" /> : <Smile className="h-5 w-5" />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="truncate text-base font-semibold text-slate-950">{request.name}</p>
+                            {requestStatusBadge(request.status)}
+                          </div>
+                          <p className="mt-1 text-sm text-slate-500">
+                            NIF: {request.nif} • {format(new Date(request.preferred_date), "d MMM", { locale: pt })} às {request.preferred_time}
+                          </p>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {getStatusBadge(request.status)}
-                      <span className="text-xs text-muted-foreground">
+                      <div className="text-sm text-slate-400">
                         {format(new Date(request.created_at), "d MMM", { locale: pt })}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-
-          {/* Processed Requests */}
-          {processedRequests.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">Processados ({processedRequests.length})</h3>
-              <div className="grid gap-2 opacity-60">
-                {processedRequests.slice(0, 5).map((request) => (
-                  <Card key={request.id} className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="font-medium text-sm">{request.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(request.preferred_date), "d MMM", { locale: pt })}
-                        </span>
                       </div>
-                      {getStatusBadge(request.status)}
                     </div>
-                  </Card>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+
+          {dashboard.processedRequests.length > 0 && (
+            <div className={cn(shellCardClassName(), 'p-5 lg:p-6')}>
+              <div className="mb-4">
+                <h3 className="font-display text-lg font-semibold text-slate-950">Processados</h3>
+                <p className="mt-1 text-sm text-slate-500">Historico recente para validacao rapida do que ja foi decidido.</p>
+              </div>
+              <div className="space-y-2">
+                {dashboard.processedRequests.slice(0, 6).map((request) => (
+                  <div key={request.id} className="flex flex-col gap-3 rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <p className="font-medium text-slate-900">{request.name}</p>
+                      <span className="text-sm text-slate-400">{format(new Date(request.preferred_date), "d MMM", { locale: pt })}</span>
+                    </div>
+                    {requestStatusBadge(request.status)}
+                  </div>
                 ))}
               </div>
             </div>
           )}
         </TabsContent>
 
-        {/* Contact Messages */}
-        <TabsContent value="messages" className="space-y-4">
-          {messages.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Mail className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Nenhuma mensagem recebida</p>
-            </Card>
-          ) : (
-            <div className="grid gap-3">
-              {messages.filter(m => m.status !== 'archived').map((message) => (
-                <Card
-                  key={message.id}
-                  className={cn(
-                    "p-4 hover:shadow-md transition-shadow cursor-pointer",
-                    message.status === 'new' && "border-l-4 border-l-primary"
-                  )}
-                  onClick={() => {
-                    setSelectedMessage(message);
-                    if (message.status === 'new') {
-                      handleMarkMessageRead(message.id);
-                    }
-                  }}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">{message.name}</p>
-                        {message.status === 'new' && (
-                          <Badge className="bg-primary text-primary-foreground text-xs">Nova</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground line-clamp-1 mt-1">{message.message}</p>
-                    </div>
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {format(new Date(message.created_at), "d MMM HH:mm", { locale: pt })}
-                    </span>
-                  </div>
-                </Card>
-              ))}
+        <TabsContent value="messages" className="space-y-5">
+          <div className={cn(shellCardClassName(), 'p-5 lg:p-6')}>
+            <div className="mb-5">
+              <h2 className="font-display text-xl font-semibold tracking-tight text-slate-950">Inbox operacional</h2>
+              <p className="mt-1 text-sm text-slate-500">Mensagens organizadas para resposta rapida sem ruido visual.</p>
             </div>
-          )}
+            {dashboard.visibleMessages.length === 0 ? (
+              <Card className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500 shadow-none">
+                Nenhuma mensagem recebida.
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {dashboard.visibleMessages.map((message) => (
+                  <button
+                    key={message.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedMessage(message);
+                      if (message.status === 'new') {
+                        handleMarkMessageRead(message.id);
+                      }
+                    }}
+                    className={cn(
+                      'w-full rounded-[1.5rem] border bg-white p-4 text-left transition hover:border-cyan-200 hover:shadow-lg',
+                      message.status === 'new' ? 'border-cyan-200' : 'border-slate-200'
+                    )}
+                  >
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-slate-950">{message.name}</p>
+                          {messageStatusBadge(message.status)}
+                        </div>
+                        <p className="mt-1 line-clamp-1 text-sm text-slate-500">{message.message}</p>
+                      </div>
+                      <span className="text-sm text-slate-400">
+                        {format(new Date(message.created_at), "d MMM HH:mm", { locale: pt })}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
-      {/* Request Detail Modal */}
       <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Pedido de Marcação</DialogTitle>
-            <DialogDescription>
-              Reveja os detalhes e escolha uma ação
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-xl rounded-[2rem] border-slate-200 bg-white p-0">
           {selectedRequest && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className={cn(
-                  "w-12 h-12 rounded-full flex items-center justify-center",
-                  selectedRequest.service_type === 'oftalmologia' ? "bg-primary/10" : "bg-purple-100"
-                )}>
-                  {selectedRequest.service_type === 'oftalmologia' ? (
-                    <Eye className="h-6 w-6 text-primary" />
-                  ) : (
-                    <Smile className="h-6 w-6 text-purple-600" />
-                  )}
-                </div>
-                <div>
-                  <p className="font-semibold text-lg">{selectedRequest.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedRequest.service_type === 'oftalmologia' ? 'Oftalmologia' : 'Medicina Dentária'}
-                  </p>
-                </div>
+            <div className="overflow-hidden rounded-[2rem]">
+              <div className="bg-slate-950 px-6 py-5 text-white">
+                <DialogHeader>
+                  <DialogTitle className="font-display text-2xl">Pedido de marcacao</DialogTitle>
+                  <DialogDescription className="text-slate-300">
+                    Reve o contexto do pedido e decide a proxima acao operacional.
+                  </DialogDescription>
+                </DialogHeader>
               </div>
-
-              <div className="grid gap-3 text-sm">
-                <div className="flex items-center gap-3">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span>NIF: {selectedRequest.nif}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-muted-foreground" />
-                  <a href={`tel:${selectedRequest.phone}`} className="text-primary hover:underline">
-                    {selectedRequest.phone}
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <a href={`mailto:${selectedRequest.email}`} className="text-primary hover:underline">
-                    {selectedRequest.email}
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span>
-                    {format(new Date(selectedRequest.preferred_date), "EEEE, d 'de' MMMM 'de' yyyy", { locale: pt })} às {selectedRequest.preferred_time}
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-xs text-muted-foreground">
-                Recebido: {format(new Date(selectedRequest.created_at), "d MMM yyyy 'às' HH:mm", { locale: pt })}
-              </div>
-
-              {selectedRequest.status === 'pending' && (
-                <DialogFooter className="flex-col gap-2 sm:flex-col">
-                  {/* Primary Actions */}
-                  <div className="flex gap-2 w-full">
-                    <Button
-                      className="flex-1 gap-2"
-                      onClick={handleConvertToAppointment}
-                      disabled={isConverting}
-                    >
-                      <CalendarPlus className="w-4 h-4" />
-                      {isConverting ? 'A converter...' : 'Confirmar Horário'}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1 gap-2 border-green-500 text-green-600 hover:bg-green-50"
-                      onClick={handleSuggestAlternatives}
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      Sugerir Alternativas
-                    </Button>
-                  </div>
-
-                  {/* Secondary Action */}
-                  <Button
-                    variant="ghost"
-                    className="text-destructive hover:bg-destructive/10 w-full"
-                    onClick={() => handleReject(selectedRequest.id)}
-                    disabled={updateRequestStatus.isPending}
+              <div className="space-y-5 px-6 py-6">
+                <div className="flex items-center gap-4">
+                  <div
+                    className={cn(
+                      'flex h-14 w-14 items-center justify-center rounded-[1.25rem]',
+                      selectedRequest.service_type === 'oftalmologia' ? 'bg-cyan-50 text-cyan-700' : 'bg-violet-50 text-violet-700'
+                    )}
                   >
-                    <X className="w-4 h-4 mr-1" />
-                    Rejeitar Pedido
-                  </Button>
-                </DialogFooter>
-              )}
+                    {selectedRequest.service_type === 'oftalmologia' ? <Eye className="h-6 w-6" /> : <Smile className="h-6 w-6" />}
+                  </div>
+                  <div>
+                    <p className="text-lg font-semibold text-slate-950">{selectedRequest.name}</p>
+                    <p className="text-sm text-slate-500">
+                      {selectedRequest.service_type === 'oftalmologia' ? 'Oftalmologia' : 'Medicina Dentaria'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+                  <div className="flex items-center gap-3">
+                    <User className="h-4 w-4 text-slate-400" />
+                    <span>NIF: {selectedRequest.nif}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-slate-400" />
+                    <a href={`tel:${selectedRequest.phone}`} className="text-cyan-700 hover:underline">
+                      {selectedRequest.phone}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-slate-400" />
+                    <a href={`mailto:${selectedRequest.email}`} className="text-cyan-700 hover:underline">
+                      {selectedRequest.email}
+                    </a>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-4 w-4 text-slate-400" />
+                    <span>
+                      {format(new Date(selectedRequest.preferred_date), "EEEE, d 'de' MMMM 'de' yyyy", { locale: pt })} às{' '}
+                      {selectedRequest.preferred_time}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-400">
+                  Recebido: {format(new Date(selectedRequest.created_at), "d MMM yyyy 'às' HH:mm", { locale: pt })}
+                </p>
+
+                {selectedRequest.status === 'pending' && (
+                  <DialogFooter className="flex-col gap-3 sm:flex-col">
+                    <div className="flex w-full flex-col gap-3 sm:flex-row">
+                      <Button className="flex-1 rounded-2xl" onClick={handleConvertToAppointment} disabled={isConverting}>
+                        <CalendarPlus className="mr-2 h-4 w-4" />
+                        {isConverting ? 'A converter...' : 'Confirmar horario'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="flex-1 rounded-2xl border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                        onClick={() => setShowAlternativesModal(true)}
+                      >
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        Sugerir alternativas
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      className="w-full rounded-2xl text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                      onClick={() => handleReject(selectedRequest.id)}
+                      disabled={updateRequestStatus.isPending}
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Rejeitar pedido
+                    </Button>
+                  </DialogFooter>
+                )}
+              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Message Detail Modal */}
       <Dialog open={!!selectedMessage} onOpenChange={() => setSelectedMessage(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Mensagem</DialogTitle>
-            <DialogDescription>
-              Mensagem de contacto recebida
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-xl rounded-[2rem] border-slate-200 bg-white p-0">
           {selectedMessage && (
-            <div className="space-y-4">
-              <div>
-                <p className="font-semibold text-lg">{selectedMessage.name}</p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                  <a href={`mailto:${selectedMessage.email}`} className="hover:text-primary">
-                    {selectedMessage.email}
-                  </a>
-                  <a href={`tel:${selectedMessage.phone}`} className="hover:text-primary">
-                    {selectedMessage.phone}
-                  </a>
+            <div className="overflow-hidden rounded-[2rem]">
+              <div className="bg-slate-950 px-6 py-5 text-white">
+                <DialogHeader>
+                  <DialogTitle className="font-display text-2xl">Mensagem</DialogTitle>
+                  <DialogDescription className="text-slate-300">
+                    Contexto de contacto do site principal.
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+              <div className="space-y-5 px-6 py-6">
+                <div>
+                  <p className="text-lg font-semibold text-slate-950">{selectedMessage.name}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                    <a href={`mailto:${selectedMessage.email}`} className="hover:text-cyan-700">
+                      {selectedMessage.email}
+                    </a>
+                    <a href={`tel:${selectedMessage.phone}`} className="hover:text-cyan-700">
+                      {selectedMessage.phone}
+                    </a>
+                  </div>
                 </div>
-              </div>
 
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-foreground whitespace-pre-wrap">{selectedMessage.message}</p>
-              </div>
+                <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
+                  <p className="whitespace-pre-wrap text-slate-700">{selectedMessage.message}</p>
+                </div>
 
-              <div className="text-xs text-muted-foreground">
-                Recebido: {format(new Date(selectedMessage.created_at), "d MMM yyyy 'às' HH:mm", { locale: pt })}
-              </div>
+                <p className="text-xs text-slate-400">
+                  Recebido: {format(new Date(selectedMessage.created_at), "d MMM yyyy 'às' HH:mm", { locale: pt })}
+                </p>
 
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => handleArchiveMessage(selectedMessage.id)}
-                  disabled={updateMessageStatus.isPending}
-                >
-                  Arquivar
-                </Button>
-                <Button asChild>
-                  <a href={`mailto:${selectedMessage.email}`}>
-                    <Mail className="w-4 h-4 mr-1" />
-                    Responder
-                  </a>
-                </Button>
-              </DialogFooter>
+                <DialogFooter className="gap-3">
+                  <Button
+                    variant="outline"
+                    className="rounded-2xl"
+                    onClick={() => handleArchiveMessage(selectedMessage.id)}
+                    disabled={updateMessageStatus.isPending}
+                  >
+                    Arquivar
+                  </Button>
+                  <Button asChild className="rounded-2xl">
+                    <a href={`mailto:${selectedMessage.email}`}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Responder
+                    </a>
+                  </Button>
+                </DialogFooter>
+              </div>
             </div>
           )}
         </DialogContent>

@@ -102,16 +102,45 @@ export function useUpdateAppointmentStatus() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: AppointmentStatus }) => {
-      const { data, error } = await supabase
+    mutationFn: async ({
+      id,
+      status,
+      reason,
+      finalNotes,
+      reviewOptOut = false,
+    }: {
+      id: string;
+      status: AppointmentStatus;
+      reason?: string;
+      finalNotes?: string;
+      reviewOptOut?: boolean;
+    }) => {
+      const { data, error } = await supabase.rpc('transition_appointment_status', {
+        p_appointment_id: id,
+        p_new_status: status,
+        p_reason: reason ?? null,
+        p_final_notes: finalNotes ?? null,
+        p_review_opt_out: reviewOptOut,
+        p_metadata: { source: 'admin_dashboard' },
+      });
+
+      if (!error) return data;
+
+      const functionMissing =
+        error.code === 'PGRST202' ||
+        error.message?.toLowerCase().includes('transition_appointment_status');
+
+      if (!functionMissing) throw error;
+
+      const { data: fallbackData, error: fallbackError } = await supabase
         .from('appointments')
         .update({ status })
         .eq('id', id)
         .select()
         .single();
-      
-      if (error) throw error;
-      return data;
+
+      if (fallbackError) throw fallbackError;
+      return fallbackData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });

@@ -11,11 +11,11 @@ interface WaitingRoomCardProps {
   consultationType: ConsultationTypeRow | undefined;
 }
 
-export function WaitingRoomCard({ 
-  appointment, 
-  patient, 
-  professional, 
-  consultationType 
+export function WaitingRoomCard({
+  appointment,
+  patient,
+  professional,
+  consultationType,
 }: WaitingRoomCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: appointment.id,
@@ -35,63 +35,54 @@ export function WaitingRoomCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'group relative bg-card rounded-xl border transition-all duration-200',
-        isDragging 
-          ? 'shadow-2xl ring-2 ring-primary/50 scale-[1.02] opacity-95' 
-          : 'hover:shadow-lg hover:border-primary/30 border-border',
-        'cursor-grab active:cursor-grabbing'
+        'group relative cursor-grab rounded-[1.5rem] border border-slate-200 bg-white/95 transition-all duration-200 active:cursor-grabbing',
+        isDragging
+          ? 'scale-[1.02] opacity-95 shadow-2xl ring-2 ring-cyan-300/50'
+          : 'hover:border-cyan-200 hover:shadow-lg'
       )}
     >
-      {/* Colored top bar */}
-      <div 
-        className="absolute top-0 left-0 right-0 h-1 rounded-t-xl"
+      <div
+        className="absolute left-4 right-4 top-0 h-px"
         style={{ backgroundColor: professional?.color || '#94a3b8' }}
       />
-      
-      <div className="p-4 pt-3">
+
+      <div className="p-4 pt-4">
         <div className="flex items-start gap-3">
-          {/* Drag handle */}
           <div
             {...attributes}
             {...listeners}
             className={cn(
-              'mt-0.5 p-1.5 rounded-lg transition-all',
-              'text-muted-foreground/50 hover:text-muted-foreground',
-              'hover:bg-muted group-hover:text-muted-foreground',
-              isDragging && 'text-primary bg-primary/10'
+              'mt-0.5 rounded-xl p-1.5 text-slate-400 transition-all hover:bg-slate-100 hover:text-slate-600',
+              isDragging && 'bg-cyan-50 text-cyan-700'
             )}
           >
             <GripVertical className="h-4 w-4" />
           </div>
 
-          {/* Content */}
-          <div className="flex-1 min-w-0 space-y-2">
-            {/* Patient name */}
+          <div className="min-w-0 flex-1 space-y-2">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0">
-                <User className="h-3.5 w-3.5 text-muted-foreground" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl bg-slate-100">
+                <User className="h-3.5 w-3.5 text-slate-500" />
               </div>
-              <p className="font-semibold text-foreground truncate text-sm">
+              <p className="truncate text-sm font-semibold text-slate-950">
                 {patient?.name || 'Paciente desconhecido'}
               </p>
             </div>
 
-            {/* Time and type */}
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+            <div className="flex items-center gap-3 text-xs text-slate-500">
+              <div className="flex items-center gap-1.5 rounded-xl bg-slate-100 px-2 py-1">
                 <Clock className="h-3 w-3" />
                 <span className="font-medium">{appointment.time.slice(0, 5)}</span>
               </div>
               <span className="truncate">{consultationType?.name || 'Consulta'}</span>
             </div>
 
-            {/* Professional */}
             <div className="flex items-center gap-2">
-              <div 
-                className="w-2 h-2 rounded-full shrink-0"
+              <div
+                className="h-2 w-2 shrink-0 rounded-full"
                 style={{ backgroundColor: professional?.color || '#94a3b8' }}
               />
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="truncate text-xs text-slate-500">
                 {professional?.name || 'Profissional'}
               </p>
             </div>

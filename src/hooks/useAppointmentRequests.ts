@@ -28,7 +28,7 @@ export function useAppointmentRequests() {
         .from('appointment_requests')
         .select('*')
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       return (data || []) as AppointmentRequest[];
     },
@@ -37,7 +37,7 @@ export function useAppointmentRequests() {
 
 export function useAddAppointmentRequest() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (request: AppointmentRequestInsert) => {
       // Note: public users can INSERT but cannot SELECT from this table (PII).
@@ -57,19 +57,19 @@ export function useAddAppointmentRequest() {
 
 export function useUpdateAppointmentRequestStatus() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: AppointmentRequest['status'] }) => {
       const { data, error } = await supabase
         .from('appointment_requests')
-        .update({ 
+        .update({
           status,
           processed_at: new Date().toISOString(),
         })
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -81,14 +81,14 @@ export function useUpdateAppointmentRequestStatus() {
 
 export function useDeleteAppointmentRequest() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('appointment_requests')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {

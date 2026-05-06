@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { SEO } from '@/components/SEO'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -8,6 +10,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { LessonItem } from '@/components/ui/LessonItem'
 import { useCourse } from '@/hooks/useCourses'
 import { useIsEnrolled, useEnroll } from '@/hooks/useEnrollments'
+import { useAuth } from '@/contexts/AuthContext'
+import { redirectToCheckout } from '@/lib/stripe'
 import { BookOpen, Clock, CheckCircle2, Loader2 } from 'lucide-react'
 import { formatPrice } from '@/lib/utils'
 
@@ -15,8 +19,10 @@ export default function CourseDetail() {
     const { slug } = useParams<{ slug: string }>()
     const navigate = useNavigate()
     const { data: course, isLoading: courseLoading } = useCourse(slug!)
+    const { user } = useAuth()
     const { data: isEnrolled, isLoading: enrollmentLoading } = useIsEnrolled(course?.id || '')
     const enrollMutation = useEnroll()
+    const [checkoutLoading, setCheckoutLoading] = useState(false)
 
     const totalLessons = course?.modules?.reduce((sum, mod) => sum + (mod.lessons?.length || 0), 0) || 0
     const totalDuration = course?.modules?.reduce(
@@ -25,9 +31,26 @@ export default function CourseDetail() {
     ) || 0
 
     const handleEnroll = async () => {
-        if (!course) return
-        await enrollMutation.mutateAsync(course.id)
-        navigate('/dashboard?enrolled=true')
+        if (!course || !user) {
+            navigate('/login')
+            return
+        }
+
+        // Free courses: enroll directly
+        if (course.price_cents === 0) {
+            await enrollMutation.mutateAsync(course.id)
+            navigate('/checkout/success?courseId=' + course.id)
+            return
+        }
+
+        // Paid courses: Stripe checkout (or mock)
+        setCheckoutLoading(true)
+        const result = await redirectToCheckout(course.id, user.id, course.title, course.price_cents)
+        setCheckoutLoading(false)
+
+        if (result.redirectUrl) {
+            navigate(result.redirectUrl)
+        }
     }
 
     if (courseLoading || enrollmentLoading) {
@@ -57,8 +80,32 @@ export default function CourseDetail() {
         )
     }
 
+    const courseJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Course',
+        name: course.title,
+        description: course.description,
+        provider: {
+            '@type': 'Organization',
+            name: 'MediFranco Academy',
+            sameAs: 'https://medifranco.pt',
+        },
+        offers: {
+            '@type': 'Offer',
+            price: (course.price_cents / 100).toFixed(2),
+            priceCurrency: 'EUR',
+            availability: 'https://schema.org/InStock',
+        },
+    }
+
     return (
         <div className="flex flex-col min-h-screen">
+            <SEO
+                title={course.title}
+                description={course.description?.slice(0, 155) || `Curso online: ${course.title}`}
+                path={`/courses/${slug}`}
+                jsonLd={courseJsonLd}
+            />
             <Header />
 
             <main className="flex-1">
@@ -99,10 +146,10 @@ export default function CourseDetail() {
                                             size="lg"
                                             className="bg-white text-primary hover:bg-white/90 shadow-xl"
                                             onClick={handleEnroll}
-                                            disabled={enrollMutation.isPending}
+                                            disabled={enrollMutation.isPending || checkoutLoading}
                                         >
-                                            {enrollMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                            Inscrever-me
+                                            {(enrollMutation.isPending || checkoutLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                            {course.price_cents === 0 ? 'Inscrever-me Grátis' : `Comprar — ${formatPrice(course.price_cents)}`}
                                         </Button>
                                     )}
                                 </div>

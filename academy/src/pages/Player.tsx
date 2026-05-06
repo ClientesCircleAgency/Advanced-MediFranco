@@ -1,5 +1,7 @@
 import { useParams } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useCallback, useMemo } from 'react'
+import Markdown from 'react-markdown'
+import { SEO } from '@/components/SEO'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -12,7 +14,7 @@ import { CourseProgress } from '@/components/ui/CourseProgress'
 import { useCourse } from '@/hooks/useCourses'
 import { useIsEnrolled } from '@/hooks/useEnrollments'
 import { useProgress, useMarkLessonComplete } from '@/hooks/useProgress'
-import { CheckCircle2, FileText } from 'lucide-react'
+import { CheckCircle2, FileText, SkipForward } from 'lucide-react'
 import type { Lesson } from '@/types'
 
 export default function Player() {
@@ -79,16 +81,38 @@ export default function Player() {
         )
     }
 
+    const allLessons = useMemo(() => {
+        return course.modules?.flatMap(m => m.lessons || []) || []
+    }, [course.modules])
+
+    const goToNextLesson = useCallback(() => {
+        if (!selectedLesson) return
+        const currentIndex = allLessons.findIndex(l => l.id === selectedLesson.id)
+        if (currentIndex >= 0 && currentIndex < allLessons.length - 1) {
+            setSelectedLesson(allLessons[currentIndex + 1])
+        }
+    }, [selectedLesson, allLessons])
+
     const handleMarkComplete = () => {
         if (selectedLesson) {
-            markCompleteMutation.mutate(selectedLesson.id)
+            markCompleteMutation.mutate(selectedLesson.id, {
+                onSuccess: () => goToNextLesson(),
+            })
         }
     }
 
     const isLessonComplete = selectedLesson ? completedLessonIds.has(selectedLesson.id) : false
+    const hasNextLesson = selectedLesson
+        ? allLessons.findIndex(l => l.id === selectedLesson.id) < allLessons.length - 1
+        : false
 
     return (
         <div className="flex flex-col min-h-screen">
+            <SEO
+                title={selectedLesson ? `${selectedLesson.title} — ${course.title}` : course.title}
+                description={`Aula do curso ${course.title} na MediFranco Academy`}
+                path={`/courses/${slug}/player`}
+            />
             <Header />
 
             {/* Progress Bar */}
@@ -110,7 +134,7 @@ export default function Player() {
                         <div className="lg:col-span-2 space-y-6">
                             {selectedLesson && (
                                 <>
-                                    {/* Video Player */}
+                                    {/* Content Area */}
                                     <Card className="overflow-hidden">
                                         {selectedLesson.content_type === 'video' ? (
                                             <div className="aspect-video bg-black">
@@ -121,21 +145,33 @@ export default function Player() {
                                                     allowFullScreen
                                                 />
                                             </div>
-                                        ) : (
-                                            <div className="aspect-video bg-muted flex items-center justify-center">
-                                                <div className="text-center">
-                                                    <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                                                    <p className="text-muted-foreground mb-2">
-                                                        {selectedLesson.content_type === 'pdf' ? 'Documento PDF' : 'Conteúdo de Texto'}
-                                                    </p>
+                                        ) : selectedLesson.content_type === 'pdf' ? (
+                                            <div className="w-full">
+                                                <iframe
+                                                    src={selectedLesson.content_url}
+                                                    className="w-full h-[600px] border-0"
+                                                    title={selectedLesson.title}
+                                                />
+                                                <div className="p-3 border-t text-center">
                                                     <a
                                                         href={selectedLesson.content_url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-primary hover:underline text-sm"
                                                     >
-                                                        Abrir em Nova Janela
+                                                        Abrir PDF em Nova Janela
                                                     </a>
+                                                </div>
+                                            </div>
+                                        ) : selectedLesson.content_text ? (
+                                            <div className="p-6 prose prose-sm max-w-none">
+                                                <Markdown>{selectedLesson.content_text}</Markdown>
+                                            </div>
+                                        ) : (
+                                            <div className="aspect-video bg-muted flex items-center justify-center">
+                                                <div className="text-center">
+                                                    <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                                                    <p className="text-muted-foreground">Conteúdo de Texto</p>
                                                 </div>
                                             </div>
                                         )}
@@ -151,21 +187,28 @@ export default function Player() {
                                                 </p>
                                             )}
                                         </div>
-                                        <Button
-                                            onClick={handleMarkComplete}
-                                            disabled={isLessonComplete || markCompleteMutation.isPending}
-                                            variant={isLessonComplete ? "ghost" : "default"}
-                                            className="flex-shrink-0"
-                                        >
-                                            {isLessonComplete ? (
-                                                <>
-                                                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                                                    Concluída
-                                                </>
-                                            ) : (
-                                                'Marcar como Concluída'
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            <Button
+                                                onClick={handleMarkComplete}
+                                                disabled={isLessonComplete || markCompleteMutation.isPending}
+                                                variant={isLessonComplete ? "ghost" : "default"}
+                                            >
+                                                {isLessonComplete ? (
+                                                    <>
+                                                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                                                        Concluída
+                                                    </>
+                                                ) : (
+                                                    'Marcar como Concluída'
+                                                )}
+                                            </Button>
+                                            {isLessonComplete && hasNextLesson && (
+                                                <Button onClick={goToNextLesson} variant="outline" className="gap-2">
+                                                    Próxima
+                                                    <SkipForward className="h-4 w-4" />
+                                                </Button>
                                             )}
-                                        </Button>
+                                        </div>
                                     </div>
 
                                     {/* Tabs - Description / Materials / Notes */}

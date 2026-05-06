@@ -1,19 +1,29 @@
 import { Link } from 'react-router-dom'
+import { SEO } from '@/components/SEO'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CourseProgress } from '@/components/ui/CourseProgress'
+import { CertificateCard } from '@/components/CertificateCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader'
 import { useUserProgress } from '@/hooks/useUserProgress'
+import { useAuth } from '@/contexts/AuthContext'
 import { BookOpen, ArrowRight } from 'lucide-react'
 
 export default function Dashboard() {
+    const { user } = useAuth()
     const { data: progressData, isLoading } = useUserProgress()
+    const studentName = user?.user_metadata?.name || user?.email || 'Aluno'
 
     return (
         <div className="flex flex-col min-h-screen">
+            <SEO
+                title="Os Meus Cursos"
+                description="Aceda aos seus cursos e acompanhe o seu progresso na MediFranco Academy."
+                path="/cursos"
+            />
             <Header />
 
             <main className="flex-1 py-12">
@@ -51,6 +61,16 @@ export default function Dashboard() {
                                                 percentage={course.progress_percentage}
                                                 className="mb-4"
                                             />
+
+                                            {course.progress_percentage === 100 && (
+                                                <div className="mb-3">
+                                                    <CertificateCard
+                                                        studentName={studentName}
+                                                        courseName={course.course_title}
+                                                        completionDate={new Date().toLocaleDateString('pt-PT')}
+                                                    />
+                                                </div>
+                                            )}
 
                                             <Link to={`/courses/${course.course_slug}/player`}>
                                                 <Button className="gap-2 w-full md:w-auto" variant={course.progress_percentage === 100 ? 'outline' : 'default'}>

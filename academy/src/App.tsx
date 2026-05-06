@@ -14,6 +14,10 @@ import Home from '@/pages/Home'
 import Catalog from '@/pages/Catalog'
 import CourseDetail from '@/pages/CourseDetail'
 
+// Checkout pages
+import CheckoutSuccess from '@/pages/CheckoutSuccess'
+import CheckoutCancel from '@/pages/CheckoutCancel'
+
 // Protected pages
 import Dashboard from '@/pages/Dashboard'
 import Player from '@/pages/Player'
@@ -56,6 +60,10 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            {/* Checkout routes */}
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/checkout/cancel" element={<CheckoutCancel />} />
 
             {/* Protected routes (Student Area) */}
             <Route
