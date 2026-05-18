@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import * as Icons from 'lucide-react';
+import medicinaDentariaHero from '@/assets/heroes/medicina-dentaria-hero.jpg';
 import { ArrowRight, Calendar, User } from 'lucide-react';
 import { dentalServices } from '@/data/services';
 import { teamMembersExtended, dentalTeamIds } from '@/data/team';
@@ -159,7 +160,7 @@ function ServicesDetailSection() {
                         {extendedDescriptions[service.id] || service.description}
                       </p>
                       <Link
-                        to="/contactos"
+                        to="/marcar-consulta"
                         className="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:gap-3 transition-all w-fit"
                       >
                         <Calendar className="w-4 h-4" />
@@ -307,14 +308,14 @@ function CTABanner() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                to="/contactos"
+                to="/marcar-consulta"
                 className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
               >
                 Marcar Consulta
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
-                to="/consultas-online"
+                to="/marcar-consulta"
                 className="inline-flex items-center gap-2 text-primary font-medium hover:underline"
               >
                 Ou consulte online
@@ -344,6 +345,8 @@ export default function MedicinaDentariaPage() {
       <PageHero
         title="Medicina Dentaria"
         subtitle="Cuidados dentarios completos e personalizados."
+        backgroundImage={medicinaDentariaHero}
+        backgroundPosition="center 50%"
         breadcrumbItems={[
           { label: 'Inicio', href: '/' },
           { label: 'Servicos', href: '/' },

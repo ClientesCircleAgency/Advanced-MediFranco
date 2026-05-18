@@ -1,5 +1,5 @@
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { Users, Calendar, Award, Stethoscope } from 'lucide-react';
+import { Users, Calendar, Award, Stethoscope, HeartPulse, Telescope, HandHeart } from 'lucide-react';
 import fundadoresImg from '@/assets/fundadores.png';
 
 const stats = [
@@ -7,6 +7,27 @@ const stats = [
   { number: '10.000+', label: 'Pacientes Satisfeitos', icon: Users },
   { number: '3', label: 'Especialistas', icon: Stethoscope },
   { number: '12', label: 'Serviços', icon: Calendar },
+];
+
+const principles = [
+  {
+    title: 'Missão',
+    description:
+      'Cuidar da saúde visual e oral de cada paciente com rigor clínico, proximidade humana e planos de tratamento claros.',
+    icon: HeartPulse,
+  },
+  {
+    title: 'Visão',
+    description:
+      'Ser uma clínica de referência em Setúbal, unindo oftalmologia e medicina dentária num acompanhamento moderno e integrado.',
+    icon: Telescope,
+  },
+  {
+    title: 'Valores',
+    description:
+      'Confiança, transparência, excelência clínica e respeito pelo tempo, pelas dúvidas e pela história de cada paciente.',
+    icon: HandHeart,
+  },
 ];
 
 export function AboutSection() {
@@ -73,6 +94,36 @@ export function AboutSection() {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <div className="mb-20">
+            <div className="mb-10 max-w-3xl">
+              <span className="text-sm font-semibold uppercase text-primary">O que nos orienta</span>
+              <h3 className="mt-3 font-display text-2xl font-bold tracking-tight text-foreground md:text-4xl">
+                Missão, visão e valores que tornam o cuidado mais humano.
+              </h3>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-3">
+              {principles.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <article
+                    key={item.title}
+                    className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
+                  >
+                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h4 className="mb-3 font-display text-2xl font-bold tracking-tight text-foreground">
+                      {item.title}
+                    </h4>
+                    <p className="leading-relaxed text-muted-foreground">{item.description}</p>
+                  </article>
+                );
+              })}
             </div>
           </div>
 

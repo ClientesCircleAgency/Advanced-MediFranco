@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import logo from '@/assets/logo-medifranco-v4.png';
+import logo from '@/assets/logo-medifranco.png';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -15,7 +15,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
               <img
                 alt="MediFranco"
                 src={logo}
-                className="h-16 w-auto mx-auto mb-2 transition-transform duration-300 hover:scale-105"
+                className="h-14 w-auto max-w-[240px] mx-auto mb-2 transition-transform duration-300 hover:scale-105"
               />
             </Link>
           </div>

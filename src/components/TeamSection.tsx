@@ -129,7 +129,7 @@ export function TeamSection() {
                   <span>Certificação de Excelência</span>
                 </div>
                 <a
-                  href="#marcacao"
+                  href="/marcar-consulta"
                   onClick={() => setSelectedMember(null)}
                   className="sm:ml-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium transition-colors shadow-lg"
                 >

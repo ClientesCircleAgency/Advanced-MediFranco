@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHero } from '@/components/layout/PageHero';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import equipaHero from '@/assets/heroes/equipa-hero.jpg';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Calendar, ArrowRight } from 'lucide-react';
 import {
@@ -149,7 +150,7 @@ function CTASection() {
               A nossa equipa esta pronta para cuidar de si. Entre em contacto connosco.
             </p>
             <Link
-              to="/contactos"
+              to="/marcar-consulta"
               className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
             >
               Marcar Consulta
@@ -173,6 +174,8 @@ export default function EquipaPage() {
       <PageHero
         title="A Nossa Equipa"
         subtitle="Especialistas dedicados ao seu bem-estar e saude."
+        backgroundImage={equipaHero}
+        backgroundPosition="center 48%"
         breadcrumbItems={[
           { label: 'Inicio', href: '/' },
           { label: 'Equipa' },

@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import logo from '@/assets/logo-medifranco-v4.png';
+import logo from '@/assets/logo-medifranco.png';
 
 const pageTitles: Record<string, { title: string; subtitle: string }> = {
   '/admin/dashboard': {
@@ -137,11 +137,11 @@ export function AdminLayout() {
                 onClick={() => navigate('/admin/dashboard')}
                 className="group flex items-center gap-3 rounded-2xl px-1 text-left"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-100 bg-cyan-50/80">
+                <div className="flex h-12 items-center justify-center rounded-2xl border border-cyan-100 bg-cyan-50/80 px-3">
                   <img
                     src={logo}
                     alt="MediFranco"
-                    className="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="h-8 w-auto max-w-[132px] object-contain transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
                 <div className="hidden min-w-0 md:block">

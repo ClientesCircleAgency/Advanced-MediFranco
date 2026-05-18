@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHero } from '@/components/layout/PageHero';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import contactosHero from '@/assets/heroes/contactos-hero.jpg';
 import { useAddContactMessage } from '@/hooks/useContactMessages';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -389,6 +390,8 @@ export default function ContactosPage() {
       <PageHero
         title="Contactos"
         subtitle="Entre em contacto connosco. Estamos aqui para ajudar."
+        backgroundImage={contactosHero}
+        backgroundPosition="center 52%"
         breadcrumbItems={[
           { label: 'Inicio', href: '/' },
           { label: 'Contactos' },

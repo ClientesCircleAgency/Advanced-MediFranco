@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHero } from '@/components/layout/PageHero';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import academyHero from '@/assets/heroes/academy-hero.jpg';
 import {
   GraduationCap,
   BookOpen,
@@ -194,6 +195,8 @@ export default function AcademyPage() {
       <PageHero
         title="MediFranco Academy"
         subtitle="Formação contínua online para profissionais de saúde."
+        backgroundImage={academyHero}
+        backgroundPosition="center 52%"
         breadcrumbItems={[
           { label: 'Início', href: '/' },
           { label: 'Academy' },

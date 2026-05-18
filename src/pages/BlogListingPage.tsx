@@ -5,6 +5,8 @@ import type { BlogPost } from '@/types/blog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { PageHero } from '@/components/layout/PageHero';
+import blogHero from '@/assets/heroes/blog-hero.jpg';
 
 export default function BlogListingPage() {
     const { data: posts, isLoading } = useQuery({
@@ -26,9 +28,19 @@ export default function BlogListingPage() {
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Header />
-            <main className="flex-1 pt-24 pb-16">
+            <PageHero
+                title="Blog & Noticias"
+                subtitle="Artigos de especialistas MediFranco sobre saude oral, visao, prevencao e bem-estar clinico."
+                backgroundImage={blogHero}
+                backgroundPosition="center 52%"
+                breadcrumbItems={[
+                    { label: 'Inicio', href: '/' },
+                    { label: 'Blog' },
+                ]}
+            />
+            <main className="flex-1 py-16">
                 <div className="container px-4 md:px-6">
-                    <div className="max-w-3xl mx-auto text-center mb-12">
+                    <div className="hidden">
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 font-display">
                             Blog & <span className="text-primary">Notícias</span>
                         </h1>

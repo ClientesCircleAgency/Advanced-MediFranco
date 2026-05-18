@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Linkedin } from 'lucide-react';
-import logo from '@/assets/logo-medifranco-v4.png';
+import footerLogo from '@/assets/logo-medifranco-white-footer.png';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -13,7 +13,7 @@ export function Footer() {
           {/* Logo & Social */}
           <div className="space-y-6 text-center md:text-left">
             <div className="flex justify-center md:justify-start">
-              <img src={logo} alt="MediFranco" className="h-28 w-auto brightness-0 invert" />
+              <img src={footerLogo} alt="MediFranco" className="h-auto w-[120px] max-w-full md:w-[140px]" />
             </div>
             <p className="text-background/70 text-sm hidden md:block leading-relaxed">
               Cuidamos da sua visão e do seu sorriso há mais de 15 anos, com dedicação e tecnologia de ponta.

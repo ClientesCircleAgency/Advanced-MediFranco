@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import logo from '@/assets/logo-medifranco-v4.png';
+import logo from '@/assets/logo-medifranco.png';
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Password deve ter pelo menos 6 caracteres')
@@ -80,7 +80,7 @@ export default function AdminLogin() {
       <div className="bg-background rounded-2xl p-8 shadow-lg">
         {/* Logo */}
         <div className="text-center mb-8">
-          <img alt="MediFranco" src={logo} className="h-16 w-auto mx-auto mb-4" />
+          <img alt="MediFranco" src={logo} className="h-14 w-auto max-w-[240px] mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground">Área de Admin</h1>
           <p className="text-muted-foreground text-sm mt-1">
             Faça login para aceder ao painel de gestão

@@ -15,7 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import logo from '@/assets/logo-medifranco-v4.png';
+import logo from '@/assets/logo-medifranco.png';
 
 const navItems = [
   { label: 'Sobre Nós', href: '/sobre-nos' },
@@ -88,8 +88,8 @@ export function Header() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-card/95 backdrop-blur-md shadow-sm border-b border-border'
-          : 'bg-transparent'
+          ? 'bg-card/95 shadow-sm backdrop-blur-md'
+          : 'bg-white/92 shadow-[0_12px_38px_rgba(15,23,42,0.12)] backdrop-blur-xl'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -109,7 +109,7 @@ export function Header() {
                 <SheetHeader className="p-6 pb-4 border-b border-border">
                   <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
                   <Link to="/" onClick={() => setIsMobileOpen(false)}>
-                    <img alt="MediFranco" className="h-16 w-auto" src={logo} />
+                    <img alt="MediFranco" className="h-12 w-auto max-w-[220px]" src={logo} />
                   </Link>
                 </SheetHeader>
 
@@ -181,7 +181,7 @@ export function Header() {
                     className="w-full bg-primary-gradient hover:opacity-90 rounded-xl"
                     asChild
                   >
-                    <Link to="/#marcacao" onClick={() => setIsMobileOpen(false)}>
+                    <Link to="/marcar-consulta" onClick={() => setIsMobileOpen(false)}>
                       <Calendar className="w-4 h-4 mr-2" />
                       Marcar Consulta
                     </Link>
@@ -203,7 +203,7 @@ export function Header() {
             to="/"
             className="flex items-center absolute left-1/2 -translate-x-1/2 lg:relative lg:left-0 lg:translate-x-0"
           >
-            <img alt="MediFranco" className="h-20 md:h-24 w-auto" src={logo} />
+            <img alt="MediFranco" className="h-14 md:h-16 w-auto max-w-[260px]" src={logo} />
           </Link>
 
           {/* Desktop Navigation */}
@@ -220,7 +220,7 @@ export function Header() {
                     className={`flex items-center gap-1 px-4 py-2 text-sm font-medium rounded-xl transition-all ${
                       isServicesActive()
                         ? 'text-primary bg-accent/50 font-semibold'
-                        : 'text-foreground/80 hover:text-primary hover:bg-accent'
+                        : 'text-slate-800 hover:text-primary hover:bg-accent'
                     }`}
                   >
                     {item.label}
@@ -274,7 +274,7 @@ export function Header() {
                   className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
                     isActive(item.href)
                       ? 'text-primary bg-accent/50 font-semibold'
-                      : 'text-foreground/80 hover:text-primary hover:bg-accent'
+                      : 'text-slate-800 hover:text-primary hover:bg-accent'
                   }`}
                 >
                   {item.label}
@@ -285,7 +285,7 @@ export function Header() {
 
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="rounded-xl text-sm" asChild>
+            <Button variant="ghost" size="sm" className="rounded-xl text-sm font-semibold text-slate-800 hover:text-primary" asChild>
               <Link to="/area-cliente">
                 <User className="w-4 h-4 mr-2" />
                 Área de Cliente
@@ -296,7 +296,7 @@ export function Header() {
               className="bg-primary-gradient hover:opacity-90 shadow-lg hover:shadow-xl transition-all rounded-xl text-sm"
               asChild
             >
-              <Link to="/#marcacao">
+              <Link to="/marcar-consulta">
                 <Calendar className="w-4 h-4 mr-2" />
                 Marcar Consulta
               </Link>
@@ -311,7 +311,7 @@ export function Header() {
               className="rounded-xl"
               asChild
             >
-              <Link to="/#marcacao" aria-label="Marcar Consulta">
+              <Link to="/marcar-consulta" aria-label="Marcar Consulta">
                 <Calendar className="w-5 h-5" />
               </Link>
             </Button>

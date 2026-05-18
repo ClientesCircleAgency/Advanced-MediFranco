@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHero } from '@/components/layout/PageHero';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import consultasOnlineHero from '@/assets/heroes/consultas-online-hero.jpg';
 import {
   Accordion,
   AccordionContent,
@@ -373,6 +374,8 @@ export default function ConsultasOnlinePage() {
       <PageHero
         title="Consultas Online"
         subtitle="Cuide da sua saude sem sair de casa."
+        backgroundImage={consultasOnlineHero}
+        backgroundPosition="center 54%"
         breadcrumbItems={[
           { label: 'Inicio', href: '/' },
           { label: 'Consultas Online' },

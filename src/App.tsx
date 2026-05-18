@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
+import BlogListingPage from "./pages/BlogListingPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import SobreNosPage from "./pages/SobreNosPage";
 import EquipaPage from "./pages/EquipaPage";
@@ -12,6 +13,7 @@ import MedicinaDentariaPage from "./pages/MedicinaDentariaPage";
 import OftalmologiaPage from "./pages/OftalmologiaPage";
 import ContactosPage from "./pages/ContactosPage";
 import ConsultasOnlinePage from "./pages/ConsultasOnlinePage";
+import MarcarConsultaPage from "./pages/MarcarConsultaPage";
 import AcademyPage from "./pages/AcademyPage";
 import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
@@ -58,7 +60,9 @@ const App = () => (
             <Route path="/oftalmologia" element={<OftalmologiaPage />} />
             <Route path="/contactos" element={<ContactosPage />} />
             <Route path="/consultas-online" element={<ConsultasOnlinePage />} />
+            <Route path="/marcar-consulta" element={<MarcarConsultaPage />} />
             <Route path="/academy" element={<AcademyPage />} />
+            <Route path="/blog" element={<BlogListingPage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             {/* Patient auth (public) */}
             <Route path="/area-cliente/login" element={<PatientLoginPage />} />

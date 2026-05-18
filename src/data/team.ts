@@ -1,4 +1,14 @@
 import { TeamMember } from '@/types';
+import antonioFrancoImg from '@/assets/team/antonio-franco.png';
+import pedroGomesImg from '@/assets/team/pedro-gomes.png';
+import claudiaPatricioImg from '@/assets/team/claudia-patricio.png';
+import joaoOliveiraImg from '@/assets/team/joao-oliveira.png';
+import helenaFrancoImg from '@/assets/team/helena-franco.png';
+import pedroFrancoImg from '@/assets/team/pedro-franco.png';
+import nunoBangolaImg from '@/assets/team/nuno-bangola.png';
+import andreLimaImg from '@/assets/team/andre-lima.png';
+import vitorCoimbraImg from '@/assets/team/vitor-coimbra.png';
+import joaoCiprianoImg from '@/assets/team/joao-cipriano.png';
 
 export type TeamCategory = 'todos' | 'oftalmologia' | 'dentaria' | 'outros';
 
@@ -13,7 +23,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Dr. António Franco',
     role: 'Director Geral',
     specialty: 'Oftalmologia',
-    image: '',
+    image: antonioFrancoImg,
     shortBio: 'Fundador da MediFranco, com mais de 25 anos dedicados à oftalmologia e à medicina humanizada.',
     bio: 'O Dr. António Franco fundou a MediFranco em 2000, trazendo consigo uma visão de medicina enraizada em valores humanos. Com formação especializada em oftalmologia, é o rosto de uma clínica que prioriza a relação médico-paciente e o diagnóstico interdisciplinar.',
   },
@@ -22,7 +32,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Dr. Pedro Gomes',
     role: 'Oftalmologista',
     specialty: 'Oftalmologia',
-    image: '',
+    image: pedroGomesImg,
     shortBio: 'Especialista em oftalmologia com foco em diagnóstico e tratamento de patologias oculares.',
     bio: 'O Dr. Pedro Gomes é oftalmologista na MediFranco, dedicando-se ao diagnóstico e tratamento de diversas patologias oculares. A sua abordagem combina rigor clínico com atenção personalizada a cada paciente.',
   },
@@ -31,7 +41,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Cláudia Patrício',
     role: 'Optometrista',
     specialty: 'Oftalmologia',
-    image: '',
+    image: claudiaPatricioImg,
     shortBio: 'Responsável pela optometria, exames de acuidade visual e adaptação de lentes de contacto.',
     bio: 'Cláudia Patrício é optometrista na MediFranco, especializando-se em testes de visão, correcção visual e adaptação personalizada de lentes de contacto para máximo conforto dos pacientes.',
   },
@@ -40,7 +50,7 @@ export const teamMembers: TeamMember[] = [
     name: 'João Oliveira',
     role: 'Ortoptista',
     specialty: 'Oftalmologia',
-    image: '',
+    image: joaoOliveiraImg,
     shortBio: 'Especialista em ortóptica, tratamento de músculos oculares e alinhamento visual.',
     bio: 'João Oliveira é ortoptista na MediFranco, dedicando-se ao diagnóstico e tratamento de distúrbios da motilidade ocular e do alinhamento visual, trabalhando em colaboração com a equipa de oftalmologia.',
   },
@@ -49,7 +59,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Drª. Helena Franco',
     role: 'Directora Clínica',
     specialty: 'Medicina Dentária',
-    image: '',
+    image: helenaFrancoImg,
     shortBio: 'Directora clínica e especialista em periodontologia, com foco na saúde gengival e prevenção.',
     bio: 'A Drª. Helena Franco é a directora clínica da MediFranco e especialista em periodontologia. Lidera a equipa de medicina dentária com uma abordagem preventiva, focando-se no tratamento de doenças gengivais e na manutenção da saúde oral a longo prazo.',
   },
@@ -58,7 +68,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Dr. Pedro Franco',
     role: 'Dentística Estética e Reabilitação Oral',
     specialty: 'Medicina Dentária',
-    image: '',
+    image: pedroFrancoImg,
     shortBio: 'Especializado em dentística estética e reabilitação oral fixa, devolvendo sorrisos naturais.',
     bio: 'O Dr. Pedro Franco é especialista em dentística estética e reabilitação oral fixa na MediFranco. Combina técnicas avançadas de restauração com um olhar artístico para devolver sorrisos naturais e harmoniosos aos seus pacientes.',
   },
@@ -67,7 +77,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Dr. Nuno Bangola',
     role: 'Cirurgião Oral',
     specialty: 'Medicina Dentária',
-    image: '',
+    image: nunoBangolaImg,
     shortBio: 'Especialista em cirurgia oral, incluindo extracções complexas e procedimentos cirúrgicos.',
     bio: 'O Dr. Nuno Bangola é cirurgião oral na MediFranco, realizando procedimentos cirúrgicos que incluem extracções complexas, cirurgias pré-protéticas e tratamento de patologias da cavidade oral com precisão e segurança.',
   },
@@ -76,7 +86,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Dr. André Lima',
     role: 'Cirurgia Oral, Implantologia e Endodontia',
     specialty: 'Medicina Dentária',
-    image: '',
+    image: andreLimaImg,
     shortBio: 'Tripla especialização em cirurgia oral, implantologia e endodontia para tratamentos abrangentes.',
     bio: 'O Dr. André Lima é um profissional multifacetado na MediFranco, com especialização em cirurgia oral, implantologia e endodontia. Esta tripla competência permite-lhe oferecer soluções integradas, desde implantes dentários até tratamentos de canais radiculares.',
   },
@@ -85,7 +95,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Dr. Vítor Coimbra',
     role: 'Endodontista',
     specialty: 'Medicina Dentária',
-    image: '',
+    image: vitorCoimbraImg,
     shortBio: 'Especialista em endodontia, dedicado ao tratamento de canais e preservação dentária.',
     bio: 'O Dr. Vítor Coimbra é especialista em endodontia na MediFranco, focando-se no tratamento de canais radiculares para preservar dentes danificados. Utiliza técnicas modernas e equipamento de precisão para tratamentos eficazes e confortáveis.',
   },
@@ -94,7 +104,7 @@ export const teamMembers: TeamMember[] = [
     name: 'João Cipriano',
     role: 'Higienista Oral',
     specialty: 'Medicina Dentária',
-    image: '',
+    image: joaoCiprianoImg,
     shortBio: 'Responsável pela higiene oral preventiva, limpezas profissionais e educação para a saúde.',
     bio: 'João Cipriano é higienista oral na MediFranco, dedicando-se à prevenção de doenças orais através de limpezas profissionais, destartarizações e educação dos pacientes sobre boas práticas de higiene oral diária.',
   },

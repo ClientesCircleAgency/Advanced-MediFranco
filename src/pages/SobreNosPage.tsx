@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import fundadoresImg from '@/assets/fundadores.png';
+import sobreNosHero from '@/assets/heroes/sobre-nos-hero.jpg';
 
 const missionVisionValues = [
   {
@@ -319,6 +320,8 @@ export default function SobreNosPage() {
       <PageHero
         title="Sobre a MediFranco"
         subtitle="Ha mais de 25 anos a cuidar da sua saude em Setubal."
+        backgroundImage={sobreNosHero}
+        backgroundPosition="center 48%"
         breadcrumbItems={[
           { label: 'Inicio', href: '/' },
           { label: 'Sobre Nos' },
