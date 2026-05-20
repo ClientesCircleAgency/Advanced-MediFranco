@@ -15,13 +15,13 @@ const Index = () => {
         <title>MediFranco — Clínica de Oftalmologia e Medicina Dentária em Setúbal</title>
         <meta
           name="description"
-          content="Clínica médica em Setúbal com 25+ anos. Oftalmologia, medicina dentária e consultas online. Marque a sua consulta hoje."
+          content="Clínica médica em Setúbal com 25+ anos. Oftalmologia, medicina dentária, morada e contactos telefónicos."
         />
         <link rel="canonical" href="https://medifranco.pt/" />
         <meta property="og:title" content="MediFranco — Clínica Médica em Setúbal" />
         <meta
           property="og:description"
-          content="Oftalmologia, medicina dentária e consultas online. 25+ anos de experiência em Setúbal."
+          content="Oftalmologia, medicina dentária, morada e contactos telefónicos. 25+ anos de experiência em Setúbal."
         />
         <meta property="og:image" content="/og/homepage.jpg" />
         <meta property="og:type" content="website" />

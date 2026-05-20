@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Phone, Calendar, User, ChevronDown, Eye, SmilePlus } from 'lucide-react';
+import { Menu, Phone, Calendar, ChevronDown, Eye, SmilePlus, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -35,10 +35,16 @@ const navItems = [
         description: 'Cirurgia, Consultas, Laser...',
         icon: Eye,
       },
+      {
+        label: 'Novo Espaço',
+        href: '/novo-espaco',
+        description: 'Novas especialidades no novo espaço',
+        icon: Sparkles,
+      },
     ],
   },
-  { label: 'Consultas Online', href: '/consultas-online' },
   { label: 'Academy', href: '/academy' },
+  { label: 'Casos', href: '/casos-estudo' },
   { label: 'Blog', href: '/blog' },
   { label: 'Contactos', href: '/contactos' },
 ];
@@ -66,7 +72,8 @@ export function Header() {
   const isServicesActive = () => {
     return (
       location.pathname === '/medicina-dentaria' ||
-      location.pathname === '/oftalmologia'
+      location.pathname === '/oftalmologia' ||
+      location.pathname === '/novo-espaco'
     );
   };
 
@@ -93,7 +100,7 @@ export function Header() {
       }`}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-20 md:h-24">
           {/* Mobile Menu (Sheet) */}
           <div className="lg:hidden">
             <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
@@ -109,7 +116,7 @@ export function Header() {
                 <SheetHeader className="p-6 pb-4 border-b border-border">
                   <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
                   <Link to="/" onClick={() => setIsMobileOpen(false)}>
-                    <img alt="MediFranco" className="h-12 w-auto max-w-[220px]" src={logo} />
+                    <img alt="MediFranco" className="h-[3.75rem] w-auto max-w-[275px]" src={logo} />
                   </Link>
                 </SheetHeader>
 
@@ -168,22 +175,12 @@ export function Header() {
                 {/* Bottom CTAs */}
                 <div className="p-4 border-t border-border space-y-3">
                   <Button
-                    variant="outline"
-                    className="w-full rounded-xl justify-start"
-                    asChild
-                  >
-                    <Link to="/area-cliente" onClick={() => setIsMobileOpen(false)}>
-                      <User className="w-4 h-4 mr-2" />
-                      Área de Cliente
-                    </Link>
-                  </Button>
-                  <Button
                     className="w-full bg-primary-gradient hover:opacity-90 rounded-xl"
                     asChild
                   >
-                    <Link to="/marcar-consulta" onClick={() => setIsMobileOpen(false)}>
+                    <Link to="/contactos" onClick={() => setIsMobileOpen(false)}>
                       <Calendar className="w-4 h-4 mr-2" />
-                      Marcar Consulta
+                      Contactos
                     </Link>
                   </Button>
                   <a
@@ -203,7 +200,7 @@ export function Header() {
             to="/"
             className="flex items-center absolute left-1/2 -translate-x-1/2 lg:relative lg:left-0 lg:translate-x-0"
           >
-            <img alt="MediFranco" className="h-14 md:h-16 w-auto max-w-[260px]" src={logo} />
+            <img alt="MediFranco" className="h-[4.375rem] w-auto max-w-[325px] md:h-20" src={logo} />
           </Link>
 
           {/* Desktop Navigation */}
@@ -285,20 +282,14 @@ export function Header() {
 
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="rounded-xl text-sm font-semibold text-slate-800 hover:text-primary" asChild>
-              <Link to="/area-cliente">
-                <User className="w-4 h-4 mr-2" />
-                Área de Cliente
-              </Link>
-            </Button>
             <Button
               size="sm"
               className="bg-primary-gradient hover:opacity-90 shadow-lg hover:shadow-xl transition-all rounded-xl text-sm"
               asChild
             >
-              <Link to="/marcar-consulta">
+              <Link to="/contactos">
                 <Calendar className="w-4 h-4 mr-2" />
-                Marcar Consulta
+                Contactos
               </Link>
             </Button>
           </div>
@@ -311,7 +302,7 @@ export function Header() {
               className="rounded-xl"
               asChild
             >
-              <Link to="/marcar-consulta" aria-label="Marcar Consulta">
+              <Link to="/contactos" aria-label="Contactos">
                 <Calendar className="w-5 h-5" />
               </Link>
             </Button>

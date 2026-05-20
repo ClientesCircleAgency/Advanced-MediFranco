@@ -118,4 +118,63 @@ export const ophthalmologyServices: Service[] = [
   },
 ];
 
-export const allServices = [...dentalServices, ...ophthalmologyServices];
+export const newSpaceServices: Service[] = [
+  {
+    id: 'medicina-geral',
+    name: 'Medicina Geral',
+    description:
+      'Acompanhamento medico de proximidade para avaliacao geral, prevencao, orientacao clinica e seguimento de situacoes de saude comuns.',
+    icon: 'Stethoscope',
+    category: 'novo-espaco',
+  },
+  {
+    id: 'optometria',
+    name: 'Optometria',
+    description:
+      'Avaliacao visual, adaptacao de correcao optica e acompanhamento funcional da visao, em articulacao com a area de oftalmologia.',
+    icon: 'Eye',
+    category: 'novo-espaco',
+  },
+  {
+    id: 'otorrinolaringologia',
+    name: 'Otorrinolaringologia',
+    description:
+      'Avaliacao e acompanhamento de queixas relacionadas com ouvido, nariz, garganta, equilibrio, respiracao e voz.',
+    icon: 'Ear',
+    category: 'novo-espaco',
+  },
+  {
+    id: 'psicologia',
+    name: 'Psicologia',
+    description:
+      'Acompanhamento psicologico num ambiente clinico reservado, com foco na escuta, orientacao e continuidade de cuidados.',
+    icon: 'Brain',
+    category: 'novo-espaco',
+  },
+  {
+    id: 'pediatria',
+    name: 'Pediatria',
+    description:
+      'Seguimento clinico de criancas e adolescentes, com atencao ao crescimento, desenvolvimento, prevencao e bem-estar familiar.',
+    icon: 'Baby',
+    category: 'novo-espaco',
+  },
+  {
+    id: 'ortoptica',
+    name: 'Ortoptica',
+    description:
+      'Avaliacao e acompanhamento de alteracoes da visao binocular, motilidade ocular e desenvolvimento visual.',
+    icon: 'Activity',
+    category: 'novo-espaco',
+  },
+  {
+    id: 'nutricao-funcional',
+    name: 'Nutricao Funcional',
+    description:
+      'Acompanhamento nutricional personalizado, orientado para habitos, equilibrio metabolico e objectivos de saude sustentaveis.',
+    icon: 'Apple',
+    category: 'novo-espaco',
+  },
+];
+
+export const allServices = [...dentalServices, ...ophthalmologyServices, ...newSpaceServices];

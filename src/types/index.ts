@@ -45,6 +45,6 @@ export interface Service {
   name: string;
   description: string;
   icon: string;
-  category: 'dentaria' | 'oftalmologia';
+  category: 'dentaria' | 'oftalmologia' | 'novo-espaco';
   image?: string;
 }

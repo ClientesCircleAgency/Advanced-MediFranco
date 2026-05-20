@@ -7,40 +7,21 @@ import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import BlogListingPage from "./pages/BlogListingPage";
 import BlogPostPage from "./pages/BlogPostPage";
+import CasosEstudoPage from "./pages/CasosEstudoPage";
 import SobreNosPage from "./pages/SobreNosPage";
 import EquipaPage from "./pages/EquipaPage";
 import MedicinaDentariaPage from "./pages/MedicinaDentariaPage";
 import OftalmologiaPage from "./pages/OftalmologiaPage";
 import ContactosPage from "./pages/ContactosPage";
-import ConsultasOnlinePage from "./pages/ConsultasOnlinePage";
-import MarcarConsultaPage from "./pages/MarcarConsultaPage";
+import NovoEspacoPage from "./pages/NovoEspacoPage";
 import AcademyPage from "./pages/AcademyPage";
 import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 import { AdminLayout } from "./components/admin/AdminLayout";
-import DashboardPage from "./pages/admin/DashboardPage";
-import AgendaPage from "./pages/admin/AgendaPage";
-import PatientsPage from "./pages/admin/PatientsPage";
-import PatientDetailPage from "./pages/admin/PatientDetailPage";
-import WaitlistPage from "./pages/admin/WaitlistPage";
-import WaitingRoomPage from "./pages/admin/WaitingRoomPage";
 import MessagesPage from "./pages/admin/MessagesPage";
-import SettingsPage from "./pages/admin/SettingsPage";
-import RequestsPage from "./pages/admin/RequestsPage";
-import PlanPage from './pages/admin/PlanPage';
-import StatisticsPage from './pages/admin/StatisticsPage';
 import BlogPage from './pages/admin/BlogPage';
+import CaseStudiesPage from './pages/admin/CaseStudiesPage';
 import { ScrollToTop } from './components/ScrollToTop';
-import PatientLoginPage from './pages/patient/LoginPage';
-import PatientRegisterPage from './pages/patient/RegisterPage';
-import PatientResetPasswordPage from './pages/patient/ResetPasswordPage';
-import { PatientLayout } from './components/patient/PatientLayout';
-import PatientDashboardPage from './pages/patient/DashboardPage';
-import PatientAgendaPage from './pages/patient/AgendaPage';
-import PatientHistoryPage from './pages/patient/HistoryPage';
-import PatientDocumentsPage from './pages/patient/DocumentsPage';
-import PatientProfilePage from './pages/patient/ProfilePage';
-import PatientSettingsPage from './pages/patient/SettingsPage';
 
 const queryClient = new QueryClient();
 
@@ -59,41 +40,21 @@ const App = () => (
             <Route path="/medicina-dentaria" element={<MedicinaDentariaPage />} />
             <Route path="/oftalmologia" element={<OftalmologiaPage />} />
             <Route path="/contactos" element={<ContactosPage />} />
-            <Route path="/consultas-online" element={<ConsultasOnlinePage />} />
-            <Route path="/marcar-consulta" element={<MarcarConsultaPage />} />
+            <Route path="/novo-espaco" element={<NovoEspacoPage />} />
+            <Route path="/consultas-online" element={<Navigate to="/contactos" replace />} />
+            <Route path="/marcar-consulta" element={<Navigate to="/contactos" replace />} />
             <Route path="/academy" element={<AcademyPage />} />
+            <Route path="/casos-estudo" element={<CasosEstudoPage />} />
             <Route path="/blog" element={<BlogListingPage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
-            {/* Patient auth (public) */}
-            <Route path="/area-cliente/login" element={<PatientLoginPage />} />
-            <Route path="/area-cliente/registar" element={<PatientRegisterPage />} />
-            <Route path="/area-cliente/recuperar-password" element={<PatientResetPasswordPage />} />
-
-            {/* Patient zone (protected) */}
-            <Route path="/area-cliente" element={<PatientLayout />}>
-              <Route index element={<PatientDashboardPage />} />
-              <Route path="agenda" element={<PatientAgendaPage />} />
-              <Route path="historico" element={<PatientHistoryPage />} />
-              <Route path="documentos" element={<PatientDocumentsPage />} />
-              <Route path="perfil" element={<PatientProfilePage />} />
-              <Route path="configuracoes" element={<PatientSettingsPage />} />
-            </Route>
 
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="agenda" element={<AgendaPage />} />
-              <Route path="pedidos" element={<RequestsPage />} />
-              <Route path="pacientes" element={<PatientsPage />} />
-              <Route path="pacientes/:id" element={<PatientDetailPage />} />
-              <Route path="lista-espera" element={<WaitlistPage />} />
-              <Route path="sala-espera" element={<WaitingRoomPage />} />
+              <Route index element={<Navigate to="blog" replace />} />
               <Route path="mensagens" element={<MessagesPage />} />
-              <Route path="configuracoes" element={<SettingsPage />} />
-              <Route path="plano" element={<PlanPage />} />
+              <Route path="casos-estudo" element={<CaseStudiesPage />} />
               <Route path="blog" element={<BlogPage />} />
-              <Route path="estatisticas" element={<StatisticsPage />} />
+              <Route path="*" element={<Navigate to="blog" replace />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

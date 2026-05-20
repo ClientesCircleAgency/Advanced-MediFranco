@@ -1,19 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  CalendarDays,
-  Users,
-  Settings,
   ChevronLeft,
   ChevronRight,
-  Plus,
   LogOut,
-  Inbox,
-  BarChart3,
   Newspaper,
-  MonitorPlay,
   MessageSquareMore,
-  Workflow,
+  BookOpenCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,28 +14,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useClinic } from '@/context/ClinicContext';
-import { useAppointmentRequests } from '@/hooks/useAppointmentRequests';
-import { useOnlineAppointments } from '@/hooks/useOnlineAppointments';
-import { PlanBadge } from './PlanBadge';
 
 const navSections = [
   {
-    label: 'Command Center',
+    label: 'Gestao do Site',
     items: [
-      { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/admin/agenda', label: 'Agenda Hibrida', icon: CalendarDays, badgeKey: 'todayLoad' },
-      { path: '/admin/pedidos', label: 'Triage e Pedidos', icon: Inbox, badgeKey: 'requests' },
-      { path: '/admin/sala-espera', label: 'Fluxo Clinico', icon: Workflow, badgeKey: 'activeFlow' },
-    ],
-  },
-  {
-    label: 'Operacao',
-    items: [
-      { path: '/admin/pacientes', label: 'Pacientes', icon: Users },
       { path: '/admin/mensagens', label: 'Mensagens', icon: MessageSquareMore, badgeKey: 'messages' },
+      { path: '/admin/casos-estudo', label: 'Casos de Estudo', icon: BookOpenCheck },
       { path: '/admin/blog', label: 'Site e Blog', icon: Newspaper },
-      { path: '/admin/estatisticas', label: 'Analytics', icon: BarChart3 },
     ],
   },
 ];
@@ -58,21 +36,6 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, isMobile = false }: AdminSidebarProps) {
   const location = useLocation();
-  const { appointments } = useClinic();
-  const { data: requests = [] } = useAppointmentRequests();
-  const { data: onlineAppointments = [] } = useOnlineAppointments();
-
-  const todayDate = new Date().toISOString().split('T')[0];
-  const pendingToday = appointments.filter(
-    (appointment) => appointment.date === todayDate && ['scheduled', 'confirmed', 'pre_confirmed'].includes(appointment.status)
-  ).length;
-  const onlineToday = onlineAppointments.filter(
-    (appointment) => appointment.date === todayDate && ['scheduled', 'pre_confirmed', 'confirmed', 'paid'].includes(appointment.status)
-  ).length;
-  const pendingRequests = requests.filter((request) => request.status === 'pending').length;
-  const activeFlow = appointments.filter(
-    (appointment) => appointment.date === todayDate && ['waiting', 'in_progress'].includes(appointment.status)
-  ).length;
   const unreadMessages = 0;
   const isCollapsed = collapsed && !isMobile;
 
@@ -86,53 +49,12 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
         !isMobile && (isCollapsed ? 'w-16' : 'w-72')
       )}
     >
-      <div className="px-3 py-3">
-        <PlanBadge plan="advanced" collapsed={isCollapsed} />
-      </div>
-
       {!isCollapsed && (
-        <div className="mx-3 mb-3 rounded-[1.75rem] border border-cyan-400/10 bg-white/5 px-3 py-3 shadow-lg shadow-cyan-950/20">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-cyan-200/70">
-            <MonitorPlay className="h-3.5 w-3.5" />
-            Operacao Hibrida
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="rounded-2xl bg-slate-900/90 p-3">
-              <p className="font-mono text-lg text-white">{pendingToday}</p>
-              <p className="mt-1 text-[11px] text-slate-400">Presencial hoje</p>
-            </div>
-            <div className="rounded-2xl bg-slate-900/90 p-3">
-              <p className="font-mono text-lg text-cyan-300">{onlineToday}</p>
-              <p className="mt-1 text-[11px] text-slate-400">Online hoje</p>
-            </div>
-          </div>
+        <div className="mx-3 mt-3 rounded-[1.75rem] border border-cyan-400/10 bg-white/5 px-4 py-4 shadow-lg shadow-cyan-950/20">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-cyan-200/70">MediFranco</p>
+          <p className="mt-2 text-sm text-slate-300">Gestao editorial do site e mensagens recebidas.</p>
         </div>
       )}
-
-      <div className="p-3">
-        {isCollapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={onNewAppointment}
-                size="icon"
-                className="w-full rounded-2xl bg-primary-gradient font-sans shadow-md hover:opacity-90"
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">Nova consulta</TooltipContent>
-          </Tooltip>
-        ) : (
-          <Button
-            onClick={onNewAppointment}
-            className="w-full gap-2 rounded-2xl bg-primary-gradient font-sans font-medium shadow-md transition-all hover:opacity-90 hover:shadow-lg"
-          >
-            <Plus className="h-4 w-4" />
-            Nova consulta
-          </Button>
-        )}
-      </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-3">
         {navSections.map((section) => (
@@ -147,15 +69,9 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
                 const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
                 const Icon = item.icon;
                 const badge =
-                  item.badgeKey === 'requests' && pendingRequests > 0
-                    ? pendingRequests
-                    : item.badgeKey === 'todayLoad' && pendingToday + onlineToday > 0
-                      ? pendingToday + onlineToday
-                      : item.badgeKey === 'activeFlow' && activeFlow > 0
-                        ? activeFlow
-                        : item.badgeKey === 'messages' && unreadMessages > 0
-                          ? unreadMessages
-                          : null;
+                  item.badgeKey === 'messages' && unreadMessages > 0
+                    ? unreadMessages
+                    : null;
 
                 if (isCollapsed) {
                   return (
@@ -225,24 +141,6 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
           <>
             <Tooltip>
               <TooltipTrigger asChild>
-                <NavLink
-                  to="/admin/configuracoes"
-                  className={cn(
-                    'flex h-10 w-full items-center justify-center rounded-2xl transition-all',
-                    location.pathname === '/admin/configuracoes'
-                      ? 'bg-white text-slate-950'
-                      : 'text-slate-400 hover:bg-white/8 hover:text-white'
-                  )}
-                >
-                  <Settings className="h-4 w-4" />
-                </NavLink>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="font-sans text-xs">
-                Configuracoes
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -259,18 +157,6 @@ export function AdminSidebar({ collapsed, onToggle, onNewAppointment, onLogout, 
           </>
         ) : (
           <>
-            <NavLink
-              to="/admin/configuracoes"
-              className={cn(
-                'flex h-10 items-center gap-3 rounded-2xl px-3 font-sans text-sm transition-all',
-                location.pathname === '/admin/configuracoes'
-                  ? 'bg-white text-slate-950 font-medium'
-                  : 'text-slate-300 hover:bg-white/8 hover:text-white'
-              )}
-            >
-              <Settings className="h-4 w-4" />
-              <span>Configuracoes</span>
-            </NavLink>
             <button
               onClick={onLogout}
               className="flex h-10 w-full items-center gap-3 rounded-2xl px-3 font-sans text-sm text-red-300 transition-all hover:bg-red-500/10 hover:text-red-200"

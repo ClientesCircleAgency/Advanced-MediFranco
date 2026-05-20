@@ -41,38 +41,41 @@ export function TeamSection() {
             {teamMembers.map((member, index) => (
               <div
                 key={member.id}
-                className={`group bg-card rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-border overflow-hidden flex flex-col items-center text-center p-6 relative cursor-pointer ${
+                className={`group relative flex flex-col items-center pt-4 text-center cursor-pointer ${
                   isVisible ? 'animate-fade-in-up' : 'opacity-0'
                 }`}
                 style={{ animationDelay: `${index * 100}ms` }}
                 onClick={() => setSelectedMember(member)}
               >
-                {/* Overlay de Hover colorido */}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-                <div className="relative mb-6">
-                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-background shadow-lg group-hover:scale-105 transition-transform duration-300">
-                    <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full shadow-md transform translate-y-1/4 translate-x-1/4">
+                <div className="relative z-0 -mb-16 h-80 w-full overflow-visible">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="mx-auto h-full w-auto max-w-[96%] object-contain object-bottom saturate-100 drop-shadow-2xl transition-transform duration-300 group-hover:scale-[1.04]"
+                  />
+                  <div className="absolute bottom-20 right-6 z-20 bg-primary text-primary-foreground p-2.5 rounded-full shadow-md">
                     <Stethoscope size={16} />
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-foreground mb-1">{member.name}</h3>
-                <p className="text-primary font-medium text-sm mb-3">{member.role}</p>
+                <div className="relative z-10 flex flex-1 flex-col items-center rounded-2xl border border-border bg-card p-6 pt-12 shadow-sm transition-all duration-300 group-hover:border-primary/25 group-hover:shadow-xl">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-transparent to-primary/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none" />
 
-                <div className="inline-block bg-muted px-3 py-1 rounded-full text-xs text-muted-foreground font-medium mb-4">
-                  {member.specialty}
+                  <h3 className="relative text-xl font-bold text-foreground mb-1">{member.name}</h3>
+                  <p className="relative text-primary font-medium text-sm mb-3">{member.role}</p>
+
+                  <div className="relative inline-block bg-muted px-3 py-1 rounded-full text-xs text-muted-foreground font-medium mb-4">
+                    {member.specialty}
+                  </div>
+
+                  <p className="relative text-muted-foreground text-sm leading-relaxed mb-6 line-clamp-2">
+                    {member.shortBio}
+                  </p>
+
+                  <button className="relative mt-auto flex items-center gap-2 text-primary font-semibold text-sm group-hover:gap-3 transition-all">
+                    Ver Perfil <ChevronRight size={16} />
+                  </button>
                 </div>
-
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6 line-clamp-2">
-                  {member.shortBio}
-                </p>
-
-                <button className="mt-auto flex items-center gap-2 text-primary font-semibold text-sm group-hover:gap-3 transition-all">
-                  Ver Perfil <ChevronRight size={16} />
-                </button>
               </div>
             ))}
           </div>
@@ -129,11 +132,11 @@ export function TeamSection() {
                   <span>Certificação de Excelência</span>
                 </div>
                 <a
-                  href="/marcar-consulta"
+                  href="/contactos"
                   onClick={() => setSelectedMember(null)}
                   className="sm:ml-auto bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2.5 rounded-full text-sm font-medium transition-colors shadow-lg"
                 >
-                  Marcar Consulta
+                  Contactos
                 </a>
               </div>
             </div>

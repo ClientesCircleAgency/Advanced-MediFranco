@@ -4,8 +4,9 @@ import { ArrowRight, Calendar, ChevronLeft, ChevronRight, Phone, Sparkles } from
 import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo-medifranco.png';
 import homeHero from '@/assets/heroes/home-hero.jpg';
-import visualScreeningSlide from '@/assets/heroes/home-visual-screening-slide.png';
 import newSpaceSlide from '@/assets/heroes/home-new-space-slide.png';
+import ophthalmologyCircleBackground from '@/assets/backgrounds/ophthalmology/ophthalmology-background-patient-machine-01.png';
+import claudiaPortrait from '@/assets/team-portraits/claudia-patricio-defringed.png';
 import { cn } from '@/lib/utils';
 
 const specialties = [
@@ -27,9 +28,9 @@ const slides = [
   },
   {
     id: 'visual-screening',
-    image: visualScreeningSlide,
+    image: ophthalmologyCircleBackground,
     imagePosition: 'center center',
-    tone: 'campaign',
+    tone: 'visual-screening',
   },
   {
     id: 'new-space',
@@ -76,7 +77,7 @@ export function HeroSection() {
             index === activeSlide ? 'opacity-100' : 'opacity-0'
           )}
           style={{
-            backgroundImage: `url(${slide.image})`,
+            backgroundImage: slide.tone === 'visual-screening' ? undefined : `url(${slide.image})`,
             backgroundPosition: slide.imagePosition,
           }}
         >
@@ -84,6 +85,28 @@ export function HeroSection() {
             <>
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_35%,rgba(20,184,166,0.22),transparent_32%),linear-gradient(90deg,rgba(248,255,255,0.96)_0%,rgba(248,255,255,0.84)_35%,rgba(248,255,255,0.44)_62%,rgba(248,255,255,0.12)_100%)]" />
               <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
+            </>
+          ) : slide.tone === 'visual-screening' ? (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/96 via-white/82 to-white/34 md:from-white/96 md:via-white/78 md:to-white/12" />
+              <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
+
+              <div className="pointer-events-none absolute right-[-12rem] top-1/2 hidden aspect-square w-[42rem] -translate-y-1/2 overflow-hidden rounded-full shadow-[0_28px_90px_rgba(15,118,110,0.28)] md:block lg:right-[-5rem] lg:w-[50rem] xl:right-[3vw] xl:w-[54rem]">
+                <div
+                  className="absolute inset-0 scale-105 bg-cover bg-center opacity-75"
+                  style={{ backgroundImage: `url(${ophthalmologyCircleBackground})` }}
+                />
+                <div className="absolute inset-0 bg-[#009f9a]/88 mix-blend-multiply" />
+                <div className="absolute inset-0 bg-[#00c7ba]/30" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_36%_28%,rgba(255,255,255,0.32),transparent_28%),linear-gradient(135deg,rgba(255,255,255,0.18),transparent_48%)]" />
+              </div>
+
+              <img
+                src={claudiaPortrait}
+                alt=""
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-0 right-[7vw] hidden h-[76vh] max-h-[45rem] w-auto object-contain object-bottom drop-shadow-[0_28px_42px_rgba(15,23,42,0.22)] md:block lg:right-[10vw]"
+              />
             </>
           ) : (
             <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/58 to-white/5 md:from-white/25 md:via-white/5 md:to-transparent" />
@@ -102,7 +125,7 @@ export function HeroSection() {
             <div className="animate-fade-in-up">
               <img
                 alt="MediFranco"
-                className="mb-8 h-24 w-auto max-w-[88vw] drop-shadow-lg md:h-32 lg:h-40"
+                className="mb-8 h-[7.5rem] w-auto max-w-[88vw] drop-shadow-lg md:h-40 lg:h-[12.5rem]"
                 src={logo}
               />
 
@@ -122,9 +145,9 @@ export function HeroSection() {
                   className="gap-2 rounded-xl bg-primary-gradient px-8 py-6 text-base font-semibold shadow-lg transition-all duration-300 hover:opacity-90 hover:shadow-xl"
                   asChild
                 >
-                  <Link to="/marcar-consulta">
+                  <Link to="/contactos">
                     <Calendar className="h-5 w-5" />
-                    Marcar Consulta
+                    Contactos
                   </Link>
                 </Button>
                 <Button
@@ -154,13 +177,13 @@ export function HeroSection() {
                   Com a Optometrista Cláudia Patrício, na MediFranco.
                 </p>
                 <p className="mt-3 text-muted-foreground">
-                  Marque através do telefone ou envie o pedido online.
+                  Fale connosco por telefone ou através da página de contactos.
                 </p>
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                   <Button asChild className="rounded-xl bg-primary-gradient">
-                    <Link to="/marcar-consulta">
+                    <Link to="/contactos">
                       <Calendar className="mr-2 h-4 w-4" />
-                      Marcar rastreio
+                      Ver contactos
                     </Link>
                   </Button>
                   <Button asChild variant="outline" className="rounded-xl border-primary/30 bg-white/70 text-primary">
@@ -201,8 +224,8 @@ export function HeroSection() {
                   No espaço atual ficará a Medicina Dentária. As restantes áreas passam para o novo espaço.
                 </p>
                 <Button asChild className="mt-5 rounded-xl bg-primary-gradient">
-                  <Link to="/marcar-consulta">
-                    Marcar consulta
+                  <Link to="/novo-espaco">
+                    Conhecer novo espaço
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

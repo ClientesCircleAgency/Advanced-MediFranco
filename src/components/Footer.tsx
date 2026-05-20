@@ -51,10 +51,9 @@ export function Footer() {
                 { label: 'Início', href: '/' },
                 { label: 'Sobre Nós', href: '/sobre-nos' },
                 { label: 'Equipa', href: '/equipa' },
+                { label: 'Casos de Estudo', href: '/casos-estudo' },
                 { label: 'Blog', href: '/blog' },
                 { label: 'Contactos', href: '/contactos' },
-                { label: 'Consultas Online', href: '/consultas-online' },
-                { label: 'Área de Cliente', href: '/area-cliente' },
               ].map((link) => (
                 <li key={link.href}>
                   <Link
@@ -96,6 +95,23 @@ export function Footer() {
                 >
                   Oftalmologia
                 </Link>
+              </li>
+              <li className="mt-4">
+                <Link
+                  to="/novo-espaco"
+                  className="text-background/70 hover:text-primary transition-colors text-sm"
+                >
+                  Novo Espaço
+                </Link>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Medicina Geral</span>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Optometria</span>
+              </li>
+              <li className="pl-3">
+                <span className="text-background/50 text-sm">Psicologia</span>
               </li>
               <li className="pl-3">
                 <span className="text-background/50 text-sm">Cirurgia Refrativa</span>

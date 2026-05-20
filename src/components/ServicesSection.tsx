@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
-import { dentalServices, ophthalmologyServices } from '@/data/services';
+import { dentalServices, ophthalmologyServices, newSpaceServices } from '@/data/services';
 import { Service } from '@/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -10,11 +10,10 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 
   return (
     <div
-      className="group overflow-hidden rounded-2xl bg-card border border-border shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500"
+      className="group h-full overflow-hidden rounded-2xl bg-card border border-border shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-500"
       style={{ animationDelay: `${index * 100}ms` }}
     >
-      {/* Image */}
-      {service.image && (
+      {service.image ? (
         <div className="relative h-48 overflow-hidden">
           <img
             src={service.image}
@@ -28,9 +27,14 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
             </div>
           </div>
         </div>
+      ) : (
+        <div className="px-6 pt-6">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <IconComponent className="h-7 w-7" />
+          </div>
+        </div>
       )}
-      
-      {/* Content */}
+
       <div className="p-6">
         <h4 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
           {service.name}
@@ -56,29 +60,27 @@ export function ServicesSection() {
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          {/* Section Header */}
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-full mb-4">
-              <span className="text-sm font-medium text-accent-foreground">Serviços</span>
+              <span className="text-sm font-medium text-accent-foreground">Servicos</span>
             </div>
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 tracking-tight">
-              Os Nossos <span className="text-primary-gradient">Serviços</span>
+              Os Nossos <span className="text-primary-gradient">Servicos</span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              Oferecemos uma gama completa de serviços de medicina dentária e
-              oftalmologia, sempre com a mais alta qualidade.
+            <p className="text-muted-foreground max-w-3xl mx-auto text-lg">
+              Medicina Dentaria continua no espaco atual. Oftalmologia e as novas
+              especialidades passam a integrar o novo espaco MediFranco.
             </p>
           </div>
 
-          {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-10 h-14 p-1 bg-card border border-border rounded-2xl">
+            <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-1 gap-1 mb-10 h-auto p-1 bg-card border border-border rounded-2xl sm:grid-cols-3">
               <TabsTrigger
                 value="dentaria"
                 className="data-[state=active]:bg-primary-gradient data-[state=active]:text-primary-foreground rounded-xl h-12 text-sm font-medium transition-all"
               >
                 <Icons.Smile className="w-4 h-4 mr-2" />
-                Medicina Dentária
+                Medicina Dentaria
               </TabsTrigger>
               <TabsTrigger
                 value="oftalmologia"
@@ -87,9 +89,20 @@ export function ServicesSection() {
                 <Icons.Eye className="w-4 h-4 mr-2" />
                 Oftalmologia
               </TabsTrigger>
+              <TabsTrigger
+                value="novo-espaco"
+                className="data-[state=active]:bg-primary-gradient data-[state=active]:text-primary-foreground rounded-xl h-12 text-sm font-medium transition-all"
+              >
+                <Icons.Sparkles className="w-4 h-4 mr-2" />
+                Novo Espaco
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="dentaria" className="mt-0">
+              <div className="mb-6 rounded-2xl border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
+                <strong className="text-foreground">No espaco atual:</strong> Medicina Dentaria
+                mantem-se no espaco historico da MediFranco.
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {dentalServices.map((service, index) => (
                   <div
@@ -104,8 +117,32 @@ export function ServicesSection() {
             </TabsContent>
 
             <TabsContent value="oftalmologia" className="mt-0">
+              <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm leading-relaxed text-muted-foreground">
+                <strong className="text-foreground">No novo espaco:</strong> Oftalmologia passa a
+                integrar o novo espaco MediFranco.
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {ophthalmologyServices.map((service, index) => (
+                  <div
+                    key={service.id}
+                    className={isVisible ? 'animate-fade-in-up' : 'opacity-0'}
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <ServiceCard service={service} index={index} />
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="novo-espaco" className="mt-0">
+              <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 p-5 text-sm leading-relaxed text-muted-foreground">
+                <strong className="text-foreground">Novas especialidades no novo espaco:</strong>{' '}
+                Medicina Geral, Optometria, Otorrinolaringologia, Psicologia, Pediatria,
+                Ortoptica e Nutricao Funcional. Estas areas passam a fazer parte da oferta
+                MediFranco neste novo espaco clinico.
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {newSpaceServices.map((service, index) => (
                   <div
                     key={service.id}
                     className={isVisible ? 'animate-fade-in-up' : 'opacity-0'}

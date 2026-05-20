@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +19,6 @@ import {
   Mail,
   Clock,
   Send,
-  ArrowRight,
   Facebook,
   Instagram,
   Youtube,
@@ -339,45 +337,11 @@ function MapSection() {
   );
 }
 
-function OnlineCTA() {
-  const { ref, isVisible } = useIntersectionObserver({ threshold: 0.1 });
-
-  return (
-    <section className="py-16 md:py-24 bg-background">
-      <div className="container mx-auto px-4">
-        <div
-          ref={ref}
-          className={`transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
-          <div className="max-w-3xl mx-auto text-center bg-card border border-border rounded-3xl p-8 md:p-12 shadow-lg">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-              Prefere consulta <span className="text-primary-gradient">online</span>?
-            </h2>
-            <p className="text-muted-foreground text-lg mb-8">
-              Brevemente podera consultar os nossos especialistas por videochamada, sem sair
-              de casa.
-            </p>
-            <Link
-              to="/consultas-online"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
-            >
-              Saber Mais
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export default function ContactosPage() {
   return (
     <PageLayout
-      title="Contactos — MediFranco Setubal | Marcar Consulta"
-      description="Rua dos Comediantes n 13, Setubal. Tel: 265 540 990. Seg-Sex 09h-19h. Marque a sua consulta na MediFranco."
+      title="Contactos — MediFranco Setubal"
+      description="Rua dos Comediantes n 13, Setubal. Tel: 265 540 990. Seg-Sex 09h-19h. Fale diretamente com a MediFranco."
       path="/contactos"
       ogImage="/og/contactos.jpg"
     >
@@ -400,7 +364,6 @@ export default function ContactosPage() {
 
       <ContactInfoAndForm />
       <MapSection />
-      <OnlineCTA />
     </PageLayout>
   );
 }

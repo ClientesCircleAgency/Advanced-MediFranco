@@ -1,14 +1,13 @@
-import { TeamMember } from '@/types';
-import antonioFrancoImg from '@/assets/team/antonio-franco.png';
-import pedroGomesImg from '@/assets/team/pedro-gomes.png';
-import claudiaPatricioImg from '@/assets/team/claudia-patricio.png';
-import joaoOliveiraImg from '@/assets/team/joao-oliveira.png';
-import helenaFrancoImg from '@/assets/team/helena-franco.png';
-import pedroFrancoImg from '@/assets/team/pedro-franco.png';
-import nunoBangolaImg from '@/assets/team/nuno-bangola.png';
-import andreLimaImg from '@/assets/team/andre-lima.png';
-import vitorCoimbraImg from '@/assets/team/vitor-coimbra.png';
-import joaoCiprianoImg from '@/assets/team/joao-cipriano.png';
+﻿import { TeamMember } from '@/types';
+import antonioFrancoImg from '@/assets/team-portraits/antonio-franco.png';
+import claudiaPatricioImg from '@/assets/team-portraits/claudia-patricio.png';
+import joaoOliveiraImg from '@/assets/team-portraits/joao-oliveira.png';
+import helenaFrancoImg from '@/assets/team-portraits/helena-franco.png';
+import pedroFrancoImg from '@/assets/team-portraits/pedro-franco.png';
+import nunoBangolaImg from '@/assets/team-portraits/nuno-bangola.png';
+import andreLimaImg from '@/assets/team-portraits/andre-lima.png';
+import vitorCoimbraImg from '@/assets/team-portraits/vitor-coimbra.png';
+import joaoCiprianoImg from '@/assets/team-portraits/joao-cipriano.png';
 
 export type TeamCategory = 'todos' | 'oftalmologia' | 'dentaria' | 'outros';
 
@@ -17,7 +16,7 @@ export interface TeamMemberExtended extends TeamMember {
   initials: string;
 }
 
-export const teamMembers: TeamMember[] = [
+const teamMembersBase: TeamMember[] = [
   {
     id: 'antonio-franco',
     name: 'Dr. António Franco',
@@ -26,15 +25,6 @@ export const teamMembers: TeamMember[] = [
     image: antonioFrancoImg,
     shortBio: 'Fundador da MediFranco, com mais de 25 anos dedicados à oftalmologia e à medicina humanizada.',
     bio: 'O Dr. António Franco fundou a MediFranco em 2000, trazendo consigo uma visão de medicina enraizada em valores humanos. Com formação especializada em oftalmologia, é o rosto de uma clínica que prioriza a relação médico-paciente e o diagnóstico interdisciplinar.',
-  },
-  {
-    id: 'pedro-gomes',
-    name: 'Dr. Pedro Gomes',
-    role: 'Oftalmologista',
-    specialty: 'Oftalmologia',
-    image: pedroGomesImg,
-    shortBio: 'Especialista em oftalmologia com foco em diagnóstico e tratamento de patologias oculares.',
-    bio: 'O Dr. Pedro Gomes é oftalmologista na MediFranco, dedicando-se ao diagnóstico e tratamento de diversas patologias oculares. A sua abordagem combina rigor clínico com atenção personalizada a cada paciente.',
   },
   {
     id: 'claudia-patricio',
@@ -101,18 +91,32 @@ export const teamMembers: TeamMember[] = [
   },
   {
     id: 'joao-cipriano',
-    name: 'João Cipriano',
+    name: 'Dr. João Cipriano',
     role: 'Higienista Oral',
     specialty: 'Medicina Dentária',
     image: joaoCiprianoImg,
     shortBio: 'Responsável pela higiene oral preventiva, limpezas profissionais e educação para a saúde.',
-    bio: 'João Cipriano é higienista oral na MediFranco, dedicando-se à prevenção de doenças orais através de limpezas profissionais, destartarizações e educação dos pacientes sobre boas práticas de higiene oral diária.',
+    bio: 'O Dr. João Cipriano é higienista oral na MediFranco, dedicando-se à prevenção de doenças orais através de limpezas profissionais, destartarizações e educação dos pacientes sobre boas práticas de higiene oral diária.',
   },
 ];
 
+const ownerPriority = ['antonio-franco', 'helena-franco', 'pedro-franco'];
+
+export const teamMembers: TeamMember[] = [...teamMembersBase].sort((a, b) => {
+  const aPriority = ownerPriority.indexOf(a.id);
+  const bPriority = ownerPriority.indexOf(b.id);
+
+  if (aPriority !== -1 || bPriority !== -1) {
+    return (aPriority === -1 ? Number.MAX_SAFE_INTEGER : aPriority)
+      - (bPriority === -1 ? Number.MAX_SAFE_INTEGER : bPriority);
+  }
+
+  return teamMembersBase.indexOf(a) - teamMembersBase.indexOf(b);
+});
+
 export const teamMembersExtended: TeamMemberExtended[] = teamMembers.map((member) => ({
   ...member,
-  category: (['Dr. António Franco', 'Dr. Pedro Gomes', 'Cláudia Patrício', 'João Oliveira'].includes(member.name)
+  category: (['antonio-franco', 'claudia-patricio', 'joao-oliveira'].includes(member.id)
     ? 'oftalmologia'
     : 'dentaria') as TeamCategory,
   initials: member.name
@@ -140,7 +144,6 @@ export const dentalTeamIds = [
 
 export const ophthalmologyTeamIds = [
   'antonio-franco',
-  'pedro-gomes',
   'claudia-patricio',
   'joao-oliveira',
 ];

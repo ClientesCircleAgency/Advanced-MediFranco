@@ -162,11 +162,11 @@ function ServicesDetailSection() {
                         {extendedDescriptions[service.id] || service.description}
                       </p>
                       <Link
-                        to="/marcar-consulta"
+                        to="/contactos"
                         className="inline-flex items-center gap-2 text-primary font-semibold text-sm hover:gap-3 transition-all w-fit"
                       >
                         <Calendar className="w-4 h-4" />
-                        Marcar Consulta
+                        Contactos
                         <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
@@ -312,17 +312,17 @@ function CTABanner() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                to="/marcar-consulta"
+                to="/contactos"
                 className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-full text-base font-medium hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
               >
-                Marcar Consulta
+                Contactos
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
-                to="/marcar-consulta"
+                to="/contactos"
                 className="inline-flex items-center gap-2 text-primary font-medium hover:underline"
               >
-                Ou consulte online
+                Ver contactos
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
